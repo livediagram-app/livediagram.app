@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, supportsRotation, turnsWithFacing } from '@livehuddle/document';
+import { isBoxed, turnsWithFacing } from '@livehuddle/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -31,9 +31,6 @@ const noop = () => {};
 const INERT_HANDLERS: CommandHandlers = {
   deleteSelection: noop,
   duplicateSelection: noop,
-  bringToFront: noop,
-  sendToBack: noop,
-  rotate: noop,
   turn: noop,
   clearAnimation: noop,
   setMarker: noop,
@@ -41,8 +38,6 @@ const INERT_HANDLERS: CommandHandlers = {
   renameDocument: noop,
   deleteDocument: noop,
   renameTab: noop,
-  openTheme: noop,
-  openCanvasOptions: noop,
   openShare: noop,
   openCollaborators: noop,
   undo: noop,
@@ -77,16 +72,12 @@ export function useEditorCommands(open: boolean): {
     deleteMultiSelected,
     duplicateSelected,
     duplicateMultiSelected,
-    sendSelectedToBack,
-    bringSelectedToFront,
-    setRotationSelected,
     turnSelected,
     clearAnimationsSelected,
     setMarkerSelected,
     addTab,
     deleteDocument,
     setShareDialogOpen,
-    setCanvasThemeTab,
     requestRenameDocument,
     requestRenameTab,
     undo,
@@ -115,7 +106,6 @@ export function useEditorCommands(open: boolean): {
   const single =
     !isMulti && selectedId ? (activeTab.elements.find((e) => e.id === selectedId) ?? null) : null;
   const singleIsShape = single?.type === 'shape';
-  const singleRotates = single ? supportsRotation(single) : false;
   // Rotate Left / Right (docs/specs/009-elements/furniture-facing.md): any selected piece that turns.
   const selectionTurns =
     selectionCount > 0 &&
@@ -139,7 +129,6 @@ export function useEditorCommands(open: boolean): {
       canUndo,
       canRedo,
       selectionCount,
-      singleRotates,
       selectionTurns,
       singleIsShape,
       hasAnimation,
@@ -153,7 +142,6 @@ export function useEditorCommands(open: boolean): {
       canUndo,
       canRedo,
       selectionCount,
-      singleRotates,
       selectionTurns,
       singleIsShape,
       hasAnimation,
@@ -168,11 +156,6 @@ export function useEditorCommands(open: boolean): {
   const handlers: CommandHandlers = {
     deleteSelection: () => (isMulti ? deleteMultiSelected() : deleteSelected()),
     duplicateSelection: () => (isMulti ? duplicateMultiSelected() : duplicateSelected()),
-    // Layer-order handlers already act on the whole selection (single +
-    // multi), so they need no per-mode branch.
-    bringToFront: bringSelectedToFront,
-    sendToBack: sendSelectedToBack,
-    rotate: setRotationSelected,
     turn: turnSelected,
     clearAnimation: () => clearAnimationsSelected(),
     setMarker: setMarkerSelected,
@@ -186,14 +169,6 @@ export function useEditorCommands(open: boolean): {
     renameTab: requestRenameTab,
     // Replicate the telemetry the menu/header entry points fire, since the
     // setters themselves don't track.
-    openTheme: () => {
-      setCanvasThemeTab('theme');
-      track('UI', 'Opened', 'ThemePicker');
-    },
-    openCanvasOptions: () => {
-      setCanvasThemeTab('canvas');
-      track('UI', 'Opened', 'CanvasStyle');
-    },
     openShare: () => {
       setShareDialogOpen(true);
       track('UI', 'Opened', 'Share');

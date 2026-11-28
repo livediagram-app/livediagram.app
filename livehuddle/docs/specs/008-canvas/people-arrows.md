@@ -8,7 +8,7 @@ the way to anyone you cannot see, so you know which way to walk to reach them.
 ## Why
 
 A Space is bigger than a screen. With the camera centred on your character ([The camera](avatar-mode.md#the-camera)),
-everyone further away than half a screen is gone, and the only way to find them was the Map or wandering about. A
+everyone further away than half a screen is gone, and the only way to find them was zooming out or wandering about. A
 pointer at the edge says "they are over there" without opening anything.
 
 ## Domain language
@@ -18,7 +18,7 @@ pointer at the edge says "they are over there" without opening anything.
 | **A people arrow**   | The marker at the canvas's edge for one person you cannot see                                          |
 | **In view**          | Their character stands in the canvas area, clear of every control laid over it                         |
 | **The rail**         | The line the arrows travel on: the canvas's edge, inset by the arrow's own size and a small gap        |
-| **A control's rect** | The screen box of a control over the canvas (toolbar, Call dock, Map, zoom cluster, a panel), measured |
+| **A control's rect** | The screen box of a control over the canvas (toolbar, Call dock, zoom cluster, a panel), measured |
 
 ## Who gets an arrow
 
@@ -53,7 +53,7 @@ pointer at the edge says "they are over there" without opening anything.
   along the edge as they, you or the view move.
 - **Never over a control.** The rects of the controls over the canvas are measured from the page, not hard-coded: every
   element marked as a canvas obstacle (`data-canvas-obstacle`), every floating panel (`data-floating-panel`: the menu
-  card, the toolbar strip, the banners, the Map, the Call dock), every region root laid over the canvas (`data-region`,
+  card, the toolbar strip, the banners, the Call dock), every region root laid over the canvas (`data-region`,
   the canvas itself aside: the zoom cluster), and any open non-modal dialog or menu, wherever it was portalled. A region
   holding marked controls is measured through them (the toolbar's region spans the canvas's width to centre the strip;
   only the strip and the menu card are in the way). A collapsed or moved panel, a narrow window or an open popover is

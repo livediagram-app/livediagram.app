@@ -25,8 +25,8 @@ vi.mock('@/components/dialogs/TabOrganiseDialogs', () => ({
 
 // livehuddle's tab menu (liveworkspace/docs/specs/022-interface-design/action-parity.md "The tab menu"): the shared
 // menu with this app's words, its toolbar spread evenly (a space's tabs have no lock), and its own rows, Attendance
-// (docs/specs/012-collaboration/tab-attendance.md "Where it shows") and Send Stickies to Plan
-// (docs/specs/013-workspace/send-to-plan.md). An Editor's menu gains the Attendance row, a Participant's tab menu
+// (docs/specs/012-collaboration/tab-attendance.md "Where it shows"); Send Stickies to Plan went with the
+// sticky notes (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category"). An Editor's menu gains the Attendance row, a Participant's tab menu
 // (otherwise closed to them) opens with that row alone, and a Viewer gets neither the row nor the menu.
 
 type Props = ComponentProps<typeof TabMenu>;
@@ -88,14 +88,10 @@ describe('the tab menu', () => {
     expect(onCopyTo).toHaveBeenCalledWith('s2');
   });
 
-  it('sends the stickies to a plan from a row after Export, and closes', () => {
-    const onSendStickies = vi.fn();
-    const onClose = vi.fn();
-    render(<TabMenu {...props({ onSendStickies, onClose })} />);
-    expect(labels().slice(-3)).toEqual(['Export', 'Send Stickies to Plan', 'Clear']);
-    fireEvent.click(screen.getByRole('button', { name: 'Send Stickies to Plan' }));
-    expect(onSendStickies).toHaveBeenCalledOnce();
-    expect(onClose).toHaveBeenCalled();
+  it('has no Send Stickies to Plan row', () => {
+    render(<TabMenu {...props()} />);
+    expect(labels().slice(-2)).toEqual(['Export', 'Clear']);
+    expect(screen.queryByRole('button', { name: 'Send Stickies to Plan' })).toBeNull();
   });
 });
 

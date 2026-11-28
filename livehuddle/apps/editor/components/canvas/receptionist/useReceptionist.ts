@@ -9,7 +9,8 @@ import type { Element } from '@livehuddle/document';
 import type { PadArrival } from '@livehuddle/avatar/pad';
 import type { AvatarPoint } from '@livehuddle/avatar/walk';
 import { buildNavGrid } from '@livehuddle/avatar/pathing';
-import { fenceReachFor, fenceSegments, shutDoorLines } from '@livehuddle/avatar/collision';
+import { modelFootprintsOn } from '@livehuddle/avatar/office-geometry';
+import { fenceReachFor, fenceSegments } from '@livehuddle/avatar/collision';
 import {
   nearestRoomSpot,
   receptionistWorld,
@@ -60,12 +61,16 @@ function useReceptionistWorld(
   active: boolean,
   elements: readonly Element[],
 ): ReceptionistWorld | null {
+  // Turned pieces block where their 3D models stand while the 3D view draws (office-geometry.ts setModelFootprints),
+  // as the walk's own fences do (useAvatarWalk), so his routes go round the models you see.
+  const model = modelFootprintsOn();
   return useMemo(() => {
     if (!active) return null;
     const fences = fenceSegments(elements);
-    const grid = buildNavGrid(fences, fenceReachFor(1), shutDoorLines(elements));
+    const grid = buildNavGrid(fences, fenceReachFor(1));
     return receptionistWorld(elements, grid, fences);
-  }, [active, elements]);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- `model` changes what fenceSegments reads
+  }, [active, elements, model]);
 }
 
 export function useReceptionist({

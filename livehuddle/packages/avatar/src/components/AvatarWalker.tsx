@@ -1,13 +1,13 @@
-// The Avatar-mode character's placement (docs/specs/008-canvas/avatar-mode.md): where the sprite sits in
-// canvas coords, the "you are here" ring under it, and a peer's name chip.
-// The pixel art itself lives in avatar-sprite.tsx.
+// The Avatar-mode character's placement (docs/specs/008-canvas/avatar-mode.md): where the character stands in
+// canvas coords, the "you are here" ring under it, and a peer's name chip. The figure itself is the 3D scene's
+// (docs/specs/008-canvas/3d-engine.md), built from this box's `data-figure`; the Space has no flat view, so no sprite is
+// drawn here (avatar-sprite.tsx draws the palette's and the Photo Wall's pictures).
 //
 // It lives INSIDE the canvas's transformed wrapper, so it pans / zooms with the
 // canvas; its position is the FEET, so it stands on the point you clicked. The
 // same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 
-import { screenDir } from '../arrow-turn';
 import { memo, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import type { DrinkKind } from '../office-geometry';
 import { avatarGlides } from '../relay';
@@ -23,13 +23,9 @@ import {
   AVATAR_ZZ_RISE,
   avatarBox,
 } from '../walk';
-import { AvatarSprite } from './avatar-sprite';
 import { propsEqualByField } from './props-equal';
 import { avatarStatusHeadroomPx } from './avatar-status-effects';
 import { chipNeedsMeasure, chipWidthKey, reportChipWidth } from '../chip-widths';
-
-// An Away character fades to half (docs/specs/008-canvas/avatar-mode.md "Status").
-const AWAY_OPACITY = 0.5;
 
 // A status dot: a small circle in the status's colour with a white rim, so it reads on a name chip and on the canvas.
 // Do Not Disturb (livehuddle's calls status) is a touch larger with a white bar across it, the sign everyone knows.
@@ -55,11 +51,6 @@ export function StatusDot({ status }: { status: AvatarStatus }) {
   );
 }
 
-// How far the body rises as the legs pass: half a sprite pixel (a sprite pixel is 2.5 canvas px at size 1).
-const STRIDE_RISE = 1.25;
-// Whether a walk frame is one where the legs pass (avatar-sprite's cycle: 1 and 3).
-const passingStride = (walking: boolean, stepFrame: number) => walking && stepFrame % 2 === 1;
-
 function AvatarWalkerView({
   pos,
   facing,
@@ -71,6 +62,7 @@ function AvatarWalkerView({
   pose = null,
   seated = false,
   holding = null,
+  handUp = false,
   shirt,
   standingOn,
   name,
@@ -82,11 +74,7 @@ function AvatarWalkerView({
   seatLift = 0,
   seatBehind = false,
   raised = 0,
-  turn = 0,
 }: {
-  // The 3D camera's quarter turns (3d-view.md "Turning the camera"): the figure is drawn facing the way the turned
-  // camera sees it, walking or seated, never the plan's way.
-  turn?: number;
   // Feet position in canvas coords.
   pos: { x: number; y: number };
   facing: AvatarFacing;
@@ -105,6 +93,8 @@ function AvatarWalkerView({
   seated?: boolean;
   // A drink in the hand (docs/specs/009-elements/office.md "Using it"), or none.
   holding?: DrinkKind | null;
+  // A raised hand (docs/specs/008-canvas/avatar-mode.md "Raise Hand"): the 3D figure holds its right arm up.
+  handUp?: boolean;
   // Shirt colour — the participant's presence colour, so your character on a
   // shared document matches your cursor / name chip. Falls back to the brand
   // cyan inside the sprite when undefined.
@@ -178,31 +168,21 @@ function AvatarWalkerView({
     holding,
     shirt,
     status,
+    // Only while up, so every other figure's key reads exactly as before.
+    ...(handUp ? { handUp: true } : null),
   });
-  // In the 3D view (docs/specs/008-canvas/3d-view.md "What it shows") the figure and its chips stand up about the feet,
-  // facing the camera: the editor's stylesheet turns this box; flat, it is the placed box's own size and does nothing.
+  // In the 3D view (docs/specs/008-canvas/3d-view.md "What it shows") the chips stand up about the feet, facing the
+  // camera: the editor's stylesheet turns this box.
   const standOrigin = `${box.offsetX}px ${box.offsetY}px`;
   // A sitter's nudge towards the camera, read by the stand's 3D rule (app/space-3d.css); nothing while standing.
   // A character standing at a piece (a treadmill's belt, a standing desk) is lifted the same way, so the piece never
   // covers them (the owner, 2026-11-18: "I seem to be hidden behind it"); one standing behind theirs (a Podium's
   // speaker) stays where the piece's own front hides their legs.
-  // Only a sitter behind their piece is clipped: a clip on every standing figure in the 3D view drew a dark bar over
-  // the head now and then (the owner, 2026-11-25), so the stylesheet clips only a figure marked for it.
-  const hidesLegs = seatLift > 0 && seated && seatBehind;
   const liftVar =
     seatLift > 0 && (seated || !seatBehind)
       ? ({
           ...(raised > 0 ? { '--space-raise': `${raised}px` } : null),
           '--space-seat-lift': `${seatLift}px`,
-          // Behind the piece: the legs, and the slack under the feet, are hidden under its front.
-          ...(seatBehind
-            ? {
-                '--space-seat-hide':
-                  seatBehind === 'whole'
-                    ? `${Math.ceil(box.height)}px`
-                    : `${Math.round(box.height - box.offsetY + AVATAR_HEIGHT * scale * SEATED_LEGS_SHARE)}px`,
-              }
-            : null),
         } as CSSProperties)
       : raised > 0
         ? ({ '--space-raise': `${raised}px` } as CSSProperties)
@@ -210,6 +190,7 @@ function AvatarWalkerView({
   const chipEl = name ? (
     <div
       ref={chip}
+      data-avatar-overhead=""
       className={`absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${status ? 'max-w-[180px]' : 'max-w-[120px]'} ${IDENTITY_FILL}`}
       // Pinned just above the HEAD, not the (headroom-extended) box, and
       // tracking the size choice so it hugs a small character too.
@@ -217,6 +198,8 @@ function AvatarWalkerView({
         ...avatarBindings.identityVars(shirt ?? AVATAR_FALLBACK_COLOUR),
         top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_NAME_CHIP_RISE - headroom,
         transform: chipMove,
+        // The headroom given back in real 3D, whose scene measures the head it drew (app/space-3d.css).
+        ...({ '--avatar-chip-headroom': `${headroom}px` } as CSSProperties),
       }}
     >
       {status ? <StatusDot status={status} /> : null}
@@ -234,10 +217,12 @@ function AvatarWalkerView({
     <div
       ref={chip}
       data-own-status
+      data-avatar-overhead=""
       className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700"
       style={{
         top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_STATUS_CHIP_RISE - headroom,
         transform: chipMove,
+        ...({ '--avatar-chip-headroom': `${headroom}px` } as CSSProperties),
       }}
     >
       <StatusDot status={status} />
@@ -279,7 +264,7 @@ function AvatarWalkerView({
         data-tour-id={self ? 'avatar-self' : undefined}
         data-seated={seated ? '' : undefined}
         // Real 3D (livehuddle docs/specs/008-canvas/3d-engine.md "Block figures"): what the figure looks like and does,
-        // read by the 3D scene, which builds the character's block figure from the same sprite.
+        // read by the 3D scene, which builds the character's figure from it.
         data-figure={figureKey}
         data-figure-scale={scale}
         className="pointer-events-none absolute"
@@ -287,8 +272,7 @@ function AvatarWalkerView({
           // The box is bigger than the figure: it reserves headroom above for
           // the hop and slack either side for the waved flag (see avatarBox),
           // so placing it means offsetting from the feet rather than the
-          // sprite's own corner. The contact shadow stays on the ground while
-          // the body rises.
+          // figure's own corner.
           // Placed by a transform from the canvas's corner, never by left and top: a step then moves the box
           // without laying the page out (docs/specs/008-canvas/canvas-performance.md "Walking renders the
           // characters, not the canvas"), and a peer's glide is a transition of it.
@@ -298,6 +282,8 @@ function AvatarWalkerView({
           width: box.width,
           height: box.height,
           ...liftVar,
+          // The figure's height, for the 3D view to pin what floats over the head to the head as drawn.
+          ...({ '--avatar-figure-h': `${AVATAR_HEIGHT * scale}px` } as CSSProperties),
         }}
       >
         <div
@@ -319,34 +305,6 @@ function AvatarWalkerView({
               Zz
             </div>
           ) : null}
-          <div
-            data-avatar-figure=""
-            data-seat-hide={hidesLegs ? '' : undefined}
-            className="absolute inset-0 motion-reduce:transition-none"
-            style={{
-              ...(status === 'away' ? { opacity: AWAY_OPACITY } : null),
-              // The body rises half a sprite pixel as the legs pass, eased rather than jumped (avatar-mode.md "Walk
-              // animation"): a compositor transition, so it costs nothing per frame.
-              translate: `0 ${passingStride(walking && !seated, stepFrame) ? -STRIDE_RISE * scale : 0}px`,
-              transition: 'translate 70ms ease-out',
-            }}
-          >
-            <AvatarSprite
-              headphones={status === 'focus'}
-              status={status}
-              facing={turn ? screenDir(facing, turn) : facing}
-              config={config}
-              walking={walking}
-              stepFrame={stepFrame}
-              lift={lift}
-              wave={wave}
-              pose={pose}
-              seated={seated}
-              holding={holding}
-              shirt={shirt}
-              scale={scale}
-            />
-          </div>
         </div>
       </div>
       {/* A chip in a spread row: the same box, its own sibling, raised over every character's figure (z-[1] in the
@@ -364,6 +322,7 @@ function AvatarWalkerView({
             width: box.width,
             height: box.height,
             ...liftVar,
+            ...({ '--avatar-figure-h': `${AVATAR_HEIGHT * scale}px` } as CSSProperties),
           }}
         >
           <div
@@ -410,8 +369,5 @@ export const walkerPropsEqual: (prev: WalkerProps, next: WalkerProps) => boolean
   propsEqualByField;
 
 // Memoised: a room's presence flush re-renders the layer that maps every peer, and only the peers who moved, turned
-// or changed costume need their sprite (a few hundred SVG nodes) drawn again.
-// How much of a seated figure's height its legs take, hidden under a piece it sits behind in the 3D view.
-const SEATED_LEGS_SHARE = 0.3;
-
+// or changed costume need their box and chips drawn again.
 export const AvatarWalker = memo(AvatarWalkerView, walkerPropsEqual);

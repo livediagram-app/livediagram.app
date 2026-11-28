@@ -22,7 +22,6 @@ function links(selected: string) {
       setActiveId: () => {},
       setSelectedId: () => {},
       setEditingId: () => {},
-      setFormatSourceId: () => {},
       openDocument: () => {},
     }),
   ).result.current;

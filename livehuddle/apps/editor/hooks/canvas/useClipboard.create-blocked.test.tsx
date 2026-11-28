@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement } from '@livehuddle/document';
+import { createShape, type Element, type ShapeElement } from '@livehuddle/document';
 import { serialiseElements } from '@/lib/clipboard-payload';
 import { useClipboard } from './useClipboard';
 
@@ -9,11 +9,11 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 
 // While edits are blocked, element creation is: a paste creates elements, so it is refused.
 
-const copied: StickyElement = {
+// A room: a labelled piece a Space still holds (a sticky note is dropped on paste, docs/specs/002-project-scope/
+// not-in-livehuddle.md "The Write category").
+const copied: ShapeElement = {
+  ...createShape('room', 0, 0),
   id: 'copied',
-  type: 'sticky',
-  x: 0,
-  y: 0,
   width: 200,
   height: 200,
   label: 'Order placed',

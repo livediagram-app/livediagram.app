@@ -2,6 +2,7 @@
 // at, each laid out from its own drawings (the front for x and heights, the side for depth) in their colours. A
 // sitter's seat is built under the hips of the figure the engine stands at its seat point, its back behind them.
 import type { Rgb } from '../mesh-builder';
+import { diningChair, FORWARD, HIP, legChair, officeChair } from './chairs';
 import { mix, SEAT_Z, type Builder, type ModelContext, type ModelTable } from './kit';
 
 /** The drawings' named colours (packages/avatar furniture-art SEATING_TONES and the office drawings). */
@@ -27,20 +28,6 @@ const C = {
 } as const;
 
 type Seat = ModelContext['seats'][number];
-
-/** Which way a sitter faces, as a unit step in the model's frame. */
-const FORWARD: Record<string, readonly [number, number]> = {
-  down: [0, 1],
-  up: [0, -1],
-  right: [1, 0],
-  left: [-1, 0],
-};
-
-/**
- * Where a seated figure's hips are, ahead of (+) or behind (-) its seat point along the way it faces: the seat is
- * built about this so the figure sits on it.
- */
-const HIP = -2;
 
 type SeatBox = (
   u0: number,
@@ -70,33 +57,6 @@ function seatBoxes(m: Builder, s: Seat): SeatBox {
     const yb = hy + ay * u1 + fy * v1;
     m.b(xa, ya, z0, xb, yb, z1, colour, { top, bare });
   };
-}
-
-/** An office chair on a pole and a star foot, at a seat. */
-function officeChair(m: Builder, s: Seat, fabric: Rgb, frame: Rgb = C.metalDeep): void {
-  const b = seatBoxes(m, s);
-  const dark = mix(fabric, 0x000000, 0.25);
-  b(-12, -2, 1, 12, 1, 3, frame, undefined, true);
-  b(-1.5, -11, 1, 1.5, 10, 3, frame, undefined, true);
-  b(-1.5, -2, 3, 1.5, 1, SEAT_Z - 3, frame, undefined, true);
-  b(-11, -10, SEAT_Z - 3, 11, 10, SEAT_Z, dark, fabric);
-  b(-1.5, -12, SEAT_Z - 3, 1.5, -10, SEAT_Z + 4, frame, undefined, true);
-  b(-10, -14, SEAT_Z + 3, 10, -10, SEAT_Z + 23, dark, fabric);
-}
-
-/** A meeting chair on four legs, at a seat. */
-function legChair(m: Builder, s: Seat, fabric: Rgb, legs: Rgb): void {
-  const b = seatBoxes(m, s);
-  const dark = mix(fabric, 0x000000, 0.25);
-  for (const [u, v] of [
-    [-10, -11],
-    [8, -11],
-    [-10, 7],
-    [8, 7],
-  ] as const)
-    b(u, v, 0, u + 2.5, v + 2.5, SEAT_Z - 3, legs, undefined, true);
-  b(-11, -11, SEAT_Z - 3, 11, 10, SEAT_Z, dark, fabric);
-  b(-10, -14, SEAT_Z - 3, 10, -10, SEAT_Z + 22, dark, fabric);
 }
 
 /** A roundish block: two crossed boxes, `k` of the way in at the corners. */
@@ -173,7 +133,7 @@ function monitor(
   m.c(x, y + 2, 10, 6, z, z + 1.5, body);
   m.c(x, y + 2, 3, 3, z + 1.5, z + 6, body, { bare: true });
   m.c(x, y, w, 4, z + 5, z + 5 + h, body);
-  m.c(x, y - 2.3, w - 4, 0.6, z + 7, z + 3 + h, screen, { bare: true });
+  m.screen(() => m.c(x, y - 2.3, w - 4, 0.6, z + 7, z + 3 + h, screen, { bare: true }));
 }
 
 /** A mug of coffee. */
@@ -197,22 +157,8 @@ function bottles(m: Builder, x0: number, x1: number, y: number, z: number, from:
 
 const MODELS: ModelTable = {
   chair: (m, { t, seats }) => {
-    // The chair's wooden frame, its upholstered seat and backrest (the seat's fabric), its back wood.
-    const s = seats[0] ?? { x: 0, y: 0, facing: 'down' };
-    const b = seatBoxes(m, s);
-    const fab = t.seat;
-    const dark = mix(fab, 0x000000, 0.22);
-    for (const [u, v] of [
-      [-20, -16],
-      [17, -16],
-      [-20, 13],
-      [17, 13],
-    ] as const)
-      b(u, v, 0, u + 3, v + 3, SEAT_Z - 4, v < 0 ? C.woodDeep : C.wood, undefined, true);
-    b(-22, -17, SEAT_Z - 5, 22, 17, SEAT_Z - 2, C.wood);
-    b(-21, -15, SEAT_Z - 2, 21, 16, SEAT_Z, dark, fab);
-    b(-17, -20, SEAT_Z - 5, 17, -15, SEAT_Z + 22, C.wood);
-    b(-13, -15, SEAT_Z + 2, 13, -13.5, SEAT_Z + 19, dark, fab);
+    // A dining chair (chairs.ts; the owner, 2026-11-27: "Improve the aesthetic of the single chair").
+    diningChair(m, seats[0] ?? { x: 0, y: 0, facing: 'down' }, t.seat);
   },
 
   desk: (m, { t, seats }) => {
@@ -225,7 +171,7 @@ const MODELS: ModelTable = {
     m.c(0, e + 10, 26, 7, H, H + 1.5, C.keys, { bare: true });
     m.c(-36, e + 22, 20, 11, H, H + 0.8, C.paper, { bare: true });
     mug(m, 42, e + 14, H);
-    officeChair(m, s, t.seat);
+    officeChair(m, s, t.seat, C.metalDeep);
   },
 
   'hot-desk': (m, { t, seats }) => {
@@ -240,7 +186,7 @@ const MODELS: ModelTable = {
     m.c(0, e + 10, 18, 5, H, H + 1.2, mix(top, 0x000000, 0.2), { bare: true });
     m.c(-30, e + 20, 38, 12, H, H + 0.8, 0xffffff, { bare: true });
     m.c(34, e + 18, 22, 13, H, H + 3, 0xcbd5e1);
-    officeChair(m, s, mix(t.seat, t.stroke, 0.3));
+    officeChair(m, s, mix(t.seat, t.stroke, 0.3), C.metalDeep);
   },
 
   'standing-desk': (m, { seats }) => {
@@ -394,17 +340,6 @@ const MODELS: ModelTable = {
     bottles(m, -108, 108, -52, 56, 3);
   },
 
-  'bar-stool': (m, { seats }) => {
-    // A round wooden seat on a steel pole with a foot ring and a round foot.
-    const s = seats[0] ?? { x: 0, y: -6, facing: 'down' };
-    const x = s.x;
-    const y = s.y + HIP;
-    round(m, x, y, 22, 22, 0, 2, 0x6b7480);
-    m.c(x, y, 3, 3, 2, SEAT_Z - 3, C.metal, { bare: true });
-    round(m, x, y, 16, 16, 6, 7.5, C.metalDeep, undefined, 0.35);
-    round(m, x, y, 30, 30, SEAT_Z - 3, SEAT_Z, 0x5a3a24, 0x8a5a3a);
-  },
-
   'reception-desk': (m) => {
     // A high curved counter in front (white, a band, a wooden top rail and a bell), the receptionist's lower desk
     // behind it with a monitor and a plant.
@@ -486,28 +421,6 @@ const MODELS: ModelTable = {
     b(-18, -26, 25, 18, -14, 29, deep, pink);
     b(-27, -20, 7, -18, 10, 18, deep, pink);
     b(18, -20, 7, 27, 10, 18, deep, pink);
-  },
-
-  hammock: (m) => {
-    // Two posts and the hammock slung between them on ropes, sagging to seat height in the middle.
-    const post = 0x86431a;
-    const blue = 0x50b4e0;
-    const stripe = 0xe29555;
-    const rope = 0x94a3b8;
-    for (const x of [-72, 64]) m.b(x, -4, 0, x + 8, 4, 46, mix(post, 0x000000, 0.1), { top: post });
-    m.b(-64, -0.75, 26, -46, 0.75, 36, rope, { bare: true });
-    m.b(46, -0.75, 26, 64, 0.75, 36, rope, { bare: true });
-    const steps: [number, number, number][] = [
-      [46, 22, 26],
-      [34, 16, 20],
-      [24, 12, 15],
-    ];
-    for (const [x, w, z] of steps) {
-      m.b(-x, -w / 2, z - 3, -x + 12, w / 2, z, mix(blue, 0x000000, 0.12), { top: blue });
-      m.b(x - 12, -w / 2, z - 3, x, w / 2, z, mix(blue, 0x000000, 0.12), { top: blue });
-    }
-    m.b(-24, -12, SEAT_Z - 3, 24, 12, SEAT_Z, mix(blue, 0x000000, 0.12), { top: blue });
-    m.b(-30, 3, SEAT_Z - 0.2, 30, 5, SEAT_Z + 0.1, stripe, { bare: true });
   },
 
   'weight-bench': (m) => {
@@ -623,7 +536,10 @@ const MODELS: ModelTable = {
     const H = 112;
     const x0 = -40;
     const x1 = 40;
-    const y0 = -68;
+    // Only as deep as its seat needs (the owner, 2026-11-27: "why is the phone booth so deep, when the chair is in
+    // the front?"): the 2D drawing's top half is the booth seen standing, so the model takes the box's front 56 px,
+    // its back wall just behind the stool.
+    const y0 = 12;
     const y1 = 68;
     const k = 6;
     m.b(x0, y0, 0, x1, y1, 4, deep);
@@ -631,7 +547,7 @@ const MODELS: ModelTable = {
       for (const y of [y0, y1 - k]) m.b(x, y, 4, x + k, y + k, H - 14, frame);
     m.b(x0, y0, H - 16, x1, y1, H, mix(frame, 0x000000, 0.1), { top: frame });
     m.b(-26, y1, H - 13, 26, y1 + 0.6, H - 7, deep, { bare: true });
-    m.c(0, 0, 44, 8, H, H + 4, 0xe5e7eb);
+    m.c(0, (y0 + y1) / 2, 44, 8, H, H + 4, 0xe5e7eb);
     m.b(x0 + 1, y0, 4, x1 - 1, y0 + 4, H - 16, 0x334155);
     m.b(x0 + k, y1 - 3, 4, x1 - k, y1 - 1, H - 16, glass, { glass: true });
     m.b(x0, y0 + k, 4, x0 + 2, y1 - k, H - 16, glass, { glass: true });

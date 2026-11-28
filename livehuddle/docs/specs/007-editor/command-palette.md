@@ -28,7 +28,7 @@ forks, no drifted telemetry):
 - **Edit and Walk** (`tool:select`, `tool:avatar`): the two sides of the
   [Edit | Walk toggle](../008-canvas/avatar-mode.md#the-edit--walk-toggle), the one not in force. There are no other
   tool commands: Hand, Eraser and Format Painter left with the Selection Mode picker (owner, 2026-11-06); the Format
-  Painter is the selection toolbar's.
+  Painter left livehuddle on 2026-11-27 ([Format Painter and Clear Styles](../002-project-scope/not-in-livehuddle.md#format-painter-and-clear-styles)).
 - **Cleanup:** Auto-align (Auto Layout's commands left livehuddle in Work Tracker #423 part 4): its one home,
   as the tab menu has no Cleanup category and livehuddle has no Tidy Up button ([Layout cleanup](../008-canvas/layout-cleanup.md)); Renumber Steps, while the tab
   holds a step number ([The step number](../009-elements/step-number.md)).

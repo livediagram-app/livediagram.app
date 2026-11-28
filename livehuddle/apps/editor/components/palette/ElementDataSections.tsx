@@ -13,14 +13,19 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { changesType, elementKindLabel, hasBuiltInDoorway } from '@livehuddle/document';
+import {
+  changesType,
+  elementKindLabel,
+  hasBuiltInDoorway,
+  turnsWithFacing,
+} from '@livehuddle/document';
 import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuToolsSection } from '@liveworkspace/workbench/components/primitives/MenuToolsSection';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { StageMenuSection } from '@/components/palette/StageMenuSection';
 import { ReceptionistMenuSection } from '@/components/palette/ReceptionistMenuSection';
 import { receptionistPad } from '@/lib/receptionist/receptionist-day';
-import { JukeboxMenuSection, WorldClockMenuSection } from '@/components/palette/SocialMenuSections';
+import { JukeboxMenuSection } from '@/components/palette/SocialMenuSections';
 import { ScreenMenuSection } from '@/components/palette/ScreenMenuSection';
 import { ArcadeMenuSection } from '@/components/palette/ArcadeMenuSection';
 import { PieceTypeMenuSection } from '@/components/palette/PieceTypeMenuSection';
@@ -31,20 +36,18 @@ import {
   RoomFloorMenuSection,
   RoomWallsMenuSection,
 } from '@/components/palette/CollabMenuSections';
+import { RoomNameMenuSection } from '@/components/palette/RoomNameField';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
-// The element menu's per-kind Tools sections (the Space pieces' settings) and its Animation controls. Split out of ElementAppearanceSections; the type flags are passed in
-// (the parent already derives them) and the shape narrowing is re-derived off target.
+// The element menu's per-kind section (the Space pieces' settings), titled for the element: the menu's one setting
+// besides Size, or laid open in its settings dialog.
 type ElementDataSectionsProps = {
   props: EditorContextMenuProps;
   target: EditorContextMenuProps['elements'][number];
-  isPortal: boolean;
-  isChair: boolean;
   sectionProps: Scaffold['sectionProps'];
-  flyoutProps: Scaffold['flyoutProps'];
   // The menu, or the element's settings dialog (the sections alone, laid open).
   surface?: 'menu' | 'dialog';
 };
@@ -52,8 +55,6 @@ type ElementDataSectionsProps = {
 export function ElementDataSections({
   props,
   target,
-  isPortal,
-  isChair,
   sectionProps: menuSectionProps,
   surface = 'menu',
 }: ElementDataSectionsProps) {
@@ -63,24 +64,13 @@ export function ElementDataSections({
       ? () => ({ open: true, onToggle: () => {}, flush: true })
       : menuSectionProps;
   const shapeTarget = target.type === 'shape' ? target : null;
-  // A Door's, Rug's, Corridor's or Meeting Table's type (docs/specs/009-elements/office.md "A piece's type").
+  // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
+  const isPortal = shapeTarget?.shape === 'portal';
+  // Every piece of furniture that turns has a facing section titled for it
+  // (docs/specs/009-elements/furniture-facing.md "Turning a placed piece").
+  const isChair = !!shapeTarget && turnsWithFacing(shapeTarget.shape);
   const retypes = !!shapeTarget && changesType(shapeTarget.shape) && !!props.onSetPieceType;
-  // The Tools flyout (docs/specs/008-canvas/canvas-and-palette.md): the kind-specific controls fold behind one
-  // "Tools" row, the same side-flyout pattern as Style and Text, so a piece's menu doesn't grow a band of bespoke
-  // rows. Animation stays top-level (every boxed element has it).
-  const showTools =
-    isPortal ||
-    isChair ||
-    retypes ||
-    (!!shapeTarget && hasBuiltInDoorway(shapeTarget)) ||
-    // Every room's Walls, Solid or Glass (docs/specs/009-elements/office.md "Glass walls").
-    shapeTarget?.shape === 'room' ||
-    shapeTarget?.shape === 'stage' ||
-    (shapeTarget?.shape === 'avatar-pad' && !!props.onSetPadReceptionist) ||
-    (shapeTarget?.shape === 'screen' && !!props.onSetScreenSource) ||
-    shapeTarget?.shape === 'world-clock' ||
-    shapeTarget?.shape === 'jukebox' ||
-    (shapeTarget?.shape === 'arcade-machine' && !!props.onClearArcadeScores);
+  const showTools = hasOwnSection(props, target);
   return (
     <>
       {showTools ? (
@@ -97,6 +87,14 @@ export function ElementDataSections({
               elements={props.elements}
               sectionProps={sectionProps}
               onSetType={props.onSetPieceType!}
+            />
+          ) : null}
+          {/* A room's name first, an Editor's (docs/specs/009-elements/office.md "Room name field"). */}
+          {shapeTarget?.shape === 'room' && props.onRenameRoom ? (
+            <RoomNameMenuSection
+              room={shapeTarget}
+              sectionProps={sectionProps}
+              onRename={props.onRenameRoom}
             />
           ) : null}
           {/* Only an older room keeps a doorway of its own (docs/specs/009-elements/office.md "Older rooms keep their
@@ -140,13 +138,6 @@ export function ElementDataSections({
               target={shapeTarget}
               sectionProps={sectionProps}
               onSetHere={props.onSetPadReceptionist}
-            />
-          ) : null}
-          {shapeTarget?.shape === 'world-clock' && props.onSetClockZones ? (
-            <WorldClockMenuSection
-              target={shapeTarget}
-              sectionProps={sectionProps}
-              onSetZones={props.onSetClockZones}
             />
           ) : null}
           {shapeTarget?.shape === 'jukebox' && props.onSetJukeboxSource ? (
@@ -195,5 +186,33 @@ export function ElementDataSections({
         </MenuToolsSection>
       ) : null}
     </>
+  );
+}
+
+/** Whether the element has a section of its own (its row named for it): the element menu opens only when it has
+ *  something to show (docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and Clear Styles"). */
+export function hasOwnSection(
+  props: EditorContextMenuProps,
+  target: EditorContextMenuProps['elements'][number],
+): boolean {
+  const shapeTarget = target.type === 'shape' ? target : null;
+  const isPortal = shapeTarget?.shape === 'portal';
+  const isChair = !!shapeTarget && turnsWithFacing(shapeTarget.shape);
+  // A Door's, Rug's, Corridor's or Meeting Table's type (docs/specs/009-elements/office.md "A piece's type").
+  const retypes = !!shapeTarget && changesType(shapeTarget.shape) && !!props.onSetPieceType;
+  // The kind-specific controls fold behind one row named for the element (canvas-and-palette.md "An element's own
+  // settings open in a dialog"), so a piece's menu doesn't grow a band of bespoke rows.
+  return (
+    isPortal ||
+    isChair ||
+    retypes ||
+    (!!shapeTarget && hasBuiltInDoorway(shapeTarget)) ||
+    // Every room's Walls, Solid or Glass (docs/specs/009-elements/office.md "Glass walls").
+    shapeTarget?.shape === 'room' ||
+    shapeTarget?.shape === 'stage' ||
+    (shapeTarget?.shape === 'avatar-pad' && !!props.onSetPadReceptionist) ||
+    (shapeTarget?.shape === 'screen' && !!props.onSetScreenSource) ||
+    shapeTarget?.shape === 'jukebox' ||
+    (shapeTarget?.shape === 'arcade-machine' && !!props.onClearArcadeScores)
   );
 }

@@ -19,7 +19,6 @@ function wrapperFor(props: {
       element={element}
       isSelected={false}
       isEditing={false}
-      isPaintMode={false}
       showHandles={false}
       showAnchors={false}
       onBeginDrag={vi.fn()}

@@ -1,6 +1,6 @@
 // The walls the 3D view stands up (docs/specs/008-canvas/3d-view.md "What it shows"; blueprint: 3d-view.md): the same
 // lines walking is stopped by (@livehuddle/avatar's collision), each a face on the floor from `a` to `b`, with the
-// doorways cut out and a shut Door standing in its gap. Built once per board change, never per frame. Pure.
+// doorways cut out and a Door standing in each. Built once per board change, never per frame. Pure.
 
 import { SPACE_STAGE_LIFT } from './space-3d-pieces';
 import { isGlassRoom, type Element } from '@livehuddle/document';
@@ -20,7 +20,7 @@ export const SPACE_WALL_HEIGHT = 152;
 export const SPACE_POD_WALL_HEIGHT = Math.round(AVATAR_HEIGHT * 1.3);
 /** A Fence is a low run. */
 export const SPACE_FENCE_HEIGHT = 22;
-/** A doorway's opening, and so a shut Door's leaf: a lintel of wall stands over it. */
+/** A doorway's opening, and so a Door's leaf: a lintel of wall stands over it. */
 export const SPACE_DOOR_HEIGHT = 96;
 
 export type SpaceWallKind =
@@ -44,12 +44,12 @@ export type SpaceWall = {
   shade: number;
   // A Room's name: over its doorway, on the lintel, or on its back wall when it has no doorway.
   label?: string;
-  // A doorway's Door is shut: its leaf stands in the frame.
-  shut?: boolean;
+  // A doorway's Door type (room-builder.md "Door types"), absent for the plain Door: the 3D view builds its model.
+  variant?: string;
   // A doorway's Door, by id: a press on its frame or leaf is a press on the door (3d-view.md "Doorways").
   doorId?: string;
-  // An open Door's leaf stands out of the wall at its hinge, swung the way the plan draws it: hinged at the face's
-  // `start` (its `a`) or `end`, swung to the face's `front` (the camera's side) or `back`. Always the two together.
+  // A Door's leaf is hinged where the plan draws it: at the face's `start` (its `a`) or `end`, and swings to the side
+  // the plan's arc shows.
   hinge?: 'start' | 'end';
   // A doorway in a glass wall: the panel over its frame is glass, as the wall is (3d-view.md "Doorways").
   glass?: boolean;
@@ -136,14 +136,15 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
       push(cutByDoors(cutByDoors(walls, doorLines), windowLines), 'wall');
     } else if (el.shape === 'office-pod') {
       const start = out.length;
-      push(podWalls(el), 'wall');
+      // Glass, so you see who meets inside (3d-view.md "Heights").
+      push(podWalls(el), 'glass');
       for (let i = start; i < out.length; i++)
         out[i] = { ...out[i]!, height: SPACE_POD_WALL_HEIGHT };
     } else if (el.shape === 'fence') push([fenceLine(el)], 'fence');
     else if (el.shape === 'garden-fence') push([fenceLine(el)], 'picket');
     else if (el.shape === 'grass') push(grassRows(el, covers), 'grass');
   }
-  // Every Door on a wall stands as a doorway: a wooden frame with a lintel of wall over it, its leaf in it when shut.
+  // Every Door on a wall stands as a doorway: a wooden frame with a lintel of wall over it and its type's model in it.
   doors.forEach((el, i) => {
     const line = doorLines[i]!;
     const on = doorable.findIndex((w) => doorSpanOnWall(w, line));
@@ -158,10 +159,10 @@ export function spaceWalls(elements: readonly Element[]): SpaceWall[] {
       room.done = true;
     }
     wall.doorId = el.id;
-    if ((el as { doorClosed?: boolean }).doorClosed === true) wall.shut = true;
-    // Open, its leaf stands hinged at the door's first jamb, swung to the side the plan draws (doorParts): the face
-    // keeps the door's own way unless facingCamera turned it round, and then the hinge and the swing both swap.
-    else wall.hinge = wall.a.x === line.a.x && wall.a.y === line.a.y ? 'start' : 'end';
+    if (el.variant) wall.variant = el.variant;
+    // Its leaf is hinged at the door's first jamb, swung to the side the plan draws (doorParts): the face keeps the
+    // door's own way unless facingCamera turned it round, and then the hinge and the swing both swap.
+    wall.hinge = wall.a.x === line.a.x && wall.a.y === line.a.y ? 'start' : 'end';
     if (glassy.some((w) => doorSpanOnWall(w, line))) wall.glass = true;
     out.push(wall);
   });
@@ -210,6 +211,7 @@ const COVERS_GRASS = new Set<string>([
   'corridor',
   'office-pod',
   'garden-path',
+  'road',
   'rug',
   'stage',
   'pond',
@@ -272,21 +274,4 @@ export function sidesToCorners(walls: readonly WallSegment[]): WallSegment[] {
     if (Math.abs(b - a) > 0) out.push({ a: { x: w.a.x, y: a }, b: { x: w.b.x, y: b } });
   }
   return out;
-}
-
-/** A wall's place on the floor: where it starts, how long it is and its angle (degrees clockwise). */
-export function wallFrame(wall: SpaceWall): {
-  x: number;
-  y: number;
-  length: number;
-  angle: number;
-} {
-  const dx = wall.b.x - wall.a.x;
-  const dy = wall.b.y - wall.a.y;
-  return {
-    x: wall.a.x,
-    y: wall.a.y,
-    length: Math.hypot(dx, dy),
-    angle: (Math.atan2(dy, dx) * 180) / Math.PI,
-  };
 }

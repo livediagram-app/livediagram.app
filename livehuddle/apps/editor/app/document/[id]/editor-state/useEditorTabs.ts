@@ -73,7 +73,6 @@ export function useEditorTabs({
     activeId,
     setActiveId,
     setEditingId,
-    setFormatSourceId,
     setIdentityPromptOpen,
     setSelectedId,
   } = fromSelection;
@@ -118,7 +117,6 @@ export function useEditorTabs({
     setActiveId,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     setImportError,
     requestFit,
     noteImport: importUndoView.noteImport,

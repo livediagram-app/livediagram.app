@@ -16,8 +16,8 @@ type Props = {
   onZoomOut: () => void;
   onSetZoom: (zoom: number) => void;
   onFitToScreen: () => void;
-  /** Turns the camera a quarter turn, or null when the view cannot turn (flat, or Rotate in 3D View off). */
-  onTurn: ((by: -1 | 1) => void) | null;
+  /** Turns the camera a quarter turn. */
+  onTurn: (by: -1 | 1) => void;
 };
 
 /** How long a press is held before it glides, and how fast the glide zooms (per second, as a factor). */
@@ -85,6 +85,8 @@ export function ViewDial({ zoom, onZoomIn, onZoomOut, onSetZoom, onFitToScreen, 
   } | null>(null);
   const onKnobDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
+    // A press on the zoom levels' menu is a pick, never a drag of the dial.
+    if ((e.target as Element).closest?.('[role="menu"]')) return;
     drag.current = {
       x: e.clientX,
       y: e.clientY,
@@ -92,7 +94,6 @@ export function ViewDial({ zoom, onZoomIn, onZoomOut, onSetZoom, onFitToScreen, 
       turned: false,
       moved: false,
     };
-    e.currentTarget.setPointerCapture(e.pointerId);
   };
   const onKnobMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = drag.current;
@@ -100,9 +101,12 @@ export function ViewDial({ zoom, onZoomIn, onZoomOut, onSetZoom, onFitToScreen, 
     const dx = e.clientX - d.x;
     const dy = e.clientY - d.y;
     if (!d.moved && Math.hypot(dx, dy) < 4) return;
+    // Held only once it is a drag: captured on the press, the pointer's click went to the dial, not the % button or a
+    // zoom level, so they did nothing (the owner, 2026-11-27).
+    if (!d.moved) e.currentTarget.setPointerCapture(e.pointerId);
     d.moved = true;
     if (Math.abs(dy) >= Math.abs(dx)) setRef.current(clampZoom(d.zoom * 2 ** (-dy / DOUBLE_PX)));
-    else if (!d.turned && onTurn && Math.abs(dx) > TURN_PX) {
+    else if (!d.turned && Math.abs(dx) > TURN_PX) {
       d.turned = true;
       onTurn(dx > 0 ? 1 : -1);
     }
@@ -159,26 +163,22 @@ export function ViewDial({ zoom, onZoomIn, onZoomOut, onSetZoom, onFitToScreen, 
       >
         <path d="M4 5.5 7 8.5l3-3" />
       </Arrow>
-      {onTurn ? (
-        <>
-          <Arrow
-            at="left"
-            label="Turn Left"
-            description="Turn the camera a quarter turn to the left. [."
-            onDown={() => onTurn(-1)}
-          >
-            <path d="M9.5 4 6.5 7l3 3" />
-          </Arrow>
-          <Arrow
-            at="right"
-            label="Turn Right"
-            description="Turn the camera a quarter turn to the right. ]."
-            onDown={() => onTurn(1)}
-          >
-            <path d="M5.5 4 8.5 7l-3 3" />
-          </Arrow>
-        </>
-      ) : null}
+      <Arrow
+        at="left"
+        label="Turn Left"
+        description="Turn the camera a quarter turn to the left. [."
+        onDown={() => onTurn(-1)}
+      >
+        <path d="M9.5 4 6.5 7l3 3" />
+      </Arrow>
+      <Arrow
+        at="right"
+        label="Turn Right"
+        description="Turn the camera a quarter turn to the right. ]."
+        onDown={() => onTurn(1)}
+      >
+        <path d="M5.5 4 8.5 7l-3 3" />
+      </Arrow>
       {/* The middle: the zoom, click to fit, hover for levels; drag it to zoom or turn. */}
       <div
         onPointerDown={onKnobDown}

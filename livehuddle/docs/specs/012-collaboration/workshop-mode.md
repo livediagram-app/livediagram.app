@@ -12,8 +12,7 @@ tools. There is no other mode and no switch, and the interface never names a mod
 ## Why
 
 livehuddle is about meeting in Spaces ([Purpose](../001-project-vision/purpose.md)): Spaces, avatars, rooms and calls
-are the product. A meeting needs a place, a few notes and pictures on its walls, and two light tools (a clock on the wall and
-Bring Focus). Running a workshop on a board, with polls, quizzes, Q&A, agendas and reveals, is
+are the product. A meeting needs a place, a few notes and pictures on its walls, and a clock on the wall. Running a workshop on a board, with polls, quizzes, Q&A, agendas and reveals, is
 livediagram's Workshop mode, which keeps all of it ([livediagram's Workshop mode](../../../../livediagram/docs/specs/012-collaboration/workshop-mode.md)).
 
 ## Domain language
@@ -23,7 +22,7 @@ livediagram's Workshop mode, which keeps all of it ([livediagram's Workshop mode
 | **meeting board** | A tab of a Space, in livehuddle's one mode (`EditorMode` `'workshop'` in the code)    | Workshop (livediagram's mode); a liveplanner board     |
 | **session**       | The meeting a group holds on a board (a stand-up, an all-hands); never a stored thing | a tab kind, a document type, a call                    |
 | **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to the mode   | whoever opened the Space first                         |
-| **meeting tools** | The Timer and Stopwatch pieces and Bring Focus                                        | the Collaborate elements, which livehuddle has none of |
+| **meeting tools** | The Timer and Stopwatch pieces                                                        | the Collaborate elements, which livehuddle has none of |
 | **light content** | Sticky notes, text and stickers                                                       | shapes, arrows, drawings, containers, charts           |
 
 - The interface says neither **Workshop** nor **mode**: a person opens a Space, never a mode. Specs say **meeting
@@ -42,7 +41,7 @@ livediagram's Workshop mode, which keeps all of it ([livediagram's Workshop mode
 ## What every tab offers
 
 - comments, comment threads, mentions and reactions;
-- presence, cursors, follow-me and Bring Focus;
+- presence, cursors, and follow-me;
 - Avatar mode, speech bubbles, proximity audio and calls;
 - assigned actions from any element's menu, and the Collaborate Panel;
 - the facilitator baton in the Collaborators dialog.
@@ -57,16 +56,13 @@ The meeting palette is livehuddle's one palette, in order:
 | Band     | Categories                              |
 | -------- | --------------------------------------- |
 | _(none)_ | Popular                                 |
-| Common   | Write                                   |
 | Meet     | Rooms, Seats, Perks, Play, Garden, Meet |
 | Travel   | Travel                                  |
 | Decorate | Stickers                                |
 
-- **Popular** (the landing category), fixed: Sticky note and Text, then behind a divider Room,
-  Meeting Table, Chair, Bring Focus and Avatar Pad. No openers: every category is one level deep.
-- **Write**: Text, Sticky note and Image (owner, 2026-11-07: images are back, for branding;
-  [Images are back](../002-project-scope/not-in-livehuddle.md#images-are-back)). No Pointer note, Table, Checklist,
-  Page or Annotation.
+- **Popular** (the landing category), fixed: Room, Meeting Table, Chair and Avatar Pad. No openers: every category is one level deep.
+- **No Write** (owner, 2026-11-27, [The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)):
+  no Text, Sticky note or Image tile in the palette.
 - **The Space categories** ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)),
   one per question somebody building a Space asks (owner, 2026-11-05: one Navigate category would only grow):
   - **Rooms**: a **Build** group first (Room, Room Builder, Door), then **Floor** (Fence, Stage, Office Pod, Rug).
@@ -77,19 +73,19 @@ The meeting palette is livehuddle's one palette, in order:
   - **Garden**: **Plants** (Outdoor Plant, Tree, Grass), **Paths and Fences** (Garden Path, Garden Fence),
     **Furniture** (Bench, Picnic Table, Hammock, Garden Umbrella), **Features** (Fountain, Pond, Campfire).
   - **Meet**, as [The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories) lists it.
-  - **Travel**, in a band of its own: Portal, Bring Focus, Avatar Pad, Directory, Elevator and the Avatar Button.
+  - **Travel**, in a band of its own: Portal, Avatar Pad, Directory, Elevator and the Avatar Button.
 - **No Selection Mode category.** The Avatar [Selection Mode button](../009-elements/mode-button.md) (once the Spaces'
   **Walk In**, which an Avatar Pad replaced) is in Travel; the Select, Hand, Eraser and Format buttons are gone, and so are Reaction Pads and the
   Laser, Spotlight and Isometric buttons (owner, 2026-11-05).
 - **Stickers**, for decoration, as livediagram has them. No Icons category (owner, 2026-11-05:
   [Icons](../002-project-scope/not-in-livehuddle.md#icons)); a stored icon still draws and edits.
 - **No Media** (owner, 2026-11-05: [Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): no
-  Media category and no Link card anywhere in the palette. The Image is Write's, and a picture pasted or dropped on
+  Media category and no Link card anywhere in the palette. No Image tile either, but a picture pasted or dropped on
   the canvas lands as an image ([Images are back](../002-project-scope/not-in-livehuddle.md#images-are-back)). A
   stored link card still draws, moves and deletes.
 - **No** Shapes, My shapes, Draw (pencil, highlighter, arrow, line), Frame, Layout, Data, Components, Ask, Tools, Record or React (owner, 2026-11-05: no frames in livehuddle). A connector or a flowchart shape is a diagram tool: livediagram's.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows
-  **Write | Rooms, Seats, Perks, Play, Garden, Meet | Travel | Stickers**, a divider
+  **Rooms, Seats, Perks, Play, Garden, Meet | Travel | Stickers**, a divider
   between each band ([The strip's order](../010-palette/palette-top-level-categories.md#the-strips-order)): no
   Popular, no Session category, no Selection Mode category. Each Space category's flyout is one block of its tiles,
   with no group headings, but Rooms, which opens on its Build group, and Play and Garden, which list their
@@ -111,7 +107,7 @@ The catalogue is **Blank Space** and thirty-two Spaces in the Campus, Events, Ga
 categories
 ([Virtual Office template](virtual-office-template.md), [Templates by mode](../007-editor/templates-by-mode.md)).
 Every template opens on a meeting board. The Spaces use only what stays: the office, bar and garden pieces,
-furniture, an Avatar Pad, Bring Focus, sticky notes, text and a sticker.
+furniture, an Avatar Pad, sticky notes, text and a sticker.
 
 The retrospectives, the workshop boards, the planning and strategy boards and the quizzes and games leave
 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)); a link, an agent or a seed naming one is answered
@@ -124,11 +120,11 @@ with Blank Space, as any unknown kind is.
 
 Following [Gate a feature by share role](../../instructions/gate-a-feature-by-share-role.md):
 
-| Role            | On a meeting board                                                                                     |
-| --------------- | ------------------------------------------------------------------------------------------------------ |
-| **Editor**      | The full meeting palette; builds and furnishes rooms; runs Timers and Stopwatches; presses Bring Focus |
-| **Participant** | Always walks; sits, talks and hears; comments and reacts; pins notes, swings doors, runs Timers        |
-| **Viewer**      | Walks, sits, talks and hears; no palette; sees a running Timer or Stopwatch read-only                  |
+| Role            | On a meeting board                                                                              |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| **Editor**      | The full meeting palette; builds and furnishes rooms; runs Timers and Stopwatches               |
+| **Participant** | Always walks; sits, talks and hears; comments and reacts; pins notes, swings doors, runs Timers |
+| **Viewer**      | Walks, sits, talks and hears; no palette; sees a running Timer or Stopwatch read-only           |
 
 Every gate reads the session's `can`, never `isReadOnly` alone.
 

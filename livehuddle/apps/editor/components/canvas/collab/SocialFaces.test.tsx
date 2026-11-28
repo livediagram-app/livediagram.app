@@ -90,27 +90,24 @@ describe('the reader while walking', () => {
     expect(document.querySelector('[data-notice-reader]')).toBeNull();
   });
 
-  it('names a World Clock zone with no label Local to a screen reader, as its dial does', () => {
-    // An unlabelled zone read as ": 10:00", with no name before the time.
+  it("names the Clock's own local time to a screen reader, and opens no reader while walking", () => {
+    // social-pieces.md "Clock": one dial at the viewer's time; an old World Clock's zones are ignored.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 27, 9, 41, 10));
     render(
-      <SocialFace element={piece('world-clock', { clockZones: [{ zone: 'UTC', label: '' }] })} />,
+      <SocialFace
+        element={piece('world-clock', { clockZones: [{ zone: 'Asia/Tokyo', label: 'Tokyo' }] })}
+        walking
+      />,
     );
     const face = screen.getByRole('img');
-    expect(face.getAttribute('aria-label')).toMatch(/^Local: /);
-  });
-
-  it('opens every World Clock zone large, past the three the face shows', () => {
-    const zones = ['London', 'Paris', 'Tokyo', 'Sydney'].map((label) => ({
-      zone: 'UTC',
-      label,
-    }));
-    render(<SocialFace element={piece('world-clock', { clockZones: zones })} walking />);
-    fireEvent.click(screen.getByRole('button', { name: 'Read the World Clock' }));
-    const dialog = screen.getByRole('dialog', { name: 'World Clock' });
-    for (const z of zones) expect(dialog.textContent).toContain(z.label);
-    // The bar's Close (the backdrop is a second, untabbable Close).
-    const close = screen.getAllByRole('button', { name: 'Close' }).find((b) => b.tabIndex !== -1);
-    fireEvent.click(close!);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    const label = new Date(2026, 10, 27, 9, 41).toLocaleTimeString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+    expect(face.getAttribute('aria-label')).toBe(`Clock: ${label}`);
+    expect(face.textContent).not.toContain('Tokyo');
+    expect(screen.queryByRole('button')).toBeNull();
+    vi.useRealTimers();
   });
 });

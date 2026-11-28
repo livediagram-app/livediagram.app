@@ -10,7 +10,8 @@ test.use({ viewport: { width: 1800, height: 1000 }, colorScheme: 'dark', ignoreH
 
 const box = (id: string, x: number) => ({
   id,
-  type: 'sticky',
+  type: 'shape',
+  shape: 'desk',
   x,
   y: 300,
   width: 160,
@@ -27,7 +28,7 @@ async function selection(page: Page): Promise<{ multi: boolean; grips: number }>
 }
 
 async function point(page: Page, label: string): Promise<{ x: number; y: number }> {
-  const r = (await page.locator(`[aria-label='Sticky note "${label}"']`).boundingBox())!;
+  const r = (await page.locator(`[aria-label='Desk "${label}"']`).boundingBox())!;
   return { x: r.x + r.width * 0.4, y: r.y + r.height * 0.4 };
 }
 

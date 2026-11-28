@@ -30,7 +30,7 @@ import { tabRejection } from './finalise';
 import { invalidResult } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
-import { SHAPES_RETIRED } from './vocabulary';
+import { isRetiredNoteType, NOTES_RETIRED, SHAPES_RETIRED } from './vocabulary';
 
 // No `mermaid`: imports from other tools are gone, and no `graph`: the graph input went with the layout containers
 // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3).
@@ -72,6 +72,9 @@ function fromElements(
     (el) => el.type === 'shape' && !kept.has(el.id) && !SHAPE_KINDS.has(el.shape),
   );
   if (made) return invalidResult(made.id, 'shape', { field: 'shape', rule: SHAPES_RETIRED });
+  // A text or a sticky note is refused (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category").
+  const note = valid.find((el) => isRetiredNoteType(el.type) && !kept.has(el.id));
+  if (note) return invalidResult(note.id, note.type, { field: 'type', rule: NOTES_RETIRED });
   return {
     elements: buildTab('elements', 'elements', valid, layout, themeId).elements,
     tab: (tabId, name) => buildTab(tabId, name, valid, layout, themeId),

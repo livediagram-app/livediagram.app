@@ -121,10 +121,6 @@ export function useAutosave(opts: {
   ownWrites?: OwnElementWrites;
   // How many peer ops this render's `tabs` include: state, bumped in the same batch that applies each op.
   opsApplied: number;
-  // True while a hover-preview is on screen. Previews mutate `tabs` (so they
-  // render live) but must never be persisted; the debounced save below skips
-  // while this is set, and the click-commit clears it and saves normally.
-  previewingRef: MutableRefObject<boolean>;
   roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
   setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
   setSavedAt: Dispatch<SetStateAction<number | null>>;

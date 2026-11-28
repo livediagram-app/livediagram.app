@@ -39,7 +39,8 @@ describe('fenceSegments', () => {
     const fence = { ...createShape('fence', 0, 0), id: 'f' };
     const square = { ...createSticky(0, 0), id: 's' };
     expect(fenceSegments([fence, square] as Element[])).toEqual([
-      { a: { x: 0, y: 12 }, b: { x: 240, y: 12 } },
+      // A fence's pad: half its 3D thickness (fence.md "A wall keeps the whole body out of it").
+      { a: { x: 0, y: 12 }, b: { x: 240, y: 12 }, pad: 3 },
     ]);
   });
 });

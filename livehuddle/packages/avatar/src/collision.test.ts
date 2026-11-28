@@ -94,12 +94,12 @@ describe('fenceRefuses', () => {
   });
 
   it('keeps each character size its own feet’s width from a fence', () => {
-    expect(fenceReachFor(1.5)).toBe(FENCE_REACH);
-    expect(fenceReachFor(1.95)).toBeCloseTo(15.6, 6);
-    expect(fenceRefuses({ x: 100, y: 20 }, { x: 100, y: 14 }, across, fenceReachFor(1.95))).toBe(
+    expect(fenceReachFor(1.9)).toBe(FENCE_REACH);
+    expect(fenceReachFor(2.45)).toBeCloseTo(15.47, 2);
+    expect(fenceRefuses({ x: 100, y: 20 }, { x: 100, y: 14 }, across, fenceReachFor(2.45))).toBe(
       true,
     );
-    expect(fenceRefuses({ x: 100, y: 20 }, { x: 100, y: 14 }, across, fenceReachFor(1.5))).toBe(
+    expect(fenceRefuses({ x: 100, y: 20 }, { x: 100, y: 14 }, across, fenceReachFor(1.9))).toBe(
       false,
     );
   });

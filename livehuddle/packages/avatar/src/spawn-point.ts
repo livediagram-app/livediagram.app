@@ -9,6 +9,8 @@ import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import {
   clearOfFences,
   FENCE_REACH,
+  fenceReachOf,
+  fenceSearchReach,
   fencesNear,
   pointSegmentDistance,
   type FenceSegment,
@@ -86,15 +88,18 @@ function atWater(p: FencePoint, water: readonly Rect[], body: number, half: numb
 function freeAt(
   p: FencePoint,
   fences: readonly FenceSegment[],
-  clear: number,
+  reach: number,
   water: readonly Rect[],
   body: number,
   half: number,
 ): boolean {
+  // Each fence at its own reach (a wall's grown by its pad: fence.md "A wall keeps the whole body out of it").
   return (
     !atWater(p, water, body, half) &&
-    !fencesNear(p, clear, fences).some(
-      (f) => (f.solid !== undefined && inside(p, f.solid)) || pointSegmentDistance(p, f) < clear,
+    !fencesNear(p, fenceSearchReach(reach) + SPAWN_MARGIN, fences).some(
+      (f) =>
+        (f.solid !== undefined && inside(p, f.solid)) ||
+        pointSegmentDistance(p, f) < fenceReachOf(f, reach) + SPAWN_MARGIN,
     )
   );
 }
@@ -117,10 +122,11 @@ export function freeSpawnPoint(
   const allWater = waterOf(fences);
   if (!solidAt(p, fences) && !atWater(p, allWater, body, half))
     return clearOfFences(p, fences, reach);
+  // The water's margin is a footprint's, at the plain reach; the search looks as far as a wall's padded reach.
   const clear = reach + SPAWN_MARGIN;
   // Only the walls within the search's reach can refuse a spot; each spot then reads the few beside it (fencesNear
   // indexes a long list once).
-  const near = fencesNear(p, SPAWN_SEARCH_MAX + clear, fences);
+  const near = fencesNear(p, SPAWN_SEARCH_MAX + fenceSearchReach(reach) + SPAWN_MARGIN, fences);
   const water = waterOf(near);
   // Straight below the water a body clear, where its drawing faces you: taken unless the rings find free floor nearer
   // than the water's bottom edge, so a margin below never sends a spot centred on a pool round to its far bank.
@@ -131,13 +137,13 @@ export function freeSpawnPoint(
     if (p.y < w.y || p.y >= w.y + w.height + body) continue;
     const at = { x: p.x, y: w.y + w.height + body };
     const d = Math.max(0, w.y + w.height - p.y) + clear;
-    if (d < edge && at.y - p.y <= SPAWN_SEARCH_MAX && freeAt(at, near, clear, water, body, half)) {
+    if (d < edge && at.y - p.y <= SPAWN_SEARCH_MAX && freeAt(at, near, reach, water, body, half)) {
       below = at;
       edge = d;
     }
   }
   return (
-    ringSearch(p, near, clear, water, body, half, below ? edge : SPAWN_SEARCH_MAX) ?? below ?? p
+    ringSearch(p, near, reach, water, body, half, below ? edge : SPAWN_SEARCH_MAX) ?? below ?? p
   );
 }
 
@@ -145,7 +151,7 @@ export function freeSpawnPoint(
 function ringSearch(
   p: FencePoint,
   near: readonly FenceSegment[],
-  clear: number,
+  reach: number,
   water: readonly Rect[],
   body: number,
   half: number,
@@ -159,7 +165,7 @@ function ringSearch(
       for (const sign of k === 0 || k === steps ? [1] : [1, -1]) {
         // Angle 0 is straight down the canvas.
         const at = { x: p.x + Math.sin(turn * sign) * r, y: p.y + Math.cos(turn) * r };
-        if (freeAt(at, near, clear, water, body, half)) return at;
+        if (freeAt(at, near, reach, water, body, half)) return at;
       }
     }
   }

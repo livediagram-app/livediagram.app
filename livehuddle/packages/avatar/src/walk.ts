@@ -402,7 +402,7 @@ export function elementUnderFeet(
     if (shape === 'fence') continue;
     // Nor is the office's floor and scenery (docs/specs/009-elements/office.md): a room or a rug is where you
     // stand, and a plant or a bookshelf is walked round.
-    // Nor is a piece on a wall (a notice board, a world clock): walked past, not to.
+    // Nor is a piece on a wall (a notice board, a clock): walked past, not to.
     // Scenery that holds a character (livehuddle's Podium, venue-pieces.md "Speaking from the Podium") is stood at.
     if (
       shape !== null &&

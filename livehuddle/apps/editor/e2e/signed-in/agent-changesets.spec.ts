@@ -1,4 +1,4 @@
-import { expect, test } from '../fixtures';
+import { expect, paletteTile, test } from '../fixtures';
 import { agentSubmits, arrange, CANVAS, open, storedIds, WEBBER } from './agent-session';
 import { freshUserId, installSession } from './session';
 
@@ -16,7 +16,8 @@ const paymentBox = {
       op: 'add',
       element: {
         id: 'payments',
-        type: 'sticky',
+        type: 'shape',
+        shape: 'desk',
         x: 520,
         y: 200,
         width: 220,
@@ -56,15 +57,15 @@ test("an agent's changeset reaches the open editor, survives its save, and the t
   await expect(page.locator('[data-reveal-id="payments"]')).toHaveCount(0, { timeout: 5_000 });
   await expect(toast).toBeVisible();
 
-  // The person adds a sticky note: their autosave keeps the agent's element.
+  // The person adds a chair: their autosave keeps the agent's element.
   await page.mouse.click(1000, 600);
-  await page.keyboard.press('n');
+  await (await paletteTile(page, 'Add Chair')).click();
   await page.mouse.click(970, 540);
   await page.keyboard.press('Escape');
   await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toHaveLength(3);
   expect(await storedIds(page, s)).toContain('payments');
 
-  // Ctrl+Z undoes the person's own note, never the agent's change.
+  // Ctrl+Z undoes the person's own chair, never the agent's change.
   await page.keyboard.press('ControlOrMeta+z');
   await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toEqual(['api', 'payments']);
   await expect(page.getByText('Payment service', { exact: true })).toBeVisible();

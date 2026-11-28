@@ -2,7 +2,7 @@
 
 // The ring round the real control the Receptionist is talking about (docs/specs/008-canvas/receptionist.md "Asking the Receptionist"), drawn
 // over the editor's chrome in the tours' look, for as long as his answer shows. Measured when it opens and when the
-// window resizes; a control that is not on screen (a closed minimap, a phone's narrower palette) draws no ring.
+// window resizes; a control that is not on screen (a phone's narrower palette) draws no ring.
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';

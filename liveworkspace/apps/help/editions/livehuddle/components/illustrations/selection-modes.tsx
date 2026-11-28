@@ -8,7 +8,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { Bookshelf, Plant, Room, Rug, Sofa, Sticky } from './space-furniture';
+import { Bookshelf, Plant, Room, Rug, Sofa, NoticeBoard } from './space-furniture';
 import { PixelCharacter } from './pixel-character';
 import { PainterGlyph } from './palette-modes-parts';
 import { Strip, WalkStrip } from './editor-chrome';
@@ -137,7 +137,7 @@ export function FormatPanelScene() {
         Done
       </Label>
       {/* Source and target: two notes, the second taking the first's green paper and border. */}
-      <Sticky x={26} y={80} w={84} h={64} tone="emerald" label="Agenda" lines={2} />
+      <NoticeBoard x={26} y={80} w={84} h={64} tone="emerald" label="Agenda" lines={2} />
       <rect
         x={26}
         y={80}
@@ -152,7 +152,7 @@ export function FormatPanelScene() {
         strokeWidth={1}
         strokeDasharray="3 3"
       />
-      <Sticky x={110} y={160} w={84} h={64} label="Notes" lines={2} />
+      <NoticeBoard x={110} y={160} w={84} h={64} label="Notes" lines={2} />
       <rect
         x={110}
         y={160}

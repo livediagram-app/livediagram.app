@@ -42,7 +42,6 @@ const draw = (element: ShapeElement, wayfinding?: Wayfinding) =>
       element={element as BoxedElement}
       isSelected={false}
       isEditing={false}
-      isPaintMode={false}
       showHandles={false}
       showAnchors={false}
       onBeginDrag={vi.fn()}

@@ -19,7 +19,6 @@
     "./components/AvatarSpeechBubble": "./src/components/AvatarSpeechBubble.tsx",
     "./components/AvatarSpeechLayer": "./src/components/AvatarSpeechLayer.tsx",
     "./components/AvatarWalker": "./src/components/AvatarWalker.tsx",
-    "./components/TurnButtons": "./src/components/TurnButtons.tsx",
     "./components/avatar-sprite-body": "./src/components/avatar-sprite-body.tsx",
     "./components/avatar-sprite-head": "./src/components/avatar-sprite-head.tsx",
     "./components/avatar-sprite-outfit-lower": "./src/components/avatar-sprite-outfit-lower.tsx",

@@ -24,11 +24,6 @@ type TabProps = {
   tiles: PaletteTileDef[];
 };
 
-// The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Text and Sticky Note.
-export function PaletteWriteTab({ pendingDraw, actions, tiles }: TabProps) {
-  return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
-}
-
 // The Collaborate elements (docs/specs/012-collaboration/workshop-mode.md "The palette"): six
 // categories, one per group (Ask, Tools, Record, React, Selection Mode, Navigate). Rows with a blurb:
 // mode buttons look alike at palette size, and

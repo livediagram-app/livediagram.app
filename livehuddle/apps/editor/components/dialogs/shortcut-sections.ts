@@ -32,8 +32,6 @@ export const SHORTCUT_SECTIONS: readonly ShortcutSection[] = [
       { keys: ['⌘', 'D'], label: 'Duplicate Selection' },
       { keys: ['⌘', 'A'], label: 'Select All' },
       { keys: ['Del', '/  ⌫'], label: 'Delete Selection' },
-      { keys: ['⌘', '⇧', ']'], label: 'Bring to Front' },
-      { keys: ['⌘', '⇧', '['], label: 'Send to Back' },
     ],
   },
   {
@@ -42,13 +40,6 @@ export const SHORTCUT_SECTIONS: readonly ShortcutSection[] = [
       { keys: ['E'], label: 'Edit  (or V, or 1)' },
       { keys: ['W'], label: 'Walk' },
       { keys: ['S'], label: 'Search Elements  (Edit where there is no strip)' },
-    ],
-  },
-  {
-    heading: 'Add elements',
-    rows: [
-      { keys: ['T'], label: 'Text  (or 8)' },
-      { keys: ['N'], label: 'Note (sticky)' },
     ],
   },
   {
@@ -82,7 +73,7 @@ export const SHORTCUT_SECTIONS: readonly ShortcutSection[] = [
       { keys: ['←', '↑', '→', '↓'], label: 'Walk' },
       { keys: ['Space'], label: 'Hop and wave a flag' },
       { keys: ['Enter'], label: 'Send a message' },
-      { keys: ['⇧', '3'], label: '3D View on or off' },
+      { keys: ['[', ']'], label: 'Turn the camera' },
       ...AVATAR_REACTIONS.map((r) => ({ keys: [AVATAR_BEHAVIOUR_KEYS[r.id]], label: r.label })),
       ...REACTIONS.map((r) => ({ keys: [AVATAR_BURST_KEYS[r]], label: REACTION_LABEL[r] })),
     ],

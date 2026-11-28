@@ -71,8 +71,6 @@ export function flyoutTagline(categoryId: string, fallback: string): string {
 // A category shows its groups only when every one is named; otherwise it is one block, so a layout whose dividers
 // fall elsewhere (Workshop's Write) never shows half its groups headed and half bare.
 const GROUP_NAMES: Readonly<Record<string, string>> = {
-  'tools:text': 'Text',
-  'tools:sticky': 'Notes',
   // Logo's Draw (palette-layouts PAGES_LOGO): the Pen first, then each person's markers as a group.
   'logo:pen': 'Pens',
   'draw:marker-main': 'Markers',

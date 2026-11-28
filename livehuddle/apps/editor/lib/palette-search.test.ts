@@ -45,7 +45,8 @@ describe('buildPaletteSearchItems', () => {
       .map((t) => `tile:${t.id}`)
       .filter((id) => !ids.has(id));
     expect(missing).toEqual([]);
-    for (const id of ['tile:tools:text', 'tile:tools:sticky']) expect(ids).toContain(id);
+    // Write went (not-in-livehuddle.md "The Write category"): Search lists only what the palette offers.
+    for (const id of ['tile:tools:text', 'tile:tools:sticky']) expect(ids).not.toContain(id);
   });
 
   it('offers no diagram tool the meeting palette left out', () => {
@@ -65,11 +66,12 @@ describe('buildPaletteSearchItems', () => {
   // not-in-livehuddle.md "Media", "Images are back": Search offers Write's Image where uploads work, and no Link card.
   it('offers the Image only with image support, and never a Link card', () => {
     const idsWith = (hasImage: boolean) => buildPaletteSearchItems({ hasImage }).map((i) => i.id);
-    expect(idsWith(true)).toContain('tile:tools:image');
-    expect(idsWith(false)).not.toContain('tile:tools:image');
+    // The Image tile went with Write: Search offers it with or without image support.
+    for (const hasImage of [true, false])
+      expect(idsWith(hasImage)).not.toContain('tile:tools:image');
     for (const hasImage of [true, false])
       expect(idsWith(hasImage)).not.toContain('tile:tools:link-card');
-    expect(OFFERED.filter((t) => t.needsImage).map((t) => t.id)).toEqual(['tools:image']);
+    expect(OFFERED.filter((t) => t.needsImage).map((t) => t.id)).toEqual([]);
   });
 
   it('covers the element types the palette added most recently', () => {

@@ -37,15 +37,16 @@ test.describe('Multi-colour themes', () => {
     const logs: string[] = [];
     page.on('console', (msg) => logs.push(msg.text()));
 
-    // Four text elements with no colours of their own (a template's authored hues would rightly be kept as
+    // Four desks with no colours of their own (a template's authored hues would rightly be kept as
     // customisations, docs/specs/011-theme/multicolour-themes.md), so any Rainbow hue found came from the
     // palette. Not joined by arrows (they left with the element engine's part 4,
     // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"): a loose element takes the next
-    // hue. Text, not sticky notes: a sticky keeps its own paper under every theme.
+    // hue. Desks, labelled: livehuddle has no text element (not-in-livehuddle.md "The Write category").
     await startBlankDocument(page);
     const box = (id: string, x: number, y: number) => ({
       id,
-      type: 'text',
+      type: 'shape',
+      shape: 'desk',
       x,
       y,
       width: 120,

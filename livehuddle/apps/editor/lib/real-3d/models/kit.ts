@@ -9,7 +9,15 @@ import type { PieceTones } from '../piece-tones';
 
 export { mix };
 
-/** How high a sitter's seat is: where a seated figure's hips rest (character-rig's seated pose). */
+/**
+ * How much taller every piece, wall and roof stands than it is built (3d-engine.md "Heights match the people"): the
+ * models are made in the plan's old heights, then risen together, so they keep their proportions to each other.
+ */
+export const RISE = 1.4;
+/** Walls, doors and roofs rise less, so a corridor's walls never wall off the view: a doorway still clears a head. */
+export const WALL_RISE = 1.2;
+
+/** How high a sitter's seat is as built: a seated figure's hips rest at `SEAT_Z * RISE` (character-rig). */
 export const SEAT_Z = 15;
 
 /**
@@ -24,7 +32,7 @@ export const KIND_HEIGHT: Record<string, number> = {
   plant: 52,
   bookshelf: 104,
   'water-cooler': 62,
-  'coffee-machine': 40,
+  'coffee-machine': 54,
   bar: 34,
   'bar-stool': 26,
   'drinks-cabinet': 72,
@@ -32,7 +40,7 @@ export const KIND_HEIGHT: Record<string, number> = {
   'outdoor-plant': 40,
   tree: 150,
   'notice-board': 60,
-  'world-clock': 40,
+  'world-clock': 50,
   jukebox: 68,
   'ping-pong-table': 24,
   'arcade-machine': 72,
@@ -49,7 +57,7 @@ export const KIND_HEIGHT: Record<string, number> = {
   'vending-machine': 84,
   'bean-bag': 16,
   'reading-nook': 62,
-  printer: 28,
+  printer: 44,
   copier: 46,
   lockers: 92,
   'coat-rack': 74,
@@ -62,6 +70,10 @@ export const KIND_HEIGHT: Record<string, number> = {
   'toilet-cubicle': 112,
   washbasin: 34,
   'hand-dryer': 20,
+  // The lamps (office-amenities.md "Lamps"): a floor lamp a coat rack's height; the others their own, on a desk.
+  'floor-lamp': 78,
+  'table-lamp': 22,
+  'desk-lamp': 20,
   pillar: 152,
   column: 152,
   'bike-rack': 36,
@@ -75,10 +87,11 @@ export const KIND_HEIGHT: Record<string, number> = {
   'hot-desk': 30,
   'pet-bed': 6,
   'reception-desk': 32,
-  directory: 72,
+  directory: 104,
   elevator: 152,
+  stairs: 108,
   'calendar-wall': 70,
-  'suggestion-box': 42,
+  'suggestion-box': 50,
   signpost: 84,
   'photo-wall': 80,
 };
@@ -93,7 +106,18 @@ export type ModelContext = {
   t: PieceTones;
   /** Seats in the model's frame (where a sitter's feet go) and which way each sitter faces in it. */
   seats: readonly { x: number; y: number; facing: string }[];
+  /** The piece's type where its kind takes one (a tree's species, office.md "Tree species"); absent for the first. */
+  variant?: string;
+  /** What a piece shows written on it: a Room Sign's room name (screen-and-room-sign.md "Room Sign"). */
+  label?: string;
+  /** The piece's own fill as stored, for a model painted in it (a Stage's deck). */
+  fill?: string;
+  /** The Clock's hands (social-pieces.md "Clock"): the viewer's own local time; absent draws a face with no hands. */
+  clock?: ClockDial;
 };
+
+/** The Clock's time: the viewer's own local hour (0 to 23) and minute. */
+export type ClockDial = { hour: number; minute: number };
 
 export type Model = (m: Builder, c: ModelContext) => void;
 

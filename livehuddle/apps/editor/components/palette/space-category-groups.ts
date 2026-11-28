@@ -61,7 +61,7 @@ export const SPACE_CATEGORY_GROUPS: Readonly<Record<string, readonly SpaceCatego
   // Ground up: what grows, what is walked on and round, what is sat at, the water and fire, then the parking.
   'collab-garden': [
     { name: 'Plants', tiles: ['tools:outdoor-plant', 'tools:tree', 'tools:grass'] },
-    { name: 'Paths and Fences', tiles: ['tools:garden-path', 'tools:garden-fence'] },
+    { name: 'Paths and Fences', tiles: ['tools:garden-path', 'tools:road', 'tools:garden-fence'] },
     {
       name: 'Furniture',
       tiles: ['tools:bench', 'tools:picnic-table', 'tools:hammock', 'tools:garden-umbrella'],

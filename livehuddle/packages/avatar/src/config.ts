@@ -26,6 +26,7 @@ import { AVATAR_SIZE_SCALE } from './size-scale';
 // (see that package's avatar.ts). Re-exported here so the modules that import
 // from this file keep one path.
 export type {
+  AvatarBuild,
   AvatarClothing,
   AvatarConfig,
   AvatarGender,
@@ -34,6 +35,7 @@ export type {
   AvatarSize,
 } from './wire';
 import type {
+  AvatarBuild,
   AvatarClothing,
   AvatarConfig,
   AvatarGender,
@@ -56,6 +58,7 @@ export const DEFAULT_AVATAR_CONFIG: AvatarConfig = {
   hair: 'short',
   size: 'regular',
   hairColour: 'brown',
+  build: 'regular',
 };
 
 // The option catalogues, in panel order. Exported so the panel renders from
@@ -147,6 +150,21 @@ export const AVATAR_SIZES: readonly { id: AvatarSize; label: string }[] = [
   { id: 'tall', label: 'Tall' },
 ];
 
+// Builds (docs/specs/008-canvas/avatar-mode.md "Build"), narrowest first: the scale the 3D character takes across and
+// front to back. Regular is 1, the character as it was before the choice existed.
+export const AVATAR_BUILDS: readonly { id: AvatarBuild; label: string; scale: number }[] = [
+  { id: 'skinny', label: 'Skinny', scale: 0.82 },
+  { id: 'slim', label: 'Slim', scale: 0.91 },
+  { id: 'regular', label: 'Regular', scale: 1 },
+  { id: 'broad', label: 'Broad', scale: 1.1 },
+  { id: 'large', label: 'Large', scale: 1.22 },
+];
+
+/** A build token's width-and-depth scale: 1 (Regular) for none or one this build does not know. */
+export function avatarBuildScale(id: string | undefined): number {
+  return AVATAR_BUILDS.find((b) => b.id === id)?.scale ?? 1;
+}
+
 export function avatarScale(size: AvatarSize): number {
   // A product without the Size choice (AvatarBindings.sizes) draws everyone at Regular.
   return AVATAR_SIZE_SCALE[avatarBindings.sizes ? size : 'regular'];
@@ -154,7 +172,7 @@ export function avatarScale(size: AvatarSize): number {
 
 // A random character for a first-time visitor: gender, clothing, hair and a natural hair colour are
 // rolled from their catalogues so two people walking into a document don't
-// arrive as the same figure. SIZE is deliberately not rolled — it changes how
+// arrive as the same figure. SIZE (and BUILD) are deliberately not rolled: it changes how
 // much of the canvas the character covers, so it starts Regular and stays a
 // deliberate choice.
 export function randomAvatarConfig(): AvatarConfig {
@@ -165,6 +183,7 @@ export function randomAvatarConfig(): AvatarConfig {
     size: DEFAULT_AVATAR_CONFIG.size,
     // Natural colours only: a bold one is a deliberate choice, like Size.
     hairColour: randomPick(NATURAL_HAIR_COLOURS)?.id ?? 'brown',
+    build: DEFAULT_AVATAR_CONFIG.build,
   };
 }
 
@@ -186,6 +205,8 @@ export function parseAvatarConfig(raw: unknown): AvatarConfig {
     size: pickOption(o.size, AVATAR_SIZES, DEFAULT_AVATAR_CONFIG.size),
     // Absent (an older build's store or packet) or unknown: Brown, the hair every character had before.
     hairColour: pickOption(o.hairColour, AVATAR_HAIR_COLOURS, 'brown'),
+    // Absent or unknown: Regular, the build every character had before.
+    build: pickOption(o.build, AVATAR_BUILDS, 'regular'),
   };
 }
 
@@ -207,7 +228,7 @@ export function peerAvatarConfig(raw: unknown): AvatarConfig {
     return parsedDefault;
   }
   const parsed = parseAvatarConfig(raw);
-  const key = `${parsed.gender}|${parsed.clothing}|${parsed.hair}|${parsed.size}|${parsed.hairColour}`;
+  const key = `${parsed.gender}|${parsed.clothing}|${parsed.hair}|${parsed.size}|${parsed.hairColour}|${parsed.build}`;
   let config = parsedByValue.get(key);
   if (!config) {
     config = parsed;

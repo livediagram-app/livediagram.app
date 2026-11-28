@@ -167,7 +167,6 @@ export function ReceptionistLayer({
   return (
     <>
       <AvatarWalker
-        turn={turn}
         pos={pose.at}
         facing={pose.facing}
         config={RECEPTIONIST_LOOK}

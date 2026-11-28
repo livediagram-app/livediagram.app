@@ -30,7 +30,7 @@ const AWAY: AvatarStatusEntry = {
   id: 'away',
   label: 'Away',
   colour: '#94a3b8',
-  line: 'Stepped away. You fade and a Zz rises.',
+  line: 'Stepped away. A Zz rises overhead.',
 };
 
 /** The four statuses every product offers, in the panel's order. */
@@ -107,7 +107,12 @@ export const AVATAR_MOOD_STATUSES: readonly AvatarStatusEntry[] = [
     colour: '#0ea5e9',
     line: 'A thought bubble, mulling it over.',
   },
-  { id: 'sick', label: 'Feeling Sick', colour: '#84cc16', line: 'A green face and an ice pack.' },
+  {
+    id: 'sick',
+    label: 'Feeling Sick',
+    colour: '#84cc16',
+    line: 'An ice pack and a bead of sweat.',
+  },
 ];
 
 /** livehuddle's status groups, in its picker's order, each under its name. */

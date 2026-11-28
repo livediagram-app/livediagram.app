@@ -1,5 +1,9 @@
 # Minimap
 
+> **Gone from livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-map)): the owner (2026-11-27) removed the Map. livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/008-canvas/minimap.md) is the one to read and change. livehuddle shows no Map, offers no Map rows in Settings and fits a tab to the whole canvas; its components are deleted. The rest of this page records what livehuddle had.
+
+Status: **gone from livehuddle** (2026-11-27).
+
 A bottom-left minimap that gives a zoomed-out overview of the whole tab and
 lets you jump the viewport anywhere with a tap or drag.
 

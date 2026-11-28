@@ -46,6 +46,8 @@ export type AvatarSnapshot = {
   status?: AvatarStatus | null;
   // Flag-wave frame, or null when the flag is down.
   wave: number | null;
+  // A raised hand (docs/specs/008-canvas/avatar-mode.md "Raise Hand"), only while it is up.
+  handUp?: true;
 };
 
 export const NO_FENCES: FenceSegment[] = [];

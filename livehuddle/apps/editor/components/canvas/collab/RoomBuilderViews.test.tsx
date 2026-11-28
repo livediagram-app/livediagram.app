@@ -24,19 +24,18 @@ const draw = (el: ShapeElement) =>
 describe('DoorView', () => {
   it('draws the swing door with its leaf open and its arc showing', () => {
     const c = draw(door());
-    expect(c.querySelector('[aria-label="Open door"]')).not.toBeNull();
+    expect(c.querySelector('[aria-label="Door"]')).not.toBeNull();
     const leaf = c.querySelector<SVGElement>('.lh-door-leaf')!;
-    expect(leaf.style.transform).toBe('none');
+    expect(leaf.style.transform).toBe('');
     expect(c.querySelector('.lh-door-swing')?.getAttribute('opacity')).toBe('0.55');
   });
 
-  it('turns the leaf across the gap and hides the arc when shut', () => {
-    const c = draw(door(undefined, { doorClosed: true }));
-    expect(c.querySelector('[aria-label="Closed door"]')).not.toBeNull();
-    const leaf = c.querySelector<SVGElement>('.lh-door-leaf')!;
-    expect(leaf.style.transform).toBe('translateX(0px) rotate(-90deg)');
-    expect(leaf.hasAttribute('data-door-closed')).toBe(true);
-    expect(c.querySelector('.lh-door-swing')?.getAttribute('opacity')).toBe('0');
+  // room-builder.md "Opening on their own": the plan draws a door open whatever it was saved as.
+  it('draws a door saved shut while doors were swung by hand open all the same', () => {
+    const c = draw(door(undefined, { doorClosed: true } as Partial<ShapeElement>));
+    expect(c.querySelector('[aria-label="Door"]')).not.toBeNull();
+    expect(c.querySelector('[data-door-closed]')).toBeNull();
+    expect(c.querySelector('.lh-door-swing')?.getAttribute('opacity')).toBe('0.55');
   });
 
   it('draws a double door two leaves, a sliding one two panes slid apart, a revolving one its wings turned', () => {
@@ -46,8 +45,6 @@ describe('DoorView', () => {
       'translateX(-50px) rotate(0deg)',
       'translateX(50px) rotate(0deg)',
     ]);
-    const shut = draw(door('sliding', { doorClosed: true }));
-    expect(shut.querySelector<SVGElement>('.lh-door-leaf')!.style.transform).toBe('none');
     const wings = draw(door('revolving')).querySelector<SVGElement>('.lh-door-leaf')!;
     expect(wings.style.transform).toBe('translateX(0px) rotate(45deg)');
   });
@@ -55,7 +52,7 @@ describe('DoorView', () => {
   // not-in-livehuddle.md "Element and Tab Locking": a door saved locked draws as any door, no padlock or shading.
   it('draws a door saved locked as any open door', () => {
     const c = draw(door('double', { locked: true } as Partial<ShapeElement>));
-    expect(c.querySelector('[aria-label="Open door"]')).not.toBeNull();
+    expect(c.querySelector('[aria-label="Door"]')).not.toBeNull();
     expect(c.querySelector('[data-door-lock]')).toBeNull();
     expect(c.querySelectorAll('[opacity="0.45"]')).toHaveLength(0);
   });

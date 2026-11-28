@@ -5,7 +5,7 @@
 
 import { Label, Scene, TextBar } from '@liveworkspace/help-site/art/primitives';
 import { BAR_H, BarTab } from './editor-chrome';
-import { Desk, MeetingTable, Plant, Room, Rug, Sofa, Sticky } from './space-furniture';
+import { Desk, MeetingTable, Plant, Room, Rug, Sofa, NoticeBoard } from './space-furniture';
 
 /** A Space embedded in a host page: the floor with the embed's only chrome (Open in livehuddle and the tab switcher
  *  bottom-left, the zoom dock bottom-right), beside the iframe snippet the Share dialog copies. */
@@ -109,7 +109,7 @@ export function OneTabShare() {
     <Scene w={420} h={200}>
       <Room x={60} y={18} w={300} h={146} name="Meeting Room" />
       <MeetingTable x={110} y={70} w={110} />
-      <Sticky x={270} y={56} w={56} h={50} tone="sky" label="Agenda" lines={2} />
+      <NoticeBoard x={270} y={56} w={56} h={50} tone="sky" label="Agenda" lines={2} />
       <Plant cx={340} cy={146} />
       <rect x={0} y={y} width={420} height={BAR_H} className="fill-slate-100" />
       <line x1={0} y1={y} x2={420} y2={y} className="stroke-slate-200" strokeWidth={0.75} />

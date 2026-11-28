@@ -14,7 +14,7 @@ const props = (over: Partial<Parameters<typeof walkerPropsEqual>[0]> = {}) => ({
   ...over,
 });
 
-// A room's presence flush re-renders every peer's walker with fresh objects: only a real change draws the sprite again.
+// A room's presence flush re-renders every peer's walker with fresh objects: only a real change draws the walker again.
 describe('walkerPropsEqual', () => {
   it('holds for fresh objects with the same fields', () => {
     expect(walkerPropsEqual(props(), props())).toBe(true);

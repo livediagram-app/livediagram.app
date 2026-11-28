@@ -157,47 +157,34 @@ function ToolButton({
   );
 }
 
-/** A selected sofa, its toolbar's Rotate Left and Rotate Right, and the sofa a quarter turn later. */
+/** A selected sofa, its menu section's four facings with Left picked, and the sofa a quarter turn later. */
 export function TurnASofa() {
   return (
     <Scene w={440} h={250}>
-      {/* The selection toolbar: More, Edit Text, then the Rotate pair in its own group, then Duplicate. */}
+      {/* The element menu's Sofa section: Down, Left, Up and Right, the way it now faces pressed. */}
       <rect
-        x={30}
+        x={58}
         y={26}
-        width={196}
+        width={140}
         height={36}
         rx={7}
         className="fill-white stroke-slate-200"
         strokeWidth={0.75}
       />
-      <ToolButton x={36} y={31}>
-        <circle cx={-5} cy={0} r={1} />
-        <circle cx={0} cy={0} r={1} />
-        <circle cx={5} cy={0} r={1} />
-      </ToolButton>
       <ToolButton x={64} y={31}>
-        <path d="M-5 -5h10M0 -5v10" />
+        <path d="M0 -5v10M-4 1l4 4 4-4" />
       </ToolButton>
-      <path d="M96 34v20" className="stroke-slate-200" strokeWidth={0.75} />
-      <ToolButton x={102} y={31} on>
-        <path d="M-5 0a5 5 0 1 0 1.5-3.6" />
-        <path d="M-5 -5v3.5h3.5" />
+      <ToolButton x={96} y={31} on>
+        <path d="M5 0h-10M-1 -4l-4 4 4 4" />
       </ToolButton>
-      <ToolButton x={130} y={31} on>
-        <path d="M5 0a5 5 0 1 1-1.5-3.6" />
-        <path d="M5 -5v3.5h-3.5" />
+      <ToolButton x={128} y={31}>
+        <path d="M0 5v-10M-4 -1l4-4 4 4" />
       </ToolButton>
-      <path d="M162 34v20" className="stroke-slate-200" strokeWidth={0.75} />
-      <ToolButton x={168} y={31}>
-        <rect x={-5} y={-5} width={7} height={7} rx={1.5} />
-        <rect x={-2} y={-2} width={7} height={7} rx={1.5} />
+      <ToolButton x={160} y={31}>
+        <path d="M-5 0h10M1 -4l4 4-4 4" />
       </ToolButton>
-      <ToolButton x={196} y={31}>
-        <path d="M-5 -3h10M-3 -3v8h6v-8M-1.5 -5h3" />
-      </ToolButton>
-      <Label x={143} y={18} size={10} weight={600} tone="accent" anchor="middle">
-        Rotate Left · Rotate Right
+      <Label x={128} y={18} size={10} weight={600} tone="accent" anchor="middle">
+        Sofa · Left
       </Label>
 
       <SelectionBox x={64} y={88} w={128} h={72} />

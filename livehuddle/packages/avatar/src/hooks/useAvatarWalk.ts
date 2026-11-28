@@ -10,21 +10,21 @@
 // ephemeral presence snapshot handed to `onPresence` for peers (docs/specs/008-canvas/avatar-mode.md
 // Realtime), which the room relays like a cursor.
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
 import { mergePose, NO_POSE, type AvatarPose } from '../pose';
 import type { DrinkKind } from '../office-geometry';
+import { modelFootprintsOn } from '../office-geometry';
 import type { AvatarSceneElement } from '../scene';
 import {
   clearOfFences,
   fenceReachFor,
-  shutDoorLines,
   fenceSegments,
   sameFences,
   type FenceSegment,
 } from '../collision';
 import { avatarScale } from '../config';
-import type { AvatarReactionKind } from '../reactions';
+import { AVATAR_HAND_UP_MS, type AvatarReactionKind } from '../reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from './useAvatarKeys';
 import { newSeatClaim, seatCountOn, type SeatClaim } from '../seat-claims';
 import { avatarBindings } from '../bindings';
@@ -106,11 +106,12 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // Fences (docs/specs/009-elements/fence.md): the lines the walk may not cross, worked out once per
   // change to the elements rather than per frame.
   // Only while the mode is on: a scan of the whole tab on every edit is wasted when nobody is walking.
-  const fences = useMemo(() => (active ? fenceSegments(elements) : NO_FENCES), [active, elements]);
-  // Shut Doors, which a walk into the room behind one heads for (pathing.ts shutDoorCell).
-  const shutDoors = useMemo(
-    () => (active ? shutDoorLines(elements) : NO_FENCES),
-    [active, elements],
+  // Turned pieces block where their 3D models stand while the 3D view draws (office-geometry.ts setModelFootprints).
+  const model = modelFootprintsOn();
+  const fences = useMemo(
+    () => (active ? fenceSegments(elements) : NO_FENCES),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- `model` changes what fenceSegments reads
+    [active, elements, model],
   );
   const targetRef = useRef<AvatarPoint | null>(null);
   // Finding the way (docs/specs/008-canvas/avatar-mode.md "Finding the way"): the route's legs still to walk after
@@ -124,7 +125,6 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // The route grid, built when someone walks after the walls changed (never per frame, never while nobody walks).
   const navRef = useRef<{
     fences: readonly FenceSegment[];
-    shutDoors: readonly FenceSegment[];
     reach: number;
     grid: NavGrid | null;
   } | null>(null);
@@ -136,18 +136,12 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     const nav = navRef.current;
     // By value: an edit that moves no wall (typing on a sticky, a peer dragging a card) makes new lists of the same
     // lines, and the grid built over them still stands rather than being built again (~20 ms on a big office).
-    if (
-      nav &&
-      nav.reach === reach &&
-      sameFences(nav.fences, fences) &&
-      sameFences(nav.shutDoors, shutDoors)
-    ) {
+    if (nav && nav.reach === reach && sameFences(nav.fences, fences)) {
       nav.fences = fences;
-      nav.shutDoors = shutDoors;
       return nav.grid;
     }
-    const grid = buildNavGrid(fences, reach, shutDoors);
-    navRef.current = { fences, shutDoors, reach, grid };
+    const grid = buildNavGrid(fences, reach);
+    navRef.current = { fences, reach, grid };
     return grid;
   };
   const stopWalk = () => {
@@ -180,10 +174,16 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // The costume last published as a standing snapshot; null = nothing published
   // since the mode was entered. Keeps the entry publish to once per change.
   const publishedLookRef = useRef<string | null>(null);
-  // The seat in a presence snapshot: the piece, and our claim on it only while seated (a walk sends ~30 a second).
+  // A raised hand (docs/specs/008-canvas/avatar-mode.md "Raise Hand"): a held state like the drink, in state for the
+  // walker and in a ref for the snapshots.
+  const [handUp, setHandUp] = useState(false);
+  const handUpRef = useRef(false);
+  // The seat in a presence snapshot: the piece, and our claim on it only while seated (a walk sends ~30 a second);
+  // and a raised hand, only while it is up.
   const seatFields = () => ({
     seatedOn: seatedRef.current,
     ...(claimRef.current ? { seat: claimRef.current } : null),
+    ...(handUpRef.current ? { handUp: true as const } : null),
   });
   // NOTE: posRef is deliberately NOT re-synced from `pos` on every render. The
   // LOOP owns the position; `pos` is a copy for rendering. Assigning
@@ -216,6 +216,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     jumpVyRef,
     waveStartRef,
     reactionRef,
+    wakeRef,
     publishedLookRef,
     onPresence,
     seatedRef,
@@ -286,7 +287,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // Play one of the panel's reactions (docs/specs/008-canvas/avatar-mode.md). It performs ON THE SPOT, so
   // any walk in progress is dropped — sliding through a routine looks like a
   // bug — and re-clicking restarts it rather than queueing.
-  const playReaction = (kind: AvatarReactionKind) => {
+  const performReaction = (kind: AvatarReactionKind) => {
     stopWalk();
     heldRef.current = { ...NO_KEYS_HELD };
     reactionRef.current = { kind, startedAt: performance.now() };
@@ -305,7 +306,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // A seat beside a wall snaps the feet clear of the wall's reach (Work Tracker #493), so standing up never leaves
   // the character able to step only away from it.
   const sitOn = (chairId: string, at: AvatarPoint, seatFacing: AvatarFacing, index = 0) => {
-    const seat = clearOfFences(at, fences, fenceReachFor(avatarScale(config.size)));
+    const seat = clearOfFences(at, fences, fenceReachFor(avatarScale(config.size)), true);
     stopWalk();
     arriveRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
@@ -451,6 +452,36 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     setDrink,
   });
 
+  // Raise Hand (docs/specs/008-canvas/avatar-mode.md "Raise Hand"): a press raises it, the next lowers it, and any
+  // other Behaviour lowers it before it plays. Up or down is told to the room at once unless a performance under way
+  // is already publishing (its next packet carries it).
+  const setHand = (up: boolean) => {
+    if (handUpRef.current === up) return;
+    handUpRef.current = up;
+    setHandUp(up);
+    if (posRef.current && activeRef.current && !reactionRef.current && !targetRef.current)
+      publishIdle(posRef.current);
+  };
+  const lowerHand = useEffectEvent(() => setHand(false));
+  useEffect(() => {
+    if (!handUp) return;
+    // Leaving the mode lowers it; else it comes down by itself after AVATAR_HAND_UP_MS.
+    const t = window.setTimeout(() => lowerHand(), active ? AVATAR_HAND_UP_MS : 0);
+    return () => window.clearTimeout(t);
+  }, [handUp, active]);
+  const playReaction = (kind: AvatarReactionKind) => {
+    if (kind === 'raise-hand') {
+      setHand(!handUpRef.current);
+      avatarBindings.track('Canvas', 'Used', 'AvatarAction');
+      return;
+    }
+    if (handUpRef.current) {
+      handUpRef.current = false;
+      setHandUp(false);
+    }
+    performReaction(kind);
+  };
+
   // Portals (docs/specs/009-elements/portal-element.md): drop the character at a point (the far portal's threshold),
   // without walking there. `arrivedPortalId` is remembered so standing in the exit
   // portal doesn't immediately trigger it again.
@@ -511,6 +542,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     seatedOn,
     seatClaim,
     holding: active ? (drink?.kind ?? null) : null,
+    // Whether your hand is raised (Raise Hand), for the walker and the Actions card's pressed state.
+    handUp: active && handUp,
     giveDrink,
     sitOn,
     standUp,

@@ -27,6 +27,7 @@ import {
   snapMovedWallPieces,
   type Element,
 } from '@livehuddle/document';
+import { aimWallPiece } from '@/lib/real-3d/wall-aim';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { iconDropSide, pointerDelta, type DragState } from '@/lib/canvas';
@@ -147,7 +148,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // The canvas going away mid-gesture writes nothing.
   useEffect(() => () => cancelPreview(), []);
 
-  const { beginDrag, pressArmedAction } = useBoxedDragHandlers({
+  const { beginDrag } = useBoxedDragHandlers({
     depsRef,
     setDrag,
     checkpointPendingRef,
@@ -262,7 +263,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           // A moved door lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door"), unless
           // Cmd / Ctrl places it freely. A wall piece goes back against the nearest wall (wall-pieces.md "Only on a
           // wall"), always.
-          const walled = snapMovedWallPieces(moved, drag.startBounds);
+          // In 3D it goes on the face of the wall it is aimed at (wall-pieces.md "Aimed at a wall in 3D").
+          const walled = snapMovedWallPieces(moved, drag.startBounds, aimWallPiece);
           return noSnap ? walled : snapMovedDoors(walled, drag.startBounds);
         });
         // Shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): holding Shift turns
@@ -534,6 +536,5 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     shiftDupGhostIds,
     snapGuideStore,
     beginDrag,
-    pressArmedAction,
   };
 }

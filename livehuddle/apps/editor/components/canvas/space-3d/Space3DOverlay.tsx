@@ -4,10 +4,10 @@
 // floats over a head (speech, the Receptionist's card, call bubbles, talking bars, raised hands) is drawn in a scene of
 // its own, a second stage with the same camera laid over the first, so a wall can never hide it however near it
 // stands. Inside, each one still stands about its speaker's feet under the same tilt and viewport transform, so it
-// lands exactly over the head it belongs to, moved by the same DOM writes as the world (no render per step). Flat,
-// there is no overlay and everything draws where it always has. Each one is drawn into a host of its own that is
-// moved between its place and the overlay, never unmounted, so a half-typed message, its caret and a bubble's float all
-// carry across turning the view on or off.
+// lands exactly over the head it belongs to, moved by the same DOM writes as the world (no render per step). Until the
+// overlay has mounted (its first frame), and outside the canvas, each one draws in place. Each one is drawn into a host
+// of its own that is moved between its place and the overlay, never unmounted, so a half-typed message, its caret and a
+// bubble's float all carry across the move.
 
 import {
   createContext,
@@ -32,7 +32,7 @@ const Space3DOverlayContext = createContext<Overlay>({ on: false, node: null });
 
 export const Space3DOverlayProvider = Space3DOverlayContext.Provider;
 
-/** Whether the 3D view shows (in any phase but flat). */
+/** Whether this is drawn inside the canvas's 3D view (false outside a canvas). */
 export function useInSpace3D(): boolean {
   return useContext(Space3DOverlayContext).on;
 }

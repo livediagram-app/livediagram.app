@@ -5,6 +5,8 @@
 
 import {
   FENCE_REACH,
+  fenceReachOf,
+  fenceSearchReach,
   fencesNear,
   pointSegmentDistance,
   segmentsIntersect,
@@ -55,7 +57,9 @@ export function freeFrontSpot({
     near.reduce((m, o) => Math.min(m, Math.hypot(o.x - p.x, o.y - p.y)), Infinity);
   if (room(want) >= FRONT_SPOT_GAP) return want;
   const walls =
-    fences.length === 0 ? fences : fencesNear(want, FRONT_SPOT_RANGE + FENCE_REACH, fences);
+    fences.length === 0
+      ? fences
+      : fencesNear(want, FRONT_SPOT_RANGE + fenceSearchReach(FENCE_REACH), fences);
   const open = (p: Point) =>
     walls.every(
       (f) =>
@@ -66,7 +70,7 @@ export function freeFrontSpot({
           p.y > f.solid.y &&
           p.y < f.solid.y + f.solid.height
         ) &&
-        pointSegmentDistance(p, f) >= FENCE_REACH &&
+        pointSegmentDistance(p, f) >= fenceReachOf(f, FENCE_REACH) &&
         !segmentsIntersect({ a: want, b: p }, f),
     );
   let best = want;

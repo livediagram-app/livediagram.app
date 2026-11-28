@@ -1,11 +1,14 @@
 import {
   alignmentGuides,
+  applyShapeVariant,
+  createShape,
   distributionSnap,
+  ROOM_WALL_SNAP_THRESHOLD,
+  sharesWallsByBox,
   snapRoomWalls,
   snapToAlignment,
   type AlignmentGuide,
   type DistributionGuide,
-  SHAPE_DEFAULT_SIZE,
   type Element,
 } from '@livehuddle/document';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
@@ -51,10 +54,13 @@ export function paletteDragSnapAt({
     height,
   };
   const edge = snapToAlignment(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
-  // Sharing a neighbouring room's wall line wins an axis over the box-edge snap when as near (a double wall otherwise).
-  const walls = room ? snapRoomWalls(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD) : null;
-  const wallX = !!walls?.snappedX && (!edge.snappedX || Math.abs(walls.dx) <= Math.abs(edge.dx));
-  const wallY = !!walls?.snappedY && (!edge.snappedY || Math.abs(walls.dy) <= Math.abs(edge.dy));
+  // Sharing a neighbouring room's wall line, within its wider reach, wins its axis over the box-edge snap: box edge to
+  // box edge beside a room is a double wall (office.md "Rooms line up").
+  const walls = room
+    ? snapRoomWalls(candidate, elements, NO_EXCLUDE, ROOM_WALL_SNAP_THRESHOLD)
+    : null;
+  const wallX = !!walls?.snappedX;
+  const wallY = !!walls?.snappedY;
   const snap = {
     dx: wallX ? walls.dx : edge.dx,
     dy: wallY ? walls.dy : edge.dy,
@@ -94,16 +100,26 @@ export function paletteDragSnapAt({
   return { dx, dy, guides, distGuides };
 }
 
-// Where an armed Room lands with the pointer at `at`: its default box centred there, snapped to its neighbours' edges
-// and wall lines (paletteDragSnapAt with `room`). Shared by the preview and the tap's commit.
-export function armedRoomSnap(at: { x: number; y: number }, elements: readonly Element[]) {
-  const { width, height } = SHAPE_DEFAULT_SIZE.room;
+// Where an armed Room lands with the pointer at `at`: its box at its own size (its preset's, `variant`) centred there,
+// snapped to its neighbours' edges and, when its walls are on its box, their wall lines (paletteDragSnapAt with
+// `room`). Shared by the preview and the tap's commit, so the room lands where its preview stood.
+export function armedRoomSnap(
+  at: { x: number; y: number },
+  elements: readonly Element[],
+  variant?: string,
+) {
+  const piece = applyShapeVariant(createShape('room', 0, 0), variant);
   return paletteDragSnapAt({
     canvasX: at.x,
     canvasY: at.y,
-    width,
-    height,
+    width: piece.width,
+    height: piece.height,
     elements: elements as Element[],
-    room: true,
+    room: sharesWallsByBox(piece),
   });
+}
+
+/** Whether a Room preset (`variant`) shares walls by its box: a rectangle does, a shaped one does not. */
+export function roomVariantSharesWalls(variant: string | undefined): boolean {
+  return sharesWallsByBox(applyShapeVariant(createShape('room', 0, 0), variant));
 }

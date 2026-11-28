@@ -75,8 +75,8 @@ export const RECEPTIONIST_TOPICS: readonly ReceptionistTopic[] = [
     group: 'Move',
     title: 'Getting Around',
     answer:
-      'Arrow keys or a click on the floor walk you there. Space hops. The Map shows the whole floor.',
-    target: '[data-tour-id="minimap"]',
+      'Arrow keys or a click on the floor walk you there. Space hops. Fit, in the corner, shows the whole floor.',
+    target: '[data-zoom-cluster]',
   },
   {
     id: 'floors',

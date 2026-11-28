@@ -47,7 +47,6 @@ export function CallItemCard({
   accountId,
   mayInvite,
   tabs,
-  activeTabId,
   onSent,
 }: {
   call: SpaceCall;
@@ -58,7 +57,6 @@ export function CallItemCard({
   mayInvite: boolean;
   // The Space's floors, for Wrap Up's draft and its actions (the floor on show).
   tabs: readonly Tab[];
-  activeTabId: string;
   // A summary was sent: read the call again.
   onSent: () => void;
 }) {
@@ -126,7 +124,6 @@ export function CallItemCard({
             spaceId={spaceId}
             accountId={accountId}
             tabs={tabs}
-            activeTabId={activeTabId}
             onClose={() => setOpen(null)}
             onSent={onSent}
           />

@@ -1,9 +1,9 @@
-// The social pieces (docs/specs/009-elements/social-pieces.md): the Notice Board, World Clock, Jukebox, Ping-Pong
+// The social pieces (docs/specs/009-elements/social-pieces.md): the Notice Board, Clock, Jukebox, Ping-Pong
 // Table, Arcade Machine, Fireplace, Campfire, Bench, Picnic Table, Hammock, Garden Umbrella, Fountain and Pond. Their
 // drawings are tables of parts in the furniture's vocabulary (seating.ts), drawn upright from the room's camera like
 // the rest of the office, which both renderers paint (the editor's views and svg-render-faces). The grid pieces join
-// OFFICE_ART (office.ts); the pond is drawn to its own size, as grass is. The notes a notice board holds, the zones a
-// world clock shows and a jukebox's source are element fields, bounded and checked here. The geometry the walk needs
+// OFFICE_ART (office.ts); the pond is drawn to its own size, as grass is. The notes a notice board holds, the zones the
+// old world clock kept (accepted and ignored) and a jukebox's source are element fields, bounded and checked here. The geometry the walk needs
 // (the seats, the footprints) is @livehuddle/avatar's. Pure: no React, no DOM.
 
 import type { FurnitureDrawing, FurniturePart } from './seating';
@@ -93,19 +93,18 @@ const NOTICE_BOARD_VIEW: FurnitureDrawing = {
   seats: [],
 };
 
-/** Where the world clock's dials sit on its grid: the plaque's face, inside its edge. */
-export const CLOCK_FACE = { x: 8, y: 14, w: 152, h: 52 } as const;
+/** The Clock's dial on its grid (social-pieces.md "Clock"): the face's middle and radius, inside the rim. */
+export const CLOCK_DIAL = { cx: 32, cy: 32, r: 25 } as const;
 
-// A wooden plaque hung from a nail; the dials are the live face's.
+// A classic round wall clock (kind `world-clock`): a dark wooden rim round a cream face; the marks and the hands are
+// the live face's, at the viewer's own time.
 const WORLD_CLOCK_VIEW: FurnitureDrawing = {
-  width: 168,
-  height: 72,
+  width: 64,
+  height: 64,
   parts: [
-    path('line', 'M70 12L84 3L98 12'),
-    ellipse('panel', 84, 3, 2.5, 2.5, T.brass),
-    rect('panel', 0, 10, 168, 60, 12, T.wood),
-    rect('face', 0, 62, 168, 8, 4, T.wood),
-    rect('panel', CLOCK_FACE.x, CLOCK_FACE.y, CLOCK_FACE.w, CLOCK_FACE.h - 2, 9, T.woodDeep),
+    ellipse('panel', 32, 32, 30, 30, T.woodDeep),
+    ellipse('panel', 32, 32, 27.5, 27.5, T.wood),
+    ellipse('face', CLOCK_DIAL.cx, CLOCK_DIAL.cy, CLOCK_DIAL.r, CLOCK_DIAL.r, T.dial),
   ],
   seats: [],
 };
@@ -886,14 +885,14 @@ export function mergeNoticeNotes(
   return next.length > 0 ? next : undefined;
 }
 
-/** One time zone on a world clock: an IANA zone and its label. */
+/**
+ * One time zone on the old World Clock: an IANA zone and its label. The Clock (social-pieces.md "Clock") shows each
+ * viewer's own time and reads no zones; a stored `clockZones` is still validated so old documents load, and ignored.
+ */
 export type ClockZone = { zone: string; label: string };
 export const CLOCK_ZONES_MAX = 6;
 export const CLOCK_LABEL_MAX = 24;
-/** How many dials the clock's face shows. */
-export const CLOCK_DIALS_ON_FACE = 3;
-// An IANA name's shape ("Europe/London", "America/Argentina/Buenos_Aires", "UTC", "Etc/GMT+5"); whether the browser
-// knows it is the face's question (an unknown one draws an empty dial).
+// An IANA name's shape ("Europe/London", "America/Argentina/Buenos_Aires", "UTC", "Etc/GMT+5").
 const ZONE_PATTERN = /^[A-Za-z][A-Za-z0-9_+-]{0,30}(?:\/[A-Za-z0-9_+-]{1,30}){0,2}$/;
 
 export function isClockZone(v: unknown): v is ClockZone {
@@ -906,12 +905,6 @@ export function isClockZone(v: unknown): v is ClockZone {
 
 export function isClockZones(v: unknown): v is ClockZone[] {
   return Array.isArray(v) && v.length <= CLOCK_ZONES_MAX && v.every(isClockZone);
-}
-
-/** The label a zone suggests: its city, underscores as spaces ("America/New_York" → "New York"). */
-export function zoneCityLabel(zone: string): string {
-  const city = zone.split('/').pop() ?? zone;
-  return city.replace(/_/g, ' ').slice(0, CLOCK_LABEL_MAX);
 }
 
 export const JUKEBOX_SOURCE_MAX = 500;

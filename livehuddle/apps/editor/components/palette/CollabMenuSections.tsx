@@ -19,21 +19,16 @@ import {
   DEFAULT_ROOM_DOOR,
   ROOM_DOOR_LABELS,
   ROOM_DOORS,
-  ROOM_WALLS,
-  ROOM_WALLS_LABELS,
   roomWallsOf,
   type RoomWalls,
   type RoomDoor,
   ROOM_FLOOR_COLOURS,
-  ROOM_FLOOR_LABELS,
-  ROOM_FLOORS,
   roomFloorOf,
   type RoomFloor,
 } from '@livehuddle/document';
-import { Glyph } from '@livehuddle/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { FloorTypeSwatch } from '@/components/palette/palette-style-previews';
+import { RoomFloorTiles, RoomWallsTiles } from '@/components/palette/RoomLookTiles';
 import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { FloorMenuGlyph, WallsMenuGlyph } from '@/components/palette/context-menu-icons';
 
@@ -135,22 +130,6 @@ export function RoomMenuSection({
 
 // --- A room's walls (docs/specs/009-elements/office.md "Glass walls") ---------------------------------
 
-// Solid: a filled wall; Glass: a pane you see through.
-export function WallsGlyph({ walls }: { walls: RoomWalls }) {
-  return (
-    <Glyph size={14} units={16}>
-      {walls === 'solid' ? (
-        <rect x="2" y="3" width="12" height="10" rx="1" fill="currentColor" fillOpacity={0.35} />
-      ) : (
-        <>
-          <rect x="2" y="3" width="12" height="10" rx="1" />
-          <path d="M8 3v10M5 10l2.5-4M9.5 10.5 11 8" strokeWidth={1} />
-        </>
-      )}
-    </Glyph>
-  );
-}
-
 export function RoomWallsMenuSection({
   target,
   sectionProps,
@@ -163,17 +142,9 @@ export function RoomWallsMenuSection({
   const walls = target ? roomWallsOf(target) : 'solid';
   return (
     <MenuAccordionSection title="Walls" icon={<WallsMenuGlyph />} {...sectionProps('room-walls')}>
-      <MenuTileGrid cols={2}>
-        {ROOM_WALLS.map((w) => (
-          <MenuTile
-            key={w}
-            icon={<WallsGlyph walls={w} />}
-            label={ROOM_WALLS_LABELS[w]}
-            active={walls === w}
-            onClick={() => onSetWalls(w)}
-          />
-        ))}
-      </MenuTileGrid>
+      <div className="px-2">
+        <RoomWallsTiles walls={walls} fill={target?.fillColor} onSetWalls={onSetWalls} />
+      </div>
       <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
         Glass walls let everyone see who is inside. They still block walking, and nobody outside
         hears the room.
@@ -183,6 +154,15 @@ export function RoomWallsMenuSection({
 }
 
 // --- Floor (docs/specs/009-elements/office.md "Floors") -------------------------------------------------------------
+
+// A heading inside the Floor section, over its types and over its colours.
+function SubHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="select-none text-[10px] font-medium text-slate-500 dark:text-slate-400">
+      {children}
+    </span>
+  );
+}
 
 // A floor colour's swatch on its tile.
 export function FloorColourSwatch({ hex }: { hex: string }) {
@@ -210,19 +190,18 @@ export function RoomFloorMenuSection({
   const fill = target?.fillColor?.toLowerCase();
   return (
     <MenuAccordionSection title="Floor" icon={<FloorMenuGlyph />} {...sectionProps('room-floor')}>
-      <MenuTileGrid cols={3}>
-        {ROOM_FLOORS.map((f) => (
-          <MenuTile
-            key={f}
-            icon={
-              <FloorTypeSwatch floor={f} fill={target?.fillColor ?? ROOM_FLOOR_COLOURS[0]!.hex} />
-            }
-            label={ROOM_FLOOR_LABELS[f]}
-            active={floor === f}
-            onClick={() => onSetFloor(f)}
-          />
-        ))}
-      </MenuTileGrid>
+      <div className="px-2">
+        <RoomFloorTiles
+          floor={floor}
+          fill={target?.fillColor}
+          heading={<SubHeading>Type</SubHeading>}
+          onSetFloor={onSetFloor}
+        />
+      </div>
+      {/* Lined up with the Type heading, which sits inside the carousel's own inset. */}
+      <div className="px-3 pt-1">
+        <SubHeading>Colour</SubHeading>
+      </div>
       <MenuTileGrid cols={3}>
         {ROOM_FLOOR_COLOURS.map((c) => (
           <MenuTile

@@ -37,7 +37,7 @@ describe('migrateStoredTab', () => {
     const tab: Tab = {
       id: 't',
       name: 'T',
-      elements: [{ id: 'a', type: 'sticky', x: 0, y: 0, width: 1, height: 1 }],
+      elements: [{ id: 'a', type: 'shape', shape: 'desk', x: 0, y: 0, width: 1, height: 1 }],
     };
     expect(migrateStoredTab(tab)).toBe(tab);
   });

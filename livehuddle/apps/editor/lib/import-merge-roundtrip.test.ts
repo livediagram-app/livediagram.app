@@ -15,7 +15,8 @@ describe('export -> import round trip', () => {
       elements: [
         {
           id: 'n1',
-          type: 'sticky',
+          type: 'shape',
+          shape: 'room',
           x: 0,
           y: 0,
           width: 200,
@@ -28,7 +29,7 @@ describe('export -> import round trip', () => {
 
   const plainTab = (): Tab => ({ id: 'dest', name: 'Tab 1', elements: [] });
 
-  it('lands the notes and drops the retired layer fields', () => {
+  it('lands the elements and drops the retired layer fields', () => {
     const parsed = parseImportedTab(tabToJsonText(board()));
     if (!parsed.ok) throw new Error('parse failed');
     const merged = mergeImportedTab(plainTab(), parsed.tab);

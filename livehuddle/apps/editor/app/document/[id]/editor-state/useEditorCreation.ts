@@ -1,5 +1,6 @@
 'use client';
 
+import { choosesPosterPicture } from '@/lib/poster-picture';
 import { useUnusedImageOffer } from '@/hooks/canvas/useUnusedImageOffer';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { useEffect } from 'react';
@@ -12,7 +13,6 @@ import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
 import { useElementCreation } from '../useElementCreation';
 import { useInlineIconMutators } from '../useInlineIconMutators';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
@@ -28,7 +28,6 @@ import type { EditorRoomSlice } from './useEditorRoom';
 // its own, with `view`, its part of the editor's view-model.
 export function useEditorCreation({
   fromDocument,
-  fromHistory,
   fromSelection,
   fromTools,
   fromCollaboration,
@@ -40,7 +39,6 @@ export function useEditorCreation({
   fromRoom,
 }: {
   fromDocument: EditorDocumentSlice;
-  fromHistory: EditorHistorySlice;
   fromSelection: EditorSelectionSlice;
   fromTools: EditorToolsSlice;
   fromCollaboration: EditorCollaborationSlice;
@@ -52,17 +50,9 @@ export function useEditorCreation({
   fromRoom: EditorRoomSlice;
 }) {
   const { documentId, embedMode, selfParticipant } = fromDocument;
-  const { commitTabs } = fromHistory;
-  const {
-    activeId,
-    readSelection,
-    selectionStore,
-    setEditingId,
-    setFormatSourceId,
-    setMultiSelectedIds,
-    setSelectedId,
-  } = fromSelection;
-  const { canvasTool, setCanvasTool } = fromTools;
+  const { readSelection, selectionStore, setEditingId, setMultiSelectedIds, setSelectedId } =
+    fromSelection;
+  const { setCanvasTool } = fromTools;
   const { isReadOnly, participant, sessionShareCode } = fromCollaboration;
   const { setUserPreferences, userPreferences } = fromPersistence;
   const { activeTab } = fromActiveTab;
@@ -96,6 +86,8 @@ export function useEditorCreation({
       structureBlocked,
     }),
     isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
+    // A Poster's picture is an Editor's alone (docs/specs/009-elements/poster.md "Share roles").
+    choosesPosterPicture: choosesPosterPicture(participant.can, isReadOnly || editsBlocked),
     embedMode,
     commit,
     documentId,
@@ -113,8 +105,6 @@ export function useEditorCreation({
     useShapeDrawing({
       editsBlocked,
       readSelection,
-      canvasTool,
-      setCanvasTool,
       activeTab,
       commit,
       setSelectedId,
@@ -130,28 +120,15 @@ export function useEditorCreation({
     };
   });
   // Palette element-creation handlers. See useElementCreation.
-  const {
-    addShape,
-    addSticker,
-    addLinkCard,
-    addImage,
-    addAvatar,
-    dropPaletteItem,
-    addText,
-    addSticky,
-    handleCanvasDoubleClick,
-  } = useElementCreation({
-    editsBlocked,
-    imagesBlocked: embedMode,
-    activeId,
-    activeTab,
-    commitTabs,
-    setSelectedId,
-    setEditingId,
-    addBoxedAt,
-    beginDraw,
-    styleNewElement: styleMemory.styleNewElement,
-  });
+  const { addShape, addSticker, addLinkCard, addImage, addAvatar, dropPaletteItem } =
+    useElementCreation({
+      editsBlocked,
+      imagesBlocked: embedMode,
+      activeTab,
+      addBoxedAt,
+      beginDraw,
+      styleNewElement: styleMemory.styleNewElement,
+    });
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
   // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
@@ -190,8 +167,6 @@ export function useEditorCreation({
     deleteMultiSelected,
     narrowMultiSelection,
     duplicateSelected,
-    stackSelectedFront,
-    stackSelectedBack,
   } = useElementSelectionActions({
     currentSelectionIds,
     readSelection,
@@ -201,7 +176,6 @@ export function useEditorCreation({
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,
-    setFormatSourceId,
     lockedByOther,
   });
 
@@ -215,8 +189,6 @@ export function useEditorCreation({
   });
   return {
     addShape,
-    addSticky,
-    addText,
     cancelDrawShape,
     commitDraw,
     deleteMultiSelected,
@@ -231,11 +203,9 @@ export function useEditorCreation({
       removeIconFromElement,
       addImage,
       addShape,
-      addSticky,
       addLinkCard,
       addAvatar,
       dropPaletteItem,
-      addText,
       applyImageToElement,
       beginRoomWalls,
       cancelDrawShape,
@@ -247,10 +217,6 @@ export function useEditorCreation({
       deleteElementById,
       duplicateMultiSelected,
       duplicateSelected,
-      // Z-order for the selection popover (docs/specs/006-document/layers.md "Stacking").
-      stackSelectedFront,
-      stackSelectedBack,
-      handleCanvasDoubleClick,
       imageContext,
       imagePickerOpenFor,
       narrowMultiSelection,

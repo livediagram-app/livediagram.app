@@ -11,7 +11,6 @@ import { useBoxedElementGestures } from './useBoxedElementGestures';
 type State = {
   isSelected: boolean;
   isMultiSelected: boolean;
-  isPaintMode?: boolean;
 };
 
 // Each case gets its own clock, far from the others, so the shared press
@@ -30,7 +29,6 @@ function harness(element: BoxedElement, initial: State) {
       wrapperRef: { current: null },
       isEditing: false,
       remotelyLocked: false,
-      isPaintMode: false,
       ...state,
       onBeginDrag,
       onBeginEdit,
@@ -146,12 +144,6 @@ describe.each(KINDS)('a plain press on a %s', (_name, make) => {
     expect(h.onPlainClick).not.toHaveBeenCalled();
   });
 
-  it('never settles a click while the format painter is armed', () => {
-    const h = harness(make(), { ...SOLE, isPaintMode: true });
-    h.press();
-    h.release();
-    expect(h.onPlainClick).not.toHaveBeenCalled();
-  });
 });
 
 // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table is a placeholder, so a

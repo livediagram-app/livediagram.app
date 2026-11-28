@@ -9,7 +9,7 @@ import { run } from './fixtures/run';
 import { EDIT_OPERATION_NAMES } from './vocabulary';
 
 const SAMPLES: Readonly<Record<(typeof EDIT_OPERATION_NAMES)[number], string>> = {
-  add: 'add sticky label="Fraud check" right-of:n5',
+  add: 'add desk label="Fraud check" right-of:n5',
   set: 'set n3 label="Sign in" fill=green',
   rm: 'rm n7',
   move: 'move f2 by=300,0',

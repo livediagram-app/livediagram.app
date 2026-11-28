@@ -7,7 +7,7 @@ import {
 } from '@livehuddle/document';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { buildNavGrid } from '@livehuddle/avatar/pathing';
-import { fenceReachFor, fenceSegments, shutDoorLines } from '@livehuddle/avatar/collision';
+import { fenceReachFor, fenceSegments } from '@livehuddle/avatar/collision';
 import { officeFootprints, roomInterior } from '@livehuddle/avatar/office-geometry';
 import { avatarFigureHeight } from '@livehuddle/avatar/walk';
 import { avatarScale } from '@livehuddle/avatar/config';
@@ -44,7 +44,7 @@ const shape = (id: string, kind: string, x: number, y: number, width = 60, heigh
 const pad = shape('pad-1', 'avatar-pad', 0, 0, 80, 80);
 
 function gridFor(elements: readonly Element[]) {
-  return buildNavGrid(fenceSegments(elements), fenceReachFor(1), shutDoorLines(elements));
+  return buildNavGrid(fenceSegments(elements), fenceReachFor(1));
 }
 
 describe('receptionistPad and receptionistWorld', () => {
@@ -237,14 +237,15 @@ describe('receptionistStop', () => {
       expect(receptionistStop(world, n)).toBe(world.home);
   });
 
-  it('mixes pieces with flourishes on the open floor, all within reach', () => {
+  it('mixes pieces with calm stops on the open floor, all within reach', () => {
     const world = receptionistWorld(pieces, null)!;
     const kinds = new Set<string>();
     for (let n = 0; n < 200; n += 1) {
       const stop = receptionistStop(world, n);
       kinds.add(stop.activity);
       if (stop.activity === 'flourish') {
-        expect(stop.flourish).toBeTruthy();
+        // Calm: he only looks round (receptionist.md "His stops"), no dance or jumping jacks.
+        expect(stop.flourish).toBeUndefined();
         expect(Math.hypot(stop.at.x - 40, stop.at.y - 40)).toBeLessThanOrEqual(RECEPTIONIST_RADIUS);
       }
     }

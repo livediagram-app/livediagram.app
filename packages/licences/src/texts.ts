@@ -123,6 +123,14 @@ export const TEXT_SOURCES: readonly TextSource[] = [
     sha256: '984ce1e0b8ee89d234e28b960381f240e03a07a8031f35012f9c3256f56964e2',
   },
   {
+    file: 'quaternius-modular-characters-CC0.txt',
+    sources: [
+      'https://quaternius.com/packs/ultimatemodularcharacters.html',
+      'https://quaternius.com/packs/ultimatemodularwomen.html',
+    ],
+    sha256: '66dc6f00dfdaa066a414379a294f30e2b0c31d3c7e100c2e11bd88132488885e',
+  },
+  {
     file: 'emscripten-3.1.28-LICENSE.txt',
     sources: ['https://raw.githubusercontent.com/emscripten-core/emscripten/3.1.28/LICENSE'],
     sha256: '51aea7641f81d560eb039bc97ce35e2517e2656fe8731eb49ce6a18498eb22fe',

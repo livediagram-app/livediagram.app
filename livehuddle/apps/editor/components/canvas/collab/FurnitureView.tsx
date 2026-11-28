@@ -1,7 +1,15 @@
 'use client';
 
 import { seatPillBottom, type Sitter } from '@livehuddle/avatar/chair-sitters';
-import { Fragment, useEffect, useId, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { rowLayouts, type RowLayout } from '@livehuddle/avatar/furniture-rows';
 import { turnFacing, type SeatFacing } from '@livehuddle/avatar/facing';
 import { seatPoints, type SeatedBox } from '@livehuddle/avatar/seats';
@@ -45,6 +53,7 @@ import {
   type FurniturePart,
   isSeatingShape,
   OFFICE_ART,
+  treeArt,
   OFFICE_TONES,
   MACHINE_ANSWER_AT,
   POD_DOORS,
@@ -103,7 +112,7 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   stairs: 'Stairs',
   // The social pieces (docs/specs/009-elements/social-pieces.md).
   'notice-board': 'Notice board',
-  'world-clock': 'World clock',
+  'world-clock': 'Clock',
   jukebox: 'Jukebox',
   'ping-pong-table': 'Ping-pong table',
   'arcade-machine': 'Arcade machine',
@@ -133,6 +142,9 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   'toilet-cubicle': 'Toilet cubicle',
   washbasin: 'Washbasin',
   'hand-dryer': 'Hand dryer',
+  'floor-lamp': 'Floor lamp',
+  'table-lamp': 'Table lamp',
+  'desk-lamp': 'Desk lamp',
   pillar: 'Pillar',
   column: 'Column',
   'car-park': 'Car park',
@@ -153,6 +165,7 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   'suggestion-box': 'Suggestion box',
   signpost: 'Signpost',
   'photo-wall': 'Team photo wall',
+  poster: 'Poster',
 };
 
 /** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */
@@ -209,7 +222,10 @@ function FurnitureDrawingView({
     ? longTableArt(planW, planH, facing)
     : seating
       ? FURNITURE_ART[kind]
-      : OFFICE_ART[kind as GridOfficeKind];
+      : // A Tree draws its species (office.md "Tree species").
+        kind === 'tree'
+        ? treeArt(element.variant)
+        : OFFICE_ART[kind as GridOfficeKind];
   // Seen side on, a piece that stands up shows its end (3d-view.md "Turning the camera"), never its back squeezed to
   // its depth, which read as the piece facing the wrong way and shrinking (the owner, 2026-11-18).
   const sideOn = seen && !plan && isSideFacing(facing);

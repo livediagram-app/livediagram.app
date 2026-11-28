@@ -5,7 +5,6 @@
 import { isGlassRoom, isRoomOutline, type Element } from '@livehuddle/document';
 import { pointInPolygon } from '@livehuddle/avatar/room-outline';
 import { SPACE_WALL_HEIGHT } from './space-3d-walls';
-import type { SpaceArea } from './space-3d-cutaway';
 
 /** How steep a roof is: its rise over half its span (about 35 degrees). */
 export const SPACE_ROOF_PITCH = 0.7;
@@ -58,20 +57,6 @@ export function spaceRoofs(elements: readonly Element[]): SpaceRoof[] {
     });
   }
   return out;
-}
-
-/** The roofs whose rooms meet the drawn area. */
-export function roofsInArea(
-  roofs: readonly SpaceRoof[],
-  area: Pick<SpaceArea, 'left' | 'top' | 'right' | 'bottom'>,
-): SpaceRoof[] {
-  return roofs.filter(
-    (r) =>
-      r.x + r.width >= area.left &&
-      r.x <= area.right &&
-      r.y + r.height >= area.top &&
-      r.y <= area.bottom,
-  );
 }
 
 /** The roof over `feet`, by id: the one hidden while you stand in its room. */

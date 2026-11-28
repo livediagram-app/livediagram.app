@@ -121,7 +121,7 @@ automationTarget?: (itemId: string, grant: GrantClaims) => Promise<AutomationTar
 | ------------- | ------------ | -------------------------------------------------------------------------------- |
 | liveplanner   | `plan_card`  | the room's card create (as Email to Board makes one): one op, the author's stamp |
 | liveknowledge | `kb_page`    | create_page's path (`newPageFromMarkdown`, `upsertTabAtRev`, `notePageWrite`)    |
-| livehuddle    | `space_post` | an agent changeset's element add: one sticky on the tab                          |
+| livehuddle    | `space_post` | an agent changeset's element update: one note on the tab's first Notice Board    |
 | livedocuments | `doc_tab`    | `addTemplateTab` (Add a Tab from a Template's own)                               |
 | livediagram   | `doc_tab`    | `addTemplateTab`                                                                 |
 

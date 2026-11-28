@@ -11,7 +11,7 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { haptic } from '@liveworkspace/workbench/lib/haptics';
-import { bringManyToFront, sendManyToBack, type Element, type Tab } from '@livehuddle/document';
+import type { Element, Tab } from '@livehuddle/document';
 import { useElementDuplication } from './useElementDuplication';
 import { track } from '@/lib/telemetry';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
@@ -35,7 +35,6 @@ type EditorSelectionActionsDeps = {
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
-  setFormatSourceId: (id: string | null) => void;
   // True when another participant has the element selected (concurrent-
   // selection lock, docs/specs/007-editor/editor-app.md). A marquee skips locked elements so a drag
   // box doesn't scoop up something someone else is editing.
@@ -52,7 +51,6 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,
-    setFormatSourceId,
     lockedByOther,
   } = deps;
 
@@ -126,7 +124,6 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       setMultiSelectedIds(ids);
     }
     setEditingId(null);
-    setFormatSourceId(null);
   };
 
   // Multi-select delete: removes every marquee-selected element plus any
@@ -165,21 +162,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     track('Element', 'Selected', 'Filter');
   };
 
-  // Z-order from the selection popover (docs/specs/006-document/layers.md "Stacking"), the same
-  // move as the element menu's Bring to Front / Send to Back. A multi-selection travels together,
-  // keeping its members' relative order.
-  const stackSelected = (direction: 'front' | 'back') => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      direction === 'front' ? bringManyToFront(els, ids) : sendManyToBack(els, ids),
-    );
-    track('Element', 'Changed', direction === 'front' ? 'StackFront' : 'StackBack');
-  };
-
   return {
-    stackSelectedFront: () => stackSelected('front'),
-    stackSelectedBack: () => stackSelected('back'),
     deleteSelected,
     deleteElementById,
     selectMarquee,

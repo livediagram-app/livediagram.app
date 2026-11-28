@@ -1,7 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { Minimap } from '@/editions/livediagram/components/illustrations/user-interface';
-import { Minimap as LivehuddleMinimap } from '@/editions/livehuddle/components/illustrations/user-interface';
 
 export const metadata = helpMetadata({
   title: 'Map',
@@ -40,7 +39,7 @@ export const metadata = helpMetadata({
 
 </AppNote>
 
-<AppNote app="livediagram,livehuddle">
+<AppNote app="livediagram">
   Once a canvas holds a few elements, the **Map** in the bottom-left corner keeps the whole thing
   in view. It draws a zoomed-out miniature of every element in its real colours (labels left
   out), with a coloured rectangle marking the part of the canvas you're currently looking at, so you
@@ -55,14 +54,8 @@ export const metadata = helpMetadata({
 >
   <Minimap />
 </Figure>
-<Figure
-  app="livehuddle"
-  caption="The Map mirrors the canvas; the outlined box is your current view. Tap or drag it to move there."
->
-  <LivehuddleMinimap />
-</Figure>
 
-<AppNote app="livediagram,livehuddle">
+<AppNote app="livediagram">
   **Navigating with it.**
 
 - **Tap** anywhere on the Map to re-centre the canvas on that spot.
@@ -83,12 +76,7 @@ The view box updates live as you pan and zoom by any means, so the Map doubles a
   the canvas.
 </AppNote>
 
-<AppNote app="livehuddle">
-  The elements use their real outlines (a round rug reads as round), so the overview is a faithful
-  miniature rather than a grid of blocks.
-</AppNote>
-
-<AppNote app="livediagram,livehuddle">
+<AppNote app="livediagram">
   **When it shows, and turning it off.** The Map appears once a tab has **four or more elements** to
   map, and it sits in the bottom-left corner. It's a desktop convenience, so it stays hidden on
   phones where the canvas is already edge-to-edge.
@@ -96,7 +84,7 @@ The view box updates live as you pan and zoom by any means, so the Map doubles a
 
 <AppNote app="livediagram">It steps aside in [Zen mode](/help/tools/zen-mode/).</AppNote>
 
-<AppNote app="livediagram,livehuddle">
+<AppNote app="livediagram">
   Like the other corner panels, it can be collapsed from its header or dragged to another corner (see [Panel Layout](/help/user-interface/panel-layout/)).
 
 Its settings live in [Settings](/help/user-interface/settings/), under **Panels › Map**:

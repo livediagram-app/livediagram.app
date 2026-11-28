@@ -247,13 +247,20 @@ export function petClear(p: Point, blocks: readonly Box[] | undefined): boolean 
 /**
  * Where the dog's feet are at the end of leg `n`, in canvas px, or null when it naps in its bed then. The same bed id
  * and leg give the same spot everywhere: the generator's first clear spot of PET_TRIES, or the bed when none is.
+ * `reaches`, when given, also passes over a clear spot the dog cannot walk to from its bed (walled off by pieces: the
+ * editor's pet-route.ts asks the walk's route finder), the same on every screen as the pieces are.
  */
-export function petLeg(id: string, n: number, area: PetArea): Point | null {
+export function petLeg(
+  id: string,
+  n: number,
+  area: PetArea,
+  reaches?: (spot: Point) => boolean,
+): Point | null {
   if (((n % PET_NAP_EVERY) + PET_NAP_EVERY) % PET_NAP_EVERY === PET_NAP_EVERY - 1) return null;
   const next = seeded(hashId(id) ^ Math.imul(n | 0, 0x9e3779b1));
   for (let i = 0; i < PET_TRIES; i += 1) {
     const spot = spotIn(area, next);
-    if (spot && petClear(spot, area.blocks)) return spot;
+    if (spot && petClear(spot, area.blocks) && (!reaches || reaches(spot))) return spot;
   }
   return null;
 }

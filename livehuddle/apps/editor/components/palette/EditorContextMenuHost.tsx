@@ -6,8 +6,7 @@ import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/se
 import dynamic from 'next/dynamic';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useColourPalette } from '@/hooks/ui/useColourPalette';
-import { getTheme, shapeColorPresets } from '@/lib/themes';
+import { roomNameEditable } from './RoomNameField';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -32,50 +31,13 @@ export function EditorContextMenuHost() {
     contextMenu,
     activeTab,
     isReadOnly,
-    editingId,
     closeContextMenu,
     setContextMenu,
     openLinkPicker,
-    removeIconFromElement,
     imageContext,
     removeImageFromElement,
     applyElementLink,
-    commitInlineIcon,
-    previewInlineIcon,
-    commitIconSize,
-    previewIconSize,
-    commitIconWeight,
-    previewIconWeight,
-    commitTextAlign,
-    previewTextAlign,
-    bringSelectedToFront,
-    sendSelectedToBack,
     toggleAspectLockSelected,
-    setOpacitySelected,
-    setTextColorSelected,
-    setFillColorSelected,
-    setStrokeColorSelected,
-    previewTextColor,
-    commitTextColor,
-    previewFillColor,
-    commitFillColor,
-    previewStrokeColor,
-    commitStrokeColor,
-    previewBorderStroke,
-    commitBorderStroke,
-    previewBorderStyle,
-    commitBorderStyle,
-    setShadowSelected,
-    previewShadow,
-    commitShadow,
-    previewFinish,
-    commitFinish,
-    previewRotation,
-    commitRotation,
-    commitMarker,
-    previewMarker,
-    commitMarkerSize,
-    previewMarkerSize,
     setChairFacingSelected,
     setRoomDoorSelected,
     setRoomWallsSelected,
@@ -85,7 +47,6 @@ export function EditorContextMenuHost() {
     setStageSelected,
     setPadReceptionistSelected,
     setScreenSourceSelected,
-    setClockZonesSelected,
     setJukeboxSourceSelected,
     applyElementDelta,
     can,
@@ -93,32 +54,9 @@ export function EditorContextMenuHost() {
     setPortalNameSelected,
     createLinkedPortal,
     tabs,
-    commitShapeColorPreset,
-    previewShapeColorPreset,
-    resetShapeStyleSelected,
-    clearStylePreview,
-    previewElementStyle,
-    commitElementStyle,
-    burstSelectedStyle,
-    commitElements,
-    commitSetAnimation,
-    commitIconAnimation,
-    previewSetAnimation,
-    previewIconAnimation,
-    setIconAnimationSpeedSelected,
-    setSetAnimationSpeedSelected,
-    setSetAnimationRepeatSelected,
-    setIconAnimationRepeatSelected,
-    resetColorsSelected,
-    toggleTextStyleSelected,
-    commitTextSize,
-    previewTextSize,
-    commitFont,
-    previewFont,
-    commitPadding,
-    previewPadding,
     resetAspectRatioSelected,
     setSizeSelected,
+    commitLabel,
   } = useEditorContext();
   // The selection the menu acts on, read from the store while a menu is open: a closed menu never
   // renders for a selection change (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -126,8 +64,6 @@ export function EditorContextMenuHost() {
   const { selectedId, multiSelectedIds } = useSelectionOf(
     useCallback((sel: Selection) => (menuOpen ? sel : EMPTY_SELECTION), [menuOpen]),
   );
-
-  const { swatches } = useColourPalette();
 
   // A Participant or a Viewer gets its own short menu, holding only what its role may do
   // (ReadOnlyElementMenuHost), so nothing below needs a second `isReadOnly` guard: everything past
@@ -144,6 +80,12 @@ export function EditorContextMenuHost() {
     multiSelectedIds.size > 0 ? [...multiSelectedIds] : ctxSelectedEl ? [ctxSelectedEl.id] : [];
   // An Arcade Machine's Clear High Scores (docs/specs/009-elements/social-pieces.md "Clearing"): one delta, the room's
   // like a posted score, so nobody's undo brings the table back.
+  // A Room's Name section, where this session may rename it (share-roles.md "rename ... Space elements").
+  const menuTarget =
+    contextMenu.mode === 'element'
+      ? activeTab.elements.find((e) => e.id === contextMenu.elementId)
+      : undefined;
+  const renamesRoom = !!menuTarget && roomNameEditable(can, menuTarget);
   const clearArcadeScores = (elementId: string) => {
     applyElementDelta(elementId, { kind: 'arcade-clear' });
     track('Element', 'Changed', 'Arcade-machine');
@@ -162,52 +104,18 @@ export function EditorContextMenuHost() {
       onOpenTools={() =>
         setContextMenu((cur) => (cur?.mode === 'element' ? { ...cur, tools: true } : cur))
       }
-      editingId={editingId}
       elements={activeTab.elements}
-      tabFont={activeTab.font}
       onClose={closeContextMenu}
       onLinkElement={openLinkPicker}
-      onRemoveIcon={removeIconFromElement}
       onOpenImagePicker={(id) => imageContext?.onOpenPicker?.(id)}
       onRemoveImage={removeImageFromElement}
+      onChoosePosterPicture={
+        imageContext?.posterPicker ? (id) => imageContext.onOpenPicker?.(id) : undefined
+      }
       onRemoveLink={() => applyElementLink(null)}
-      onSetIconPosition={commitInlineIcon}
-      onPreviewIconPosition={previewInlineIcon}
-      onSetIconSize={commitIconSize}
-      onPreviewIconSize={previewIconSize}
-      onSetIconWeight={commitIconWeight}
-      onPreviewIconWeight={previewIconWeight}
-      onSetTextAlign={commitTextAlign}
-      onPreviewTextAlign={previewTextAlign}
-      onBringToFront={bringSelectedToFront}
-      onSendToBack={sendSelectedToBack}
       onToggleAspectLock={toggleAspectLockSelected}
-      onSetOpacity={setOpacitySelected}
-      onSetTextColor={setTextColorSelected}
-      onSetFillColor={setFillColorSelected}
-      onSetStrokeColor={setStrokeColorSelected}
-      onPreviewTextColor={previewTextColor}
-      onCommitTextColor={commitTextColor}
-      onPreviewFillColor={previewFillColor}
-      onCommitFillColor={commitFillColor}
-      onPreviewStrokeColor={previewStrokeColor}
-      onCommitStrokeColor={commitStrokeColor}
-      onPreviewBorderStroke={previewBorderStroke}
-      onCommitBorderStroke={commitBorderStroke}
-      onPreviewBorderStyle={previewBorderStyle}
-      onCommitBorderStyle={commitBorderStyle}
-      onSetShadow={setShadowSelected}
-      onPreviewShadow={previewShadow}
-      onCommitShadow={commitShadow}
-      onPreviewFinish={previewFinish}
-      onCommitFinish={commitFinish}
-      onPreviewRotation={previewRotation}
-      onCommitRotation={commitRotation}
-      onSetMarker={commitMarker}
-      onPreviewMarker={previewMarker}
-      onSetMarkerSize={commitMarkerSize}
-      onPreviewMarkerSize={previewMarkerSize}
       onSetChairFacing={setChairFacingSelected}
+      onRenameRoom={renamesRoom ? commitLabel : undefined}
       onSetRoomDoor={setRoomDoorSelected}
       onSetRoomWalls={setRoomWallsSelected}
       onSetRoomFloor={setRoomFloorSelected}
@@ -216,7 +124,6 @@ export function EditorContextMenuHost() {
       onSetStage={setStageSelected}
       onSetPadReceptionist={setPadReceptionistSelected}
       onSetScreenSource={setScreenSourceSelected}
-      onSetClockZones={setClockZonesSelected}
       onSetJukeboxSource={setJukeboxSourceSelected}
       onClearArcadeScores={can.level === 'edit' ? clearArcadeScores : undefined}
       onSetPortalTarget={setPortalTargetSelected}
@@ -224,44 +131,8 @@ export function EditorContextMenuHost() {
       onCreateLinkedPortal={createLinkedPortal}
       tabs={tabs}
       activeTabId={activeTab.id}
-      shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
-      onApplyShapeColorPreset={commitShapeColorPreset}
-      onPreviewShapeColorPreset={previewShapeColorPreset}
-      onResetShapeStyle={resetShapeStyleSelected}
-      onPreviewStyleEnd={clearStylePreview}
-      elementStyle={{
-        preview: (map) => previewElementStyle(map),
-        end: clearStylePreview,
-        commit: (map, telemetryType) => commitElementStyle(map, telemetryType),
-        burst: burstSelectedStyle,
-        commitTab: (map, telemetryType) => {
-          commitElements(map);
-          track('Element', 'Changed', telemetryType);
-        },
-      }}
-      onSetSetAnimation={commitSetAnimation}
-      onSetIconAnimation={commitIconAnimation}
-      onPreviewSetAnimation={previewSetAnimation}
-      onPreviewIconAnimation={previewIconAnimation}
-      onAnimationPreviewEnd={clearStylePreview}
-      onSetIconAnimationSpeed={setIconAnimationSpeedSelected}
-      onSetSetAnimationSpeed={setSetAnimationSpeedSelected}
-      onSetSetAnimationRepeat={setSetAnimationRepeatSelected}
-      onSetIconAnimationRepeat={setIconAnimationRepeatSelected}
-      onResetColors={resetColorsSelected}
-      onToggleTextBold={() => toggleTextStyleSelected('textBold')}
-      onToggleTextItalic={() => toggleTextStyleSelected('textItalic')}
-      onToggleTextUnderline={() => toggleTextStyleSelected('textUnderline')}
-      onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
-      onSetTextSize={commitTextSize}
-      onPreviewTextSize={previewTextSize}
-      onSetFont={commitFont}
-      onPreviewFont={previewFont}
-      onSetPadding={commitPadding}
-      onPreviewPadding={previewPadding}
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
-      colourPalette={swatches}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))
         .filter((e): e is NonNullable<typeof e> => e != null)}

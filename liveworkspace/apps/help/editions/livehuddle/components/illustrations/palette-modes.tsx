@@ -4,10 +4,10 @@
 
 import { Scene, SelectionBox } from '@liveworkspace/help-site/art/primitives';
 import { PixelCharacter } from './pixel-character';
-import { TopRow } from './editor-chrome';
-import { Desk, MeetingTable, OfficeFloor, Plant, Room, Sticky } from './space-furniture';
+import { STRIP_W, Strip, TopRow } from './editor-chrome';
+import { Desk, MeetingTable, OfficeFloor, Plant, Room, NoticeBoard } from './space-furniture';
 import { Brush } from './canvas';
-import { MapPanel, SelectionToolbar } from './user-interface';
+import { SelectionToolbar } from './user-interface';
 
 // --- Mode scenes ------------------------------------------------------------
 
@@ -28,11 +28,12 @@ export function EditMode() {
 /** The Format Painter: the source note selected with Format Painter pressed on its selection toolbar, and its
  *  look being brushed onto another note. */
 export function FormatPainterMode() {
-  const tx = 24;
+  // Centred over the source note (x 48 to 136).
+  const tx = 13;
   return (
     <Scene w={420} h={210}>
       <SelectionToolbar x={tx} y={24} formatOn />
-      <Sticky x={48} y={110} w={88} h={70} tone="sky" label="Agenda" lines={3} />
+      <NoticeBoard x={48} y={110} w={88} h={70} tone="sky" label="Agenda" lines={3} />
       <SelectionBox x={48} y={110} w={88} h={70} />
       <path
         d="M140 136 C 190 106, 230 106, 258 130"
@@ -40,7 +41,7 @@ export function FormatPainterMode() {
         strokeWidth={1}
         strokeDasharray="3 3"
       />
-      <Sticky x={262} y={110} w={88} h={70} tone="sky" label="Notes" lines={3} />
+      <NoticeBoard x={262} y={110} w={88} h={70} tone="sky" label="Notes" lines={3} />
       <Brush x={316} y={170} />
       <path
         d={`M${tx + 6 + 3 * 30 + 12} 58 V102`}
@@ -84,7 +85,7 @@ export function AvatarMode() {
   );
 }
 
-/** Panel opacity: the Map at a lower opacity, so the rooms behind it show through. */
+/** Panel opacity: the palette strip at a lower opacity over the floor, so the rooms behind it show through. */
 export function PanelOpacity() {
   return (
     <Scene w={400} h={210}>
@@ -92,7 +93,7 @@ export function PanelOpacity() {
         <OfficeFloor x={0} y={0} />
       </g>
       <g opacity={0.6}>
-        <MapPanel x={14} y={110} />
+        <Strip x={(400 - STRIP_W) / 2} y={44} />
       </g>
     </Scene>
   );

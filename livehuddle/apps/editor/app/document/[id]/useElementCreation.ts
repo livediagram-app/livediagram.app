@@ -1,8 +1,7 @@
-import { type Dispatch, type SetStateAction } from 'react';
+import { snapFenceToGrass } from '@/lib/space-3d/fence-snap';
 import {
   applyShapeVariant,
   createShape,
-  createText,
   type BoxedElement,
   type Element,
   type SelectionMode,
@@ -10,15 +9,12 @@ import {
   type Tab,
   isWallPiece,
   snapDoorToWall,
-  snapToWallFace,
 } from '@livehuddle/document';
+import { snapAimedWallPiece } from '@/lib/real-3d/wall-aim';
 import { withPlacingFacing } from '@/lib/placing-facing';
-import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
-
-type SetState<T> = Dispatch<SetStateAction<T>>;
 
 // Palette element-creation handlers, lifted out of editor-page.tsx. Nearly
 // every element arms the combined add gesture (beginDraw, from
@@ -30,11 +26,7 @@ export function useElementCreation(opts: {
   // Whether image placement is unavailable (embed chrome — see
   // useEditorImages for why uploads stay off there). Gates addImage only.
   imagesBlocked: boolean;
-  activeId: string;
   activeTab: Tab;
-  commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
-  setSelectedId: SetState<string | null>;
-  setEditingId: SetState<string | null>;
   addBoxedAt: <T extends BoxedElement>(
     canvasX: number,
     canvasY: number,
@@ -50,18 +42,7 @@ export function useElementCreation(opts: {
   // drop.
   styleNewElement: <T extends Element>(el: T) => T;
 }) {
-  const {
-    editsBlocked,
-    imagesBlocked,
-    activeId,
-    activeTab,
-    commitTabs,
-    setSelectedId,
-    setEditingId,
-    addBoxedAt,
-    beginDraw,
-    styleNewElement,
-  } = opts;
+  const { editsBlocked, imagesBlocked, activeTab, addBoxedAt, beginDraw, styleNewElement } = opts;
 
   // Telemetry for these arming handlers fires on commit (see
   // useShapeDrawing.commitDraw), once the tap / drag actually lands the
@@ -121,39 +102,17 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'component', kind: 'avatar' });
   };
 
-  const addText = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'text' });
-  };
-  const addSticky = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'sticky' });
-  };
-
   // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the
   // drop point. Shapes / devices use createShape; a sticker carries `stickerId`
   // (docs/specs/010-palette/stickers.md). No icon arrives: livehuddle offers none to drag.
   const dropPaletteItem = (
-    kind: ShapeKind | 'sticky',
+    kind: ShapeKind,
     canvasX: number,
     canvasY: number,
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => {
     if (editsBlocked) return;
     const stickerId = art?.stickerId;
-    if (kind === 'sticky') {
-      // A dragged sticky lands exactly like a tapped one (the drop point is
-      // the only difference), so it goes through the same builder. placeBoxed re-centres and leaves sticky
-      // colours alone.
-      addBoxedAt(
-        canvasX,
-        canvasY,
-        (x, y) => buildDrawnBoxed({ type: 'sticky' }, x, y, x, y, null, activeTab),
-        { edit: true },
-      );
-      track('Element', 'Added', 'Sticky');
-      return;
-    }
     if (stickerId) {
       // A dragged sticker lands at its flavour's natural size, square to the
       // canvas, exactly like a tapped one — the drop point is the only
@@ -198,35 +157,16 @@ export function useElementCreation(opts: {
           // "Window").
           // A wall piece lands against the nearest wall (wall-pieces.md "Only on a wall").
           const mounted: Element =
-            styled.type === 'shape' ? snapToWallFace(styled, activeTab.elements) : styled;
+            styled.type === 'shape' ? snapAimedWallPiece(styled, activeTab.elements) : styled;
+          // A fence on a lawn's edge fences the whole side (fence.md "Placed on a lawn's edge").
           const placed = isWallPiece(mounted)
             ? snapDoorToWall(mounted, activeTab.elements)
-            : mounted;
+            : snapFenceToGrass(mounted, activeTab.elements);
           return placed as typeof el;
         },
       },
     );
     track('Element', 'Added', titleCaseType(kind));
-  };
-
-  const handleCanvasDoubleClick = (x: number, y: number) => {
-    // Same creation gate as every other add path (addShape, addSticker, ...):
-    // a loading tab or a view-only session silently no-ops.
-    if (editsBlocked) return;
-    const TEXT_W = 160;
-    const TEXT_H = 48;
-    const el = createText(x - TEXT_W / 2, y - TEXT_H / 2);
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId ? { ...t, elements: [...t.elements, el], templateChosen: true } : t,
-      ),
-    );
-    setSelectedId(el.id);
-    setEditingId(el.id);
-    // Double-clicking empty canvas is a first-class "make a Text element"
-    // path, same as the quick-connect "add text" action — count it so it
-    // isn't invisible to the Element/Added dashboard (docs/specs/017-telemetry/telemetry.md).
-    track('Element', 'Added', 'Text');
   };
 
   return {
@@ -236,8 +176,5 @@ export function useElementCreation(opts: {
     addImage,
     addAvatar,
     dropPaletteItem,
-    addText,
-    addSticky,
-    handleCanvasDoubleClick,
   };
 }

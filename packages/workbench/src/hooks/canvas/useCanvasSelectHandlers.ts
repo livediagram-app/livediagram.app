@@ -9,7 +9,7 @@ import { debugLog } from '../../lib/debug-log';
 // closure and defeat the memo.
 export function useCanvasSelectHandlers({
   inertIds,
-  isPaintMode,
+  isPaintMode = false,
   readSelection,
   onSelect,
   onDeselect,
@@ -20,8 +20,9 @@ export function useCanvasSelectHandlers({
   // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): right-click and
   // arrow-click route nowhere for them.
   inertIds: Set<string>;
-  // The format painter is armed: every press paints, so none settles a click.
-  isPaintMode: boolean;
+  // The format painter is armed: every press paints, so none settles a click. Omitted (false) by an editor with
+  // no painter (livehuddle).
+  isPaintMode?: boolean;
   // The selection as it is when a handler runs (docs/specs/008-canvas/blueprints/selection-store.md):
   // read from the store, so the handlers stay stable and a release reads the selection it ends.
   readSelection: () => Selection;

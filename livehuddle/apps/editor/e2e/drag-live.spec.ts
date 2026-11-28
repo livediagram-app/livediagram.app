@@ -21,7 +21,8 @@ const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const BOARD = [
   {
     id: 'a',
-    type: 'sticky',
+    type: 'shape',
+    shape: 'desk',
     x: 300,
     y: 300,
     width: 120,
@@ -30,7 +31,8 @@ const BOARD = [
   },
   {
     id: 'b',
-    type: 'sticky',
+    type: 'shape',
+    shape: 'desk',
     x: 800,
     y: 300,
     width: 120,
@@ -161,7 +163,8 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
 // collaborator's layer carries it ("A very large move rides as one layer").
 const MANY = Array.from({ length: 250 }, (_, i) => ({
   id: `m${i}`,
-  type: 'sticky',
+  type: 'shape',
+  shape: 'desk',
   x: 200 + (i % 25) * 140,
   y: 200 + Math.floor(i / 25) * 100,
   width: 100,

@@ -4,7 +4,12 @@ import { rugDrawnToSize, rugParts, type ShapeElement } from '@livehuddle/documen
 import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
 import { FenceView } from '@/components/canvas/collab/FenceView';
 import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
-import { GardenFenceView, GardenPathView, GrassView } from '@/components/canvas/collab/GardenViews';
+import {
+  GardenFenceView,
+  GardenPathView,
+  GrassView,
+  RoadView,
+} from '@/components/canvas/collab/GardenViews';
 import { CorridorView, DoorView } from '@/components/canvas/collab/RoomBuilderViews';
 import { WindowView } from '@/components/canvas/collab/WindowView';
 import { PondView } from '@/components/canvas/collab/PondView';
@@ -38,6 +43,8 @@ export function hasPieceArt(kind: string): boolean {
     kind === 'window' ||
     kind === 'stage' ||
     kind === 'garden-path' ||
+    // The Road (docs/specs/009-elements/road.md), drawn to its size.
+    kind === 'road' ||
     kind === 'grass' ||
     kind === 'garden-fence' ||
     kind === 'fence' ||
@@ -107,7 +114,7 @@ export function PieceArt({
       />
     );
     // A social piece's live face over its art (docs/specs/009-elements/social-pieces.md): the notice board's notes,
-    // the world clock's dials, the jukebox's button, the arcade's bubble.
+    // the clock's hands, the jukebox's button, the arcade's bubble.
     if (hasSocialFace(kind))
       return (
         <>
@@ -162,6 +169,8 @@ export function PieceArt({
       return (
         <GardenPathView element={element} stroke={stroke} floor={fill} animClass={animClass} />
       );
+    case 'road':
+      return <RoadView element={element} stroke={stroke} floor={fill} animClass={animClass} />;
     case 'pond':
       return <PondView element={element} stroke={stroke} floor={fill} animClass={animClass} />;
     case 'swimming-pool':

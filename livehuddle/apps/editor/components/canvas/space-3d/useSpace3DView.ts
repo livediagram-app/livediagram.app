@@ -1,35 +1,52 @@
 'use client';
 
-// The 3D view's state (docs/specs/008-canvas/3d-view.md; blueprint: 3d-view.md "Behaviour and state"): wanted while
-// you walk with it turned on, moved through its phases so the tilt animates in and out, Shift+3 while walking, and the
-// tilt a walking press is traced back through. Composed into the canvas, which draws the stage and the walls from it.
+// The 3D view's state (docs/specs/008-canvas/3d-view.md; blueprint: 3d-view.md "Behaviour and state"): the Space is
+// always 3D, `[` and `]` turn the camera, and the tilt a walking press is traced back through. Composed into the
+// canvas, which draws the stage and the walls from it.
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { isInMenuSurface } from '@liveworkspace/ui';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
-import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { walkInputBlocked } from '@livehuddle/avatar/walk-guard';
+import { setSpace3DTiltNow } from '@/lib/space-3d/space-3d-preference';
+import { space3DTurnKey } from '@/lib/space-3d/space-3d-key';
 import {
-  setSpace3DTiltNow,
-  space3DOverview,
-  space3DPreference,
-  toggleSpace3D,
-} from '@/lib/space-3d/space-3d-preference';
-import { nextSpace3DPhase, type Space3DPhase } from '@/lib/space-3d/space-3d-phase';
-import { isSpace3DKey, space3DTurnKey } from '@/lib/space-3d/space-3d-key';
-import {
-  resetSpace3DTurn,
+  setSpace3DTilt,
+  space3DTilt,
+  setSpace3DTurn,
   space3DShowing,
   space3DTurn,
   turnQuarter,
   turnSpace3D,
 } from '@/lib/space-3d/space-3d-turn';
-import { SPACE_3D_TILT_DEG, SPACE_3D_TILT_MS } from '@/lib/space-3d/space-3d-camera';
+import { attachRightTurn } from '@/lib/space-3d/right-turn-drag';
+import { track } from '@/lib/telemetry';
+import { SPACE_3D_TILT_DEG, SPACE_3D_TILT_RANGE } from '@/lib/space-3d/space-3d-camera';
 import { loadSpace3DWalls } from '@/lib/editor-deferred-code';
+
+/** How often a right-drag's turn reaches the app's state (the stage itself follows every move). */
+const TURN_SYNC_MS = 150;
+let liveTurn: number | null = null;
+let liveTilt: number | null = null;
+let synced = 0;
+
+/** The turn and tilt reach the app's state a few times a second while a right-drag moves the stage directly. */
+function sync(): void {
+  const now = performance.now();
+  if (now - synced <= TURN_SYNC_MS) return;
+  synced = now;
+  if (liveTurn !== null) setSpace3DTurn(liveTurn);
+  if (liveTilt !== null) setSpace3DTilt(liveTilt);
+}
 
 /** The camera's quarter turns now (3d-view.md "Turning the camera"). */
 export function useSpace3DTurn(): number {
   return useSyncExternalStore(space3DTurn.subscribe, space3DTurn.get, () => 0);
+}
+
+/** The camera's tilt now, in degrees. */
+export function useSpace3DTilt(): number {
+  return useSyncExternalStore(space3DTilt.subscribe, space3DTilt.get, space3DTilt.get);
 }
 
 /** Whether the 3D view shows now. */
@@ -37,108 +54,96 @@ export function useSpace3DShowing(): boolean {
   return useSyncExternalStore(space3DShowing.subscribe, space3DShowing.get, () => false);
 }
 
-/** The remembered choice, as it changes. */
-export function useSpace3DPreference(): boolean {
-  return useSyncExternalStore(space3DPreference.subscribe, space3DPreference.get, () => false);
-}
-
-// `turning` is the Rotate in 3D View setting (3d-view.md "Turning the camera"): off, `[` and `]` do nothing.
-export function useSpace3DView(walking: boolean, turning = false): Space3DPhase {
-  // Held flat while the arrival's overview shows the whole tab (3d-view.md "Arriving").
-  const overview = useSyncExternalStore(
-    space3DOverview.subscribe,
-    space3DOverview.get,
-    () => false,
-  );
-  const want = useSpace3DPreference() && walking && !overview;
-  const [phase, setPhase] = useState<Space3DPhase>('flat');
-  // Moving on when the wish changes is a render-time update (no effect), so the first frame already shows it.
-  // Starts unwanted, so a canvas that opens already walking with it on rises into it too.
-  const [wanted, setWanted] = useState(false);
-  if (wanted !== want) {
-    setWanted(want);
-    setPhase((p) => nextSpace3DPhase(p, want, { reducedMotion: prefersReducedMotion() }));
-  }
+/**
+ * The 3D view, always (the owner, 2026-11-27: "remove the 2d mode entirely, 3d always, same with rotation"): tilted from
+ * the first frame, with `[` and `]` turning the camera while you walk.
+ */
+export function useSpace3DView(walking: boolean): void {
   // The pieces turned on the plan read it, to stand as the camera sees them (3d-view.md "Turning the camera").
   useEffect(() => {
-    space3DShowing.set(phase !== 'flat');
-  }, [phase]);
-  useEffect(() => () => space3DShowing.set(false), []);
-  // `rising` waits two frames, so the flat start is styled before the tilt is asked for and the browser animates it;
-  // `falling` waits out the tilt before the walls unmount.
+    space3DShowing.set(true);
+    return () => space3DShowing.set(false);
+  }, []);
+  // What a walking press unprojects with: the view's tilt.
   useEffect(() => {
-    if (phase === 'rising') {
-      let second = 0;
-      const first = requestAnimationFrame(() => {
-        second = requestAnimationFrame(() =>
-          setPhase((p) => nextSpace3DPhase(p, true, { settled: true })),
-        );
-      });
-      return () => {
-        cancelAnimationFrame(first);
-        cancelAnimationFrame(second);
-      };
-    }
-    if (phase === 'falling') {
-      const timer = setTimeout(
-        () => setPhase((p) => nextSpace3DPhase(p, false, { settled: true })),
-        SPACE_3D_TILT_MS,
-      );
-      return () => clearTimeout(timer);
-    }
-    return undefined;
-  }, [phase]);
-  // What a walking press unprojects with: the tilt the view is heading to while it stands.
+    setSpace3DTiltNow(space3DTilt.get());
+    const off = space3DTilt.subscribe(() => setSpace3DTiltNow(space3DTilt.get()));
+    return () => {
+      off();
+      setSpace3DTiltNow(0);
+    };
+  }, []);
+  // The walls' code, fetched at once.
   useEffect(() => {
-    setSpace3DTiltNow(phase === 'tilted' || phase === 'rising' ? SPACE_3D_TILT_DEG : 0);
-  }, [phase]);
-  useEffect(() => () => setSpace3DTiltNow(0), []);
-  // The camera turns back as the view flattens, so the flat plan never turns, and when Rotate in 3D View goes off
-  // (3d-view.md "Turning the camera").
-  useEffect(() => {
-    if (phase === 'falling' || phase === 'flat' || !turning) resetSpace3DTurn();
-  }, [phase, turning]);
-  // The walls' code, fetched as soon as a walk will want it.
-  useEffect(() => {
-    if (want) void loadSpace3DWalls();
-  }, [want]);
-  // Shift+3 while walking (docs/specs/008-canvas/3d-view.md "Turning it on and off"), with the action keys' guards.
+    void loadSpace3DWalls();
+  }, []);
+  // A mouse's right-drag turns the camera freely, in Edit or Walk (3d-view.md "Turning the camera"). While it turns, the
+  // view follows the pointer with no ease (`data-space-turning`, space-3d.css).
+  useEffect(
+    () =>
+      attachRightTurn(window, {
+        inView: (t) =>
+          t instanceof Element &&
+          !!t.closest('[data-space-view]') &&
+          !isInMenuSurface(t) &&
+          !isTypingTarget(t),
+        get: () => liveTurn ?? space3DTurn.get(),
+        set: (q) => {
+          // The turn goes straight onto the stage each move (no render), and the rest of the app (the walls cut
+          // away, the arrows, what picks a side) catches up a few times a second and on the release.
+          liveTurn = q;
+          for (const el of document.querySelectorAll<HTMLElement>('[data-space-turn-target]'))
+            el.style.setProperty('--space-turn', `${q * 90}deg`);
+          sync();
+        },
+        getTilt: () => liveTilt ?? space3DTilt.get(),
+        setTilt: (deg) => {
+          const [lo, hi] = SPACE_3D_TILT_RANGE;
+          liveTilt = Math.min(hi, Math.max(lo, deg));
+          for (const el of document.querySelectorAll<HTMLElement>('[data-space-turn-target]'))
+            el.style.setProperty('--space-tilt', `${liveTilt}deg`);
+          setSpace3DTiltNow(liveTilt);
+          sync();
+        },
+        onStart: () => document.documentElement.setAttribute('data-space-turning', ''),
+        onEnd: () => {
+          if (liveTurn !== null) setSpace3DTurn(liveTurn);
+          if (liveTilt !== null) setSpace3DTilt(liveTilt);
+          liveTurn = null;
+          liveTilt = null;
+          document.documentElement.removeAttribute('data-space-turning');
+          track('Canvas', 'Used', 'Space3DTurn');
+        },
+      }),
+    [],
+  );
+  // `[` and `]` turn the camera (3d-view.md "Turning the camera"), with the action keys' guards.
   useEffect(() => {
     if (!walking) return;
     const onKeyDown = (e: KeyboardEvent) => {
       const turn = space3DTurnKey(e);
-      if (!isSpace3DKey(e) && turn === null) return;
+      if (turn === null) return;
       if (e.defaultPrevented || isTypingTarget(e.target) || walkInputBlocked()) return;
       if (isInMenuSurface(e.target)) return;
-      // `[` and `]` turn the camera while the view is 3D (3d-view.md "Turning the camera").
-      if (turn !== null) {
-        if (!space3DPreference.get() || !turning) return;
-        e.preventDefault();
-        turnSpace3D(turn);
-        return;
-      }
       e.preventDefault();
-      toggleSpace3D();
+      turnSpace3D(turn);
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [walking, turning]);
-  return phase;
+  }, [walking]);
 }
 
-/** The stage's style for a phase: no transform while flat, the camera's tilt as a variable otherwise. */
-export function space3DStageStyle(phase: Space3DPhase, turn = 0): React.CSSProperties | undefined {
-  if (phase === 'flat') return undefined;
-  const up = phase === 'tilted';
+/** The stage's style: the camera's tilt and turn as variables. */
+export function space3DStageStyle(turn = 0, tilt = SPACE_3D_TILT_DEG): React.CSSProperties {
   return {
-    ['--space-tilt' as string]: up ? `${SPACE_3D_TILT_DEG}deg` : '0deg',
-    ['--space-stand' as string]: up ? '-90deg' : '0deg',
+    ['--space-tilt' as string]: `${tilt}deg`,
+    ['--space-stand' as string]: '-90deg',
     // The camera's quarter turns (3d-view.md "Turning the camera"), unbounded so a turn always goes the short way.
-    ['--space-turn' as string]: `${up ? turn * 90 : 0}deg`,
+    ['--space-turn' as string]: `${turn * 90}deg`,
   };
 }
 
 /** The view's turned mark: set while the camera looks any way but up the screen (a built table then stands whole). */
-export function space3DTurned(phase: Space3DPhase, turn: number): '' | undefined {
-  return phase !== 'flat' && turnQuarter(turn) !== 0 ? '' : undefined;
+export function space3DTurned(turn: number): '' | undefined {
+  return turnQuarter(turn) !== 0 ? '' : undefined;
 }

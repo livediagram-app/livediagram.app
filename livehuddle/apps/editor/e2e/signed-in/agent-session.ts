@@ -38,7 +38,8 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
           elements: [
             {
               id: 'api',
-              type: 'sticky',
+              type: 'shape',
+              shape: 'desk',
               x: 200,
               y: 200,
               width: 180,

@@ -320,10 +320,12 @@ means `newElementId` ([Ids](#ids)).
 - **`add <kind> [id=] key=value… [<placement>]`.** `kind` is a shape kind, an element type, or `shape` (a
   square). An unknown kind is coerced as a shape kind with `shape_coerced` (EO17). `image`, `video`, `table`,
   `arrow`, `line`, `freehand`, `path` and `annotation` are `invalid_value` naming why (`NOT_ADDED`: "arrows are no
-  longer supported in livehuddle", and the like; EO15). A retired shape kind (`lane`, `boundary`, `stack`, `card`,
+  longer supported in livehuddle", and the like; EO15). Since 2026-11-27 `text` and `sticky` are `NOT_ADDED` too
+  (`NOTES_RETIRED`, `vocabulary.ts`), and `normaliseTouched` (`finalise.ts`) and `applyReplace` refuse a raw or replaced
+  element of either type (`invalid_value` / `invalid_result` on `type`; a stored one a replace keeps rides through). A retired shape kind (`lane`, `boundary`, `stack`, `card`,
   `callout`, `badge`, `step`, `pointer-note`, `timeline-rail`, `diagram-key`, the Page, a chart) is an unknown kind:
-  a square with `shape_coerced`. The element is the factory's (`createShape`, `createText`, `createSticky`,
-  `createLinkCard`) with a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28), a
+  a square with `shape_coerced`. The element is the factory's (`createShape`, `createLinkCard`; `createText` and
+  `createSticky` until 2026-11-27) with a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28), a
   shape measured at `labelFontPx` of its text size (`GraphLook.fontPx`); fields apply as `set` does; it is
   painted, placed, and appended to the element order (EO29). The JSON form may carry `element` (a whole raw
   element, as the MCP's `ops` mode sends) instead of `kind` and `fields`: it is taken as given, its geometry kept,

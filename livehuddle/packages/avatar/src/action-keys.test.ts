@@ -23,6 +23,22 @@ describe('avatarActionForKey', () => {
     expect(press('s')).toEqual({ type: 'behaviour', kind: 'spin' });
     expect(press('c')).toEqual({ type: 'behaviour', kind: 'cheer' });
     expect(press('d')).toEqual({ type: 'behaviour', kind: 'dance' });
+    expect(press('h')).toEqual({ type: 'behaviour', kind: 'raise-hand' });
+    expect(press('t')).toEqual({ type: 'behaviour', kind: 'thumbs-up' });
+    expect(press('p')).toEqual({ type: 'behaviour', kind: 'point' });
+  });
+
+  it("plays Clap on K, since C is Cheer's", () => {
+    expect(press('k')).toEqual({ type: 'behaviour', kind: 'clap' });
+  });
+
+  it('gives every Behaviour its own letter, never E or V (the ways out) or a digit', () => {
+    const keys = Object.values(AVATAR_BEHAVIOUR_KEYS);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys.filter((k) => /^[EV0-9]$/.test(k))).toEqual([]);
+    expect(Object.keys(AVATAR_BEHAVIOUR_KEYS).sort()).toEqual(
+      AVATAR_REACTIONS.map((r) => r.id).sort(),
+    );
   });
 
   it('throws each Reaction on its place in the panel, 1 to 5', () => {

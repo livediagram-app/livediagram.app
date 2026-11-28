@@ -184,9 +184,9 @@ describe('the reception bell', () => {
   });
 
   it('stands beside its front when behind is walled off, and gives up on a desk he cannot reach', () => {
-    const behind = { x: 330, y: 260 };
     const front = { x: 448, y: 368 };
-    const blocked = (to: { x: number; y: number }) => to.x === behind.x && to.y === behind.y;
+    // Every spot behind it, past its back edge or inside its box behind the counter, walled off.
+    const blocked = (to: { x: number; y: number }) => to.y < desk.y + desk.height / 2;
     const walled = { ...world, grid: null };
     const route = (to: { x: number; y: number }) => (blocked(to) ? null : [to]);
     const beside = bellDetour(walled, 1_000, null, desk, route)!;

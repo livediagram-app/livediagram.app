@@ -4,7 +4,10 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, DRINK_HOLD_MS, type Element } from '@livehuddle/document';
 import { DEFAULT_AVATAR_CONFIG } from '@livehuddle/avatar/config';
-import { FENCE_REACH } from '@livehuddle/avatar/collision';
+import { FENCE_PAD, FENCE_REACH, fenceReachOf } from '@livehuddle/avatar/collision';
+
+// A Fence holds feet off its line by the body's reach plus its own pad (collision.ts).
+const HELD = fenceReachOf({ pad: FENCE_PAD } as Parameters<typeof fenceReachOf>[0], FENCE_REACH);
 import { useAvatarWalk } from '@livehuddle/avatar/hooks/useAvatarWalk';
 
 // Leaving Avatar mode (docs/specs/008-canvas/avatar-mode.md) drops whatever the character was doing and
@@ -78,8 +81,8 @@ describe('useAvatarWalk with a fence', () => {
         vi.advanceTimersByTime(3000);
       });
       const pos = result.current.readPos()!;
-      expect(pos.y).toBeGreaterThanOrEqual(112 + FENCE_REACH);
-      expect(pos.y).toBeLessThan(112 + FENCE_REACH + 1);
+      expect(pos.y).toBeGreaterThanOrEqual(112 + HELD);
+      expect(pos.y).toBeLessThan(112 + HELD + 1);
       expect(result.current.poseStore.get().walking).toBe(false);
     } finally {
       vi.useRealTimers();
@@ -93,8 +96,8 @@ describe('useAvatarWalk with a fence', () => {
       const { result } = setup(vi.fn(), [fence]);
       const arrived = vi.fn();
       act(() => result.current.teleportTo({ x: 120, y: 200 }));
-      // A peer 6 px from the fence's line: the walk stops at the reach, 6 px short of them.
-      act(() => result.current.walkTo({ x: 120, y: 118 }, arrived));
+      // A peer 6 px inside the fence's reach: the walk stops at the reach, 6 px short of them.
+      act(() => result.current.walkTo({ x: 120, y: 112 + HELD - 6 }, arrived));
       act(() => {
         vi.advanceTimersByTime(3000);
       });

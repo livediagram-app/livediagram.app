@@ -1,6 +1,5 @@
 import { useMemo, type Ref } from 'react';
 import { isBoxed, unionBoxedBounds, unionRects, type Element } from '@livehuddle/document';
-import { isContentOffScreen } from '@liveworkspace/workbench/lib/viewport';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { turnedArea, viewArea } from '@/lib/space-3d/space-3d-cutaway';
@@ -18,14 +17,14 @@ import { turnedArea, viewArea } from '@/lib/space-3d/space-3d-cutaway';
 // store by value (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the
 // canvas"), so a pan renders its caller only when the answer flips.
 //
-// In the 3D view the camera sees far ahead and little behind, so "in view" is the floor it draws (space-3d-cutaway
-// `viewArea`), not the flat plan's rectangle: content up ahead is on screen there (the owner, 2026-11-18: "Bring it
-// back into view does nothing when I am in 3d").
+// The Space is always 3D: the camera sees far ahead and little behind, so "in view" is the floor it draws
+// (space-3d-cutaway `viewArea`), not the screen's rectangle: content up ahead is on screen there (the owner, 2026-11-18:
+// "Bring it back into view does nothing when I am in 3d"). Turned, it reaches as far every way.
 export function useOffscreenContent(
   elements: Element[],
   mainRef: Ref<HTMLElement>,
   pages?: readonly { rect: { x: number; y: number; width: number; height: number } }[],
-  space?: { tilted: boolean; turned: boolean },
+  turned = false,
 ): boolean {
   const size = useObservedSize(mainRef);
   const bbox = useMemo(() => {
@@ -33,11 +32,8 @@ export function useOffscreenContent(
     const own = boxedIds.size === 0 ? null : unionBoxedBounds(elements, boxedIds);
     return unionRects([...(own ? [own] : []), ...(pages ?? []).map((p) => p.rect)]);
   }, [elements, pages]);
-  const tilted = space?.tilted ?? false;
-  const turned = space?.turned ?? false;
   return useViewportOf((view) => {
     if (!size || !bbox) return false;
-    if (!tilted) return isContentOffScreen(size, bbox, view.offset, view.zoom);
     const ahead = viewArea(view, size);
     const area = turned ? turnedArea(ahead) : ahead;
     return (

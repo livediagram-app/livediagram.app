@@ -46,16 +46,14 @@ export const metadata = helpMetadata({
 </Figure>
 <Figure
   app="livehuddle"
-  caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, Format Painter, stacking order and Delete."
+  caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, Format Painter and Delete."
 >
   <LivehuddleContextualToolbar />
 </Figure>
 
 ## One element selected
 
-<AppNote app="livediagram,livedesign,livehuddle">
-  From left to right:
-</AppNote>
+<AppNote app="livediagram,livedesign,livehuddle">From left to right:</AppNote>
 
 <AppNote app="livedesign">
 - **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
@@ -65,6 +63,7 @@ export const metadata = helpMetadata({
 - **Lock** (or **Unlock**) and **Delete**.
 
 Which buttons show depends on the element: an image has no text to add, a design kept only [Offline](/help/privacy-and-security/offline-mode/) has no Library to save to, and a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button and, on an element with words, **Send to Plan** instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds show no comments).
+
 </AppNote>
 
 <AppNote app="livediagram">
@@ -75,27 +74,25 @@ Which buttons show depends on the element: an image has no text to add, a design
 - **Lock** (or **Unlock**) and **Delete**.
 
 Which buttons show depends on the element: an image has no text to add, a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. An element kind's own verbs, such as **Add Child** on a [mind map](/help/palette/mind-maps/) node or **Add Step** on a [flowchart](/help/palette/flowcharts/) step, and **Save to Library**, are in the row along the top of the **More** menu instead. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button, **Send to Plan** (on an element with words) and **Send to Knowledge Base** instead, and a right-click opens a [short element menu](/help/user-interface/context-menus/). The comments button is **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds and Community posts show no comments).
+
 </AppNote>
 
 <AppNote app="livedocuments">
   A single selected element has **no toolbar** floating over it, so nothing covers the page you are writing about. Everything the toolbar used to hold is in the element's menu: right-click the element (a long press on a touch screen, or **Shift+F10** with the keyboard). Its top row holds **Save to Library**, with **Delete** at the right, and its last section, **Resources**, holds **Assign Action** and **Add Comment**; duplicate with **Cmd/Ctrl+D**, lock with **Cmd/Ctrl+Shift+L**, and reorder from its **Layer** section. See [Context Menus](/help/user-interface/context-menus/).
 
 On a Participant or view-only link the same right-click opens a short menu with what that link may do, such as **Add Comment** or **Show Comments**.
+
 </AppNote>
 
 <AppNote app="livehuddle">
-- **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
-- **Add Text** (or **Edit Text** once the element has some).
-- **Rotate Left** and **Rotate Right**, on a piece of furniture that turns, such as a chair or a desk: a quarter turn each way.
+- **More** (**⋯**): opens the element's menu, the same one a right-click opens, with its size and its own settings. See [Context Menus](/help/user-interface/context-menus/).
 - **Duplicate**.
-- **Format Painter**: takes this element's style, ready to paint onto the next elements you press. See [Format Painter](/help/selection-modes/format-painter/).
-- **Bring to Front** and **Send to Back**.
-- **Send to Plan**, on an element with words: makes a card from it in one of your plans. See [Send to Plan](/help/collaboration/send-to-plan/).
 - **Delete**.
 
-Which buttons show depends on the element: an image has no text to add, and only furniture turns. An element from a feature <AppName /> no longer has keeps **Delete** alone.
+To rename a piece, double-click it and type; a Room's **Room name** is in its settings (**More**, then **Room**). To turn a piece of furniture, open **More** and pick a way in its own section (see [Turning Furniture](/help/palette/virtual-office/turning-furniture/)). An element from a feature <AppName /> no longer has keeps **Delete** alone.
 
-The toolbar is an Editor's. On a Participant or Viewer link, selecting an element shows no toolbar, except **Send to Plan** alone on an element with words, and a right-click opens a [short element menu](/help/user-interface/context-menus/#on-a-participant-or-view-only-link) instead.
+The toolbar is an Editor's. On a Participant or Viewer link, selecting an element shows no toolbar, and a right-click opens a [short element menu](/help/user-interface/context-menus/#on-a-participant-or-view-only-link) instead.
+
 </AppNote>
 
 ## Several elements selected
@@ -144,10 +141,8 @@ The toolbar is an Editor's. On a Participant or Viewer link, selecting an elemen
 <AppNote app="livehuddle">
   - **More** (**⋯**): the selection's menu, for styling everything at once. - **Filter Selection**
   (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and
-  keep, say, just the sticky notes. See
-  [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/). - **Rotate Left** and **Rotate
-  Right**, when the selection holds furniture that turns: each piece turns about its own centre. -
-  **Duplicate**. - **Export**: export just these elements. - **Delete**.
+  keep, say, just the chairs. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
+  - **Duplicate**. - **Export**: export just these elements. - **Delete**.
 </AppNote>
 
 <AppNote app="livedesign,livediagram,livehuddle">
@@ -164,13 +159,17 @@ The toolbar is an Editor's. On a Participant or Viewer link, selecting an elemen
   shapes.
 </AppNote>
 
-<Figure app="livedesign,livediagram"
+<Figure
+  app="livedesign,livediagram"
   caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export, Lock and Delete."
 >
   <MultiSelectToolbar />
 </Figure>
 
-<Figure app="livedocuments" caption="With several elements selected, a bar above them acts on all of them at once.">
+<Figure
+  app="livedocuments"
+  caption="With several elements selected, a bar above them acts on all of them at once."
+>
   <MultiSelectionBar />
 </Figure>
 <Figure

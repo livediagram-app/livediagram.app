@@ -4,6 +4,9 @@
 // over them. With no walls round them, a Garden Fence or the trees hold the edge, and the Avatar Pad waits under the
 // gate or the path, so walking in is walking up it.
 //
+// Drawn at their final size for the 3D view (virtual-office-template.md "Laid out for the 3D view"): paths wide enough
+// to walk two abreast, seats turned to the view, the fire or each other.
+//
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
 import type { Element } from '@livehuddle/document';
@@ -15,6 +18,7 @@ import {
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
+import { against, standAt } from './template-3d-place';
 
 // A garden fence or path of the given size: they are drawn to their own size, never aspect locked.
 const run = (
@@ -25,17 +29,24 @@ const run = (
   h: number,
 ): OfficePiece => ({ kind, x, y, w, h });
 
+// A path two characters wide, side by side with room to pass.
+const PATH = 112;
+const FENCE = 28;
+// A Door's width: a path up to one is no wider than its doorway.
+const DOOR_PATH = 96;
+
 // --- Garden Retreat ----------------------------------------------------------------
 
-const GARDEN_W = 1200;
-const GARDEN_H = 640;
-const FENCE = 28;
-// The gateway in the bottom fence, and the path up from it to the summer house's door.
-const GATE_FROM = 520;
-const GATE_TO = 680;
-const PATH_W = 64;
-const PATH_X = GARDEN_W / 2 - PATH_W / 2;
-const HOUSE = { x: 440, y: 40, w: 320, h: 320 };
+const GARDEN_W = 1600;
+const GARDEN_H = 1000;
+const MID = GARDEN_W / 2;
+const GATE_FROM = MID - 100;
+const GATE_TO = MID + 100;
+const HOUSE = { x: MID - 200, y: 60, w: 400, h: 400 };
+// The cross path's top, and where its two arms end: at the Bench, and at the Benches round the Campfire.
+const CROSS_Y = 640;
+const LEFT_END = 260;
+const RIGHT_END = 1220;
 
 export function buildGardenRetreat(cx: number, cy: number): Element[] {
   const width = GARDEN_W;
@@ -44,90 +55,77 @@ export function buildGardenRetreat(cx: number, cy: number): Element[] {
   const y0 = cy - height / 2;
   const open: OfficePiece[] = [
     { kind: 'grass', x: 0, y: 0, w: GARDEN_W, h: GARDEN_H },
-    // From the gate to the summer house, and either side to somewhere to sit.
-    run('garden-path', PATH_X, HOUSE.y + HOUSE.h, PATH_W, GARDEN_H - HOUSE.y - HOUSE.h),
-    run('garden-path', 200, 420, PATH_X - 200, PATH_W),
-    run('garden-path', PATH_X + PATH_W, 420, 1000 - PATH_X - PATH_W, PATH_W),
-    // The fence round the garden, open at the gate.
+    // The path from the gate up to the Summer House's door, and its two arms across the lawn.
+    // The path up is as wide as the doorway it leads to; the arms across the lawn are two abreast.
+    run(
+      'garden-path',
+      MID - DOOR_PATH / 2,
+      HOUSE.y + HOUSE.h,
+      DOOR_PATH,
+      GARDEN_H - HOUSE.y - HOUSE.h,
+    ),
+    run('garden-path', LEFT_END, CROSS_Y, MID - DOOR_PATH / 2 - LEFT_END, PATH),
+    run('garden-path', MID + DOOR_PATH / 2, CROSS_Y, RIGHT_END - MID - DOOR_PATH / 2, PATH),
     run('garden-fence', 0, 0, GARDEN_W, FENCE),
     run('garden-fence', 0, FENCE, FENCE, GARDEN_H - 2 * FENCE),
     run('garden-fence', GARDEN_W - FENCE, FENCE, FENCE, GARDEN_H - 2 * FENCE),
     run('garden-fence', 0, GARDEN_H - FENCE, GATE_FROM, FENCE),
     run('garden-fence', GATE_TO, GARDEN_H - FENCE, GARDEN_W - GATE_TO, FENCE),
-    { kind: 'tree', x: 60, y: 60 },
-    // A hammock between the first two trees: walk up and it sways (docs/specs/009-elements/piece-moments.md).
-    { kind: 'hammock', x: 200, y: 48 },
-    { kind: 'tree', x: 230, y: 150 },
-    { kind: 'tree', x: 900, y: 60 },
-    { kind: 'tree', x: 1030, y: 190 },
-    { kind: 'outdoor-plant', x: 360, y: 250 },
-    { kind: 'outdoor-plant', x: 780, y: 250 },
-    // A pond on the lawn under the trees (docs/specs/009-elements/social-pieces.md "Pond").
-    { kind: 'pond', x: 40, y: 312, w: 200, h: 100 },
-    // A bench at the end of the left path; two chairs round a campfire at the end of the right one.
-    { kind: 'bench', x: 134, y: 500 },
-    // A dog's bed on the lawn beside the bench (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog").
-    { kind: 'pet-bed', x: 292, y: 516 },
-    // The chairs an aisle apart round the fire (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
-    { kind: 'chair', x: 776, y: 500, facing: 'w' },
-    { kind: 'campfire', x: 884, y: 500 },
-    { kind: 'chair', x: 996, y: 500, facing: 'e' },
-    // A planter either side of the gate.
-    { kind: 'outdoor-plant', x: 440, y: 530 },
-    { kind: 'outdoor-plant', x: 688, y: 530 },
+    // Trees round the lawn, a Hammock slung between the first two.
+    standAt('tree', 110, 150),
+    standAt('hammock', 250, 170),
+    standAt('tree', 400, 200),
+    standAt('tree', 1250, 150),
+    standAt('tree', 1460, 320),
+    standAt('outdoor-plant', HOUSE.x - 80, 300),
+    standAt('outdoor-plant', HOUSE.x + HOUSE.w + 80, 300),
+    // The pond under the trees, the Bench at the end of the left arm looking over it, the dog's bed beside it.
+    { kind: 'pond', x: 60, y: 320, w: 280, h: 140 },
+    standAt('bench', 200, 600, 's'),
+    standAt('pet-bed', 360, 560),
+    // Two Benches facing each other across the Campfire at the end of the right arm.
+    standAt('bench', RIGHT_END + 60, CROSS_Y + PATH / 2, 'w'),
+    standAt('campfire', RIGHT_END + 170, CROSS_Y + PATH / 2),
+    standAt('bench', RIGHT_END + 280, CROSS_Y + PATH / 2, 'e'),
+    standAt('outdoor-plant', GATE_FROM - 70, GARDEN_H - 90),
+    standAt('outdoor-plant', GATE_TO + 70, GARDEN_H - 90),
   ];
+  const house = { w: HOUSE.w, h: HOUSE.h };
   const rooms: OfficeRoom[] = [
     {
       name: 'Summer House',
       ...HOUSE,
       door: 's',
-      // Windows in its side walls, onto the garden (docs/specs/009-elements/room-builder.md "Window").
       windows: [
-        { side: 'w', at: 170 },
-        { side: 'e', at: 170 },
+        { side: 'w', at: 200 },
+        { side: 'e', at: 200 },
       ],
       pieces: [
-        { kind: 'meeting-table', x: 44, y: 40 },
-        { kind: 'plant', x: 16, y: 224 },
-        { kind: 'plant', x: 248, y: 224 },
+        { kind: 'meeting-table', x: 84, y: 140 },
+        against('plant', 's', 60, house),
+        against('plant', 's', HOUSE.w - 60, house),
       ],
     },
   ];
   return spacePlan(
     x0,
     y0,
-    width,
     rooms,
-    {
-      text: 'Garden Retreat',
-      width: 320,
-      sticker: 'emoji-blossom',
-      subtitle:
-        'Step outside: walk the paths, meet round the table in the summer house, sit by the campfire, or swing in the hammock.',
-    },
-    // On the lawn beside the summer house, its door and the campfire in view.
-    arrival({
-      x: cx + 336,
-      y: cy - 4,
-      hint: 'You arrive on the Avatar Pad. Meet in the summer house, or sit by the campfire.',
-    }),
+    // On the lawn beside the Summer House, off the paths.
+    arrival({ x: x0 + HOUSE.x + HOUSE.w + 120, y: y0 + SPACE_HEAD + 550 }),
     open,
   );
 }
 
 // --- City Park ---------------------------------------------------------------------
 
-const PARK_W = 1200;
-const PARK_H = 700;
-const PARK_PATH = 64;
-const CROSS_X = PARK_W / 2 - PARK_PATH / 2;
-const CROSS_Y = 318;
-// The plaza where the paths meet: big enough for the fountain inside its ring of setts.
+const PARK_W = 1600;
+const PARK_H = 1000;
 const PARK_MID_X = PARK_W / 2;
-const PARK_MID_Y = CROSS_Y + PARK_PATH / 2;
-const PARK_PLAZA = 300;
-// How far from the plaza's middle each arm ends: where its straight sides meet the rim.
-const PLAZA_IN = Math.sqrt((PARK_PLAZA / 2) ** 2 - (PARK_PATH / 2) ** 2) - PARK_PATH / 2;
+const PARK_MID_Y = 480;
+const PARK_PLAZA = 380;
+// How far from the plaza's middle a path running into it ends: where its straight sides meet the rim.
+const PLAZA_IN = Math.sqrt((PARK_PLAZA / 2) ** 2 - (PATH / 2) ** 2) - PATH / 2;
 
 export function buildCityPark(cx: number, cy: number): Element[] {
   const width = PARK_W;
@@ -136,12 +134,23 @@ export function buildCityPark(cx: number, cy: number): Element[] {
   const y0 = cy - height / 2;
   const open: OfficePiece[] = [
     { kind: 'grass', x: 0, y: 0, w: PARK_W, h: PARK_H },
-    // Two paths meeting at a round plaza in the middle (docs/specs/009-elements/office.md "Garden Path": paths never
-    // cross), each arm ending at its rim, the plaza over their ends and a fountain in its middle.
-    run('garden-path', 0, CROSS_Y, PARK_MID_X - PLAZA_IN, PARK_PATH),
-    run('garden-path', PARK_MID_X + PLAZA_IN, CROSS_Y, PARK_W - PARK_MID_X - PLAZA_IN, PARK_PATH),
-    run('garden-path', CROSS_X, 0, PARK_PATH, PARK_MID_Y - PLAZA_IN),
-    run('garden-path', CROSS_X, PARK_MID_Y + PLAZA_IN, PARK_PATH, PARK_H - PARK_MID_Y - PLAZA_IN),
+    // Two paths crossing the park, meeting at the round plaza.
+    run('garden-path', 0, PARK_MID_Y - PATH / 2, PARK_MID_X - PLAZA_IN, PATH),
+    run(
+      'garden-path',
+      PARK_MID_X + PLAZA_IN,
+      PARK_MID_Y - PATH / 2,
+      PARK_W - PARK_MID_X - PLAZA_IN,
+      PATH,
+    ),
+    run('garden-path', PARK_MID_X - PATH / 2, 0, PATH, PARK_MID_Y - PLAZA_IN),
+    run(
+      'garden-path',
+      PARK_MID_X - PATH / 2,
+      PARK_MID_Y + PLAZA_IN,
+      PATH,
+      PARK_H - PARK_MID_Y - PLAZA_IN,
+    ),
     run(
       'garden-path',
       PARK_MID_X - PARK_PLAZA / 2,
@@ -149,53 +158,30 @@ export function buildCityPark(cx: number, cy: number): Element[] {
       PARK_PLAZA,
       PARK_PLAZA,
     ),
-    { kind: 'fountain', x: PARK_MID_X - 68, y: PARK_MID_Y - 60 },
-    // The bandstand, a Stage in the open: whoever stands on it is heard across the park.
-    { kind: 'stage', x: 780, y: 420, stageCameras: true },
-    // Top left and top right: trees, and a bench facing the plaza (docs/specs/009-elements/social-pieces.md).
-    { kind: 'tree', x: 40, y: 40 },
-    // A Ping-Pong Table on the lawn beside the first tree, as a city park has
-    // (docs/specs/009-elements/social-pieces.md "Ping-Pong Table"), the bench below it moved along towards the path.
-    { kind: 'ping-pong-table', x: 184, y: 60 },
-    { kind: 'bench', x: 376, y: 200 },
-    { kind: 'tree', x: 1040, y: 40 },
-    // A hammock slung under the corner trees, clear of the cross path.
-    { kind: 'hammock', x: 1024, y: 222 },
-    { kind: 'tree', x: 900, y: 90 },
-    { kind: 'bench', x: 734, y: 200 },
-    // Bottom left: a picnic table under a tree.
-    { kind: 'picnic-table', x: 140, y: 460 },
-    { kind: 'tree', x: 420, y: 480 },
-    { kind: 'outdoor-plant', x: 40, y: 420 },
-    { kind: 'outdoor-plant', x: 40, y: 600 },
-    // Bottom right: four seats facing the bandstand.
-    ...[790, 870, 950, 1030].map((x) => ({
-      kind: 'chair' as const,
-      x,
-      y: 596,
-      facing: 's' as const,
-    })),
+    standAt('fountain', PARK_MID_X, PARK_MID_Y),
+    // Two Benches on the plaza beside the fountain, facing each other across the path.
+    standAt('bench', PARK_MID_X - 130, PARK_MID_Y - 120, 'n'),
+    standAt('bench', PARK_MID_X - 130, PARK_MID_Y + 120, 's'),
+    // The bandstand, two Benches side by side in front of it facing it.
+    { kind: 'stage', x: 1080, y: 690, stageCameras: true },
+    ...[1210, 1360].map((x) => standAt('bench', x, 925, 's')),
+    standAt('tree', 90, 120),
+    standAt('ping-pong-table', 380, 220),
+    standAt('tree', PARK_W - 90, 120),
+    // A Hammock under the corner trees.
+    standAt('hammock', PARK_W - 260, 230),
+    standAt('tree', PARK_W - 420, 150),
+    standAt('picnic-table', 300, 790),
+    standAt('tree', 470, 880),
+    standAt('outdoor-plant', 60, 640),
+    standAt('outdoor-plant', 60, 920),
   ];
   return spacePlan(
     x0,
     y0,
-    width,
     [],
-    {
-      text: 'City Park',
-      width: 240,
-      sticker: 'emoji-sun',
-      subtitle:
-        'Take the meeting outside: stroll the paths, sit on a bench, swing in a hammock, or gather round the bandstand.',
-    },
-    // On the open lawn above the fountain plaza, between the north path and the trees, off the paths and the
-    // bandstand, its line under it clear of the path stones and the bench.
-    arrival({
-      x: cx + 165,
-      y: cy - 255,
-      hintW: 260,
-      hint: 'You arrive on the Avatar Pad. A bench seats two, the picnic table six.',
-    }),
+    // On the grass beside the path up into the park from the bottom.
+    arrival({ x: cx - 170, y: y0 + SPACE_HEAD + PARK_H - 150 }),
     open,
   );
 }

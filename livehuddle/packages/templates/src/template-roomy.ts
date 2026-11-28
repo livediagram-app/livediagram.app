@@ -6,9 +6,45 @@
 // board, a Door stay on it); one out in the floor keeps its place as a share of the room. Pure: no React, no DOM.
 
 import type { Element } from '@livehuddle/document';
+import { flushToWalls } from './template-flush';
 
 /** How much bigger a template's rooms are than the plan it was drawn at. */
 export const TEMPLATE_ROOMY = 1.25;
+
+/**
+ * The templates drawn at their final size for the 3D view (templates-by-mode.md "Made for 3D"): rooms sharing walls
+ * exactly and pieces flush on their walls, so the opening-out pass leaves them as drawn. A template joins when its
+ * builder is rebuilt to pass `template3dFit`; once every one has, the pass goes.
+ */
+export const DRAWN_TO_SIZE: Set<string> = new Set<string>([
+  'training-room',
+  'arcade-lounge',
+  'games-night-den',
+  'sports-bar',
+  'family-house',
+  'city-townhouse',
+  'country-cottage',
+  'art-gallery',
+  'wellness-studio',
+  'classroom',
+  'hackathon-hall',
+  'expo-hall',
+  'music-hall',
+  'rooftop-bar',
+  'cafe',
+  'garden-retreat',
+  'city-park',
+  'beach-offsite',
+  'festival-field',
+]);
+
+/**
+ * A template's tab opened out (`roomier`), or as drawn when the template is drawn to size; then every standing wall
+ * piece flush on its wall in 3D (template-flush.ts).
+ */
+export function roomierFor(kind: string, elements: Element[], cx: number, cy: number): Element[] {
+  return flushToWalls(DRAWN_TO_SIZE.has(kind) ? elements : roomier(elements, cx, cy));
+}
 /** How close two pieces stand to move together, in canvas px. */
 const GROUP_GAP = 16;
 /** How near a wall a group stands to keep its distance from it, in canvas px. */
@@ -19,7 +55,15 @@ type Boxed = Element & Box;
 
 // The plan's structure: what grows. A Room, a Corridor and a lawn grow both ways; a Garden Path or a Fence (thin)
 // grows along its length only.
-const GROWS = new Set(['room', 'corridor', 'grass', 'garden-path', 'garden-fence', 'car-park']);
+const GROWS = new Set([
+  'room',
+  'corridor',
+  'grass',
+  'garden-path',
+  'road',
+  'garden-fence',
+  'car-park',
+]);
 // What a group can stand in, the smallest first.
 const HOLDS = new Set(['room', 'corridor', 'grass', 'car-park']);
 // What belongs to a wall on its own, never grouped with the furniture beside it.
@@ -55,8 +99,8 @@ const AGAINST_A_WALL = new Set([
   'copier',
   'printer',
 ]);
-// What follows another piece rather than its room: a Room Sign its Door, Bring Focus its stage.
-const FOLLOWS: Record<string, string> = { 'room-sign': 'door', 'focus-button': 'stage' };
+// What follows another piece rather than its room: a Room Sign its Door.
+const FOLLOWS: Record<string, string> = { 'room-sign': 'door' };
 // What stands on a counter, and a pet's bed by the fire.
 const ON_A_COUNTER = new Set(['microwave', 'kettle', 'coffee-machine', 'pet-bed']);
 // Two wall pieces in one run along a wall (a counter and a sink at one height) stay in line however far apart.
@@ -89,6 +133,22 @@ const shapeOf = (el: Element): string | null =>
   el.type === 'shape' ? (el as { shape: string }).shape : null;
 const isBoxed = (el: Element): el is Boxed =>
   typeof (el as Partial<Box>).x === 'number' && typeof (el as Partial<Box>).width === 'number';
+
+// A box Room grown by its wall lines rather than its box (office.md "Rooms line up"): each wall's centre line moves out
+// from the centre by `k`, so two rooms that shared a wall line still share it, exactly, after the plan opens out.
+function growRoom(b: Box, cx: number, cy: number, k: number): Box {
+  const out = (v: number, c: number) => c + (v - c) * k;
+  const left = out(b.x + SIDE_IN, cx);
+  const right = out(b.x + b.width - SIDE_IN, cx);
+  const back = out(b.y + BACK_FACE - SIDE_IN, cy);
+  const front = out(b.y + b.height - SIDE_IN, cy);
+  return {
+    x: left - SIDE_IN,
+    y: back - (BACK_FACE - SIDE_IN),
+    width: right - left + 2 * SIDE_IN,
+    height: front - back + BACK_FACE,
+  };
+}
 
 function grow(b: Box, cx: number, cy: number, k: number): Box {
   const thinW = b.width < THIN && b.height >= THIN;
@@ -141,7 +201,11 @@ export function roomier(
   elements.forEach((el, i) => {
     const kind = shapeOf(el);
     if (!kind || !GROWS.has(kind) || !isBoxed(el)) return;
-    const to = grow(el, cx, cy, k);
+    const boxRoom =
+      kind === 'room' &&
+      !(el as { roomOutline?: unknown[] }).roomOutline?.length &&
+      ((el as { rotation?: number }).rotation ?? 0) % 360 === 0;
+    const to = boxRoom ? growRoom(el, cx, cy, k) : grow(el, cx, cy, k);
     grown.set(i, { from: el, to });
     out[i] = { ...el, ...to };
   });
@@ -194,7 +258,7 @@ export function roomier(
   const placed: { members: number[]; room: Box | null }[] = [];
   const signs: number[] = [];
   for (const members of groups.values()) {
-    // A Room Sign by a door goes where that door goes, Bring Focus where its stage goes, below.
+    // A Room Sign by a door goes where that door goes, below.
     if (members.length === 1 && FOLLOWS[shapeOf(elements[members[0]!]!) ?? ''] !== undefined) {
       signs.push(members[0]!);
       continue;
@@ -234,8 +298,7 @@ export function roomier(
     shift(out, members, nx - box.x, ny - box.y);
     placed.push({ members, room: h?.to ?? null });
   }
-  // Each Room Sign keeps its place beside the Door nearest it (it names the room that door opens; Work Tracker 638),
-  // and Bring Focus its place by the stage.
+  // Each Room Sign keeps its place beside the Door nearest it (it names the room that door opens; Work Tracker 638).
   for (const i of signs) {
     const sign = elements[i] as Boxed;
     const leaders = loose.filter((j) => shapeOf(elements[j]!) === FOLLOWS[shapeOf(sign)!]);
@@ -298,6 +361,7 @@ const FLOOR = new Set([
   'avatar-pad',
   'stage',
   'garden-path',
+  'road',
   'grass',
   'car-park',
 ]);

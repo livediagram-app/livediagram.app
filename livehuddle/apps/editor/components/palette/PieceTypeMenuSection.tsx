@@ -17,6 +17,7 @@ const HINT: Record<string, string> = {
   rug: 'It keeps its colour and where it lies; each type has its own size.',
   corridor: 'It keeps its turn and where it stands; each shape has its own size.',
   'meeting-table': 'It keeps its facing and where it stands. A Long Table seats sixteen.',
+  screen: 'It keeps what it shows and stays on its wall; each size has its own box.',
 };
 
 export function PieceTypeMenuSection({

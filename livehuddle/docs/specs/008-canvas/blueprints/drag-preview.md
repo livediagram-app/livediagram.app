@@ -275,7 +275,7 @@ type DragPreviewOp =
 - Per drag frame: one identity pass over the elements (overlay), re-render of the changed elements
   that do not ride and of the affected arrows that do not ride, a grid query per moved box for the
   arrows it crosses, a grid query per affected arrow for the moved boxes that cut it, and one
-  `translate` write per node whose offset changed. No index, grid, label pass, Map or
+  `translate` write per node whose offset changed. No index, grid, label pass or
   selection derivation over the whole board, except the selection's `applyOverlay` (linear).
 - The large-selection board (1,770 elements), all of it moved: 0 element renders a frame (all
   ride), the arrow work at most 16 ms of CPU (`drag-affected-arrows.perf.test.ts`, 5.0 ms measured

@@ -4,7 +4,7 @@ import {
   boxToCamera,
   resetSpace3DTurn,
   screenToPlan,
-  seenFromBehind,
+  setSpace3DTurn,
   space3DTurn,
   toCamera,
   turnQuarter,
@@ -114,7 +114,7 @@ describe('the camera\'s quarter turns (docs/specs/008-canvas/3d-view.md "Turning
   });
 });
 
-describe('screenToPlan and seenFromBehind (3d-view.md "Turning the camera")', () => {
+describe('screenToPlan (3d-view.md "Turning the camera")', () => {
   it('turns a drag on the screen back onto the plan, so a pan follows the hand', () => {
     expect(screenToPlan({ x: 10, y: 0 }, 0)).toEqual({ x: 10, y: 0 });
     for (const q of [1, 2, 3]) {
@@ -124,10 +124,43 @@ describe('screenToPlan and seenFromBehind (3d-view.md "Turning the camera")', ()
       expect(back.y).toBeCloseTo(d.y);
     }
   });
+});
 
-  it('reads a level wall from the front unturned and from behind turned round', () => {
-    const w = { a: { x: 0, y: 0 }, b: { x: 100, y: 0 } };
-    expect(seenFromBehind(w, 0)).toBe(false);
-    expect(seenFromBehind(w, 2)).toBe(true);
+// 3d-view.md "Turning the camera": a right-drag leaves the camera at any angle.
+describe('a free turn', () => {
+  afterEach(() => resetSpace3DTurn());
+
+  it('turns a point by any angle, and a box by its nearest quarter', () => {
+    const p = toCamera({ x: 10, y: 0 }, 0.5);
+    expect(p.x).toBeCloseTo(10 * Math.SQRT1_2);
+    expect(p.y).toBeCloseTo(10 * Math.SQRT1_2);
+    expect(boxToCamera({ x: 0, y: 0, width: 4, height: 2 }, 0.9)).toEqual(
+      boxToCamera({ x: 0, y: 0, width: 4, height: 2 }, 1),
+    );
+    expect(turnQuarter(0.4)).toBe(0);
+    expect(turnQuarter(-0.6)).toBe(3);
+  });
+
+  it('goes on to the next quarter that way from between quarters, and steers the arrows by the nearest', () => {
+    setSpace3DTurn(0.3);
+    expect(planDir('up')).toBe(planDir('up', 0));
+    turnSpace3D(1);
+    expect(space3DTurn.get()).toBe(0);
+    setSpace3DTurn(0.3);
+    turnSpace3D(-1);
+    expect(space3DTurn.get()).toBe(1);
+  });
+});
+
+describe('space3DTilt', () => {
+  it('holds the tilt within its range and puts it back with the turn', async () => {
+    const { setSpace3DTilt, space3DTilt, resetSpace3DTurn } = await import('./space-3d-turn');
+    const { SPACE_3D_TILT_DEG, SPACE_3D_TILT_RANGE } = await import('./space-3d-camera');
+    setSpace3DTilt(5);
+    expect(space3DTilt.get()).toBe(SPACE_3D_TILT_RANGE[0]);
+    setSpace3DTilt(99);
+    expect(space3DTilt.get()).toBe(SPACE_3D_TILT_RANGE[1]);
+    resetSpace3DTurn();
+    expect(space3DTilt.get()).toBe(SPACE_3D_TILT_DEG);
   });
 });

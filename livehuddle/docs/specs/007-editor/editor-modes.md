@@ -92,7 +92,7 @@ keyed by a mode.
   id, in order. With no list it holds the category's own tiles (`tilesForCategory`).
 - **Catalogue categories** (My shapes, Icons, Stickers; in livehuddle, Stickers alone) are bodies with their own content and take no tile list.
 - **Popular** is the landing category: Sticky note and Text, then behind a divider (`DIVIDE`) Room, Meeting Table,
-  Chair, Bring Focus and Avatar Pad. No category holds an opener (the openers module went with
+  Chair and Avatar Pad. No category holds an opener (the openers module went with
   the Collaborate code in part 4).
 
 ## The tool it starts with

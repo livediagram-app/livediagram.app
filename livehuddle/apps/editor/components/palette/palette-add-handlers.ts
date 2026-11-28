@@ -7,8 +7,6 @@ import type { PaletteProps } from './palette.types';
 export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddShape',
   'onAddSticker',
-  'onAddText',
-  'onAddSticky',
   'onAddLinkCard',
   'onAddAvatar',
   'onAddImage',

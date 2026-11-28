@@ -73,7 +73,7 @@ Drag the slider down and every panel becomes translucent, so the canvas behind t
   <DocumentsPanelOpacity />
 </Figure>
 
-<Figure app="livehuddle" caption="Panel Opacity lets the floor show through the Map panel.">
+<Figure app="livehuddle" caption="Panel Opacity lets the floor show through the palette strip.">
   <HuddlePanelOpacity />
 </Figure>
 
@@ -81,7 +81,17 @@ So a translucent panel never gets in your way, each panel snaps back to fully op
 
 ## Where it applies
 
+<NotFor app="livehuddle">
+
 Panel Opacity affects every panel: the corner panels (the Map and the tool panels), the panels that open as popovers from a button, and the [palette strip](/help/palette/toolbar-layout/). Buttons are not panels, so the menu button and the buttons in the bottom-right corner stay fully opaque, and so do menus and dialogs.
+
+</NotFor>
+
+<ForApps app="livehuddle">
+
+Panel Opacity affects the [palette strip](/help/palette/toolbar-layout/) and the panels that open from it. Buttons are not panels, so the menu button and the buttons in the bottom-right corner stay fully opaque, and so do menus and dialogs.
+
+</ForApps>
 
 <AppNote app="livediagram">
   The popover panels are Layers, Collaborate, Session, Tidy Up, the Magnifier, and the Poll and Vote

@@ -24,32 +24,11 @@ import { corridorShape, corridorWalls } from './piece-variants';
 
 export { snap45, pointInPolygon, polygonArea } from '@livehuddle/avatar/room-outline';
 
-/** How near a character's feet must be to a door's opening to swing it (room-builder.md "Opening and closing"). */
-export const DOOR_REACH = 48;
-
 /**
- * Whether a character's feet are next to a door (docs/specs/009-elements/room-builder.md "Opening and closing"):
- * within DOOR_REACH of the door's opening (the line across its gap, at the wall's centre line), on either side.
+ * How near a character's feet must be to a piece to replay its moment where they stand (piece-moments.md "A press
+ * beside it"): the reach doors were once swung at.
  */
-export function isNextToDoor(feet: { x: number; y: number }, door: ShapeElement): boolean {
-  if (door.shape !== 'door') return false;
-  const { a, b } = doorLine(door);
-  const wx = b.x - a.x;
-  const wy = b.y - a.y;
-  const len2 = wx * wx + wy * wy;
-  const t =
-    len2 === 0 ? 0 : Math.max(0, Math.min(1, ((feet.x - a.x) * wx + (feet.y - a.y) * wy) / len2));
-  return Math.hypot(feet.x - (a.x + wx * t), feet.y - (a.y + wy * t)) <= DOOR_REACH;
-}
-
-/** A door with its swing turned (`doorClosed` set when shut, removed when open, so an open door stores nothing). */
-export function toggledDoor(door: ShapeElement): ShapeElement {
-  if (door.doorClosed === true) {
-    const { doorClosed: _open, ...rest } = door;
-    return rest;
-  }
-  return { ...door, doorClosed: true };
-}
+export const DOOR_REACH = 48;
 
 /** A door within this many canvas px of a wall snaps onto it. */
 export const DOOR_SNAP_REACH = 48;

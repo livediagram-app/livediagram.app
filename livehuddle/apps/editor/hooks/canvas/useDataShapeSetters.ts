@@ -9,7 +9,6 @@ import {
   type RoomFloor,
   type RoomWalls,
   GLASS_ROOM_VARIANT,
-  type ClockZone,
   retypePiece,
   retypeCorridorDoors,
   screenSourcePatch,
@@ -134,14 +133,7 @@ export function useDataShapeSetters({
       commit,
       matches: (kind) => kind === 'avatar-pad',
     })(receptionistPatch(here), 'AvatarPad');
-  // A World Clock's zones and a Jukebox's source (docs/specs/009-elements/social-pieces.md); undefined clears them.
-  const patchClocks = makeShapePatcher({
-    currentSelectionIds,
-    commit,
-    matches: (kind) => kind === 'world-clock',
-  });
-  const setClockZonesSelected = (zones: ClockZone[] | undefined) =>
-    patchClocks({ clockZones: zones }, 'World-clock');
+  // A Jukebox's source (docs/specs/009-elements/social-pieces.md); undefined clears it.
   const patchJukeboxes = makeShapePatcher({
     currentSelectionIds,
     commit,
@@ -163,7 +155,6 @@ export function useDataShapeSetters({
     setScreenSourceOf,
     setPadReceptionistSelected,
     setPadReceptionistOf,
-    setClockZonesSelected,
     setJukeboxSourceSelected,
   };
 }

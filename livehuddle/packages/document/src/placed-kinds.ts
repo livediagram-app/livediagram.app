@@ -5,6 +5,7 @@
 import { isSeatingShape } from '@livehuddle/avatar/office-geometry';
 import { isGridOfficeShape, isLongTable } from './office';
 import { isFixedSizeShape } from './selection-mode';
+import { takesTypedLabel } from './element-types';
 
 /**
  * Pieces that are PLACED, not sized (docs/specs/010-palette/palette-drag-ghost.md "Placed pieces preview
@@ -36,6 +37,16 @@ export function isPlacedShape(kind: string): boolean {
   );
 }
 
+/**
+ * Whether a newly added element opens for typing (docs/specs/009-elements/office.md "Placing selects every piece"):
+ * only one whose label is what it is for (a sticky, a text, a shape), never a placed piece. A chair, a desk, a plant
+ * or a seat is placed, not written on, so a caret there turned the next stray key into its label (a Chair called "r").
+ */
+export function opensForTypingOnPlace(el: { type: string; shape?: string }): boolean {
+  if (!takesTypedLabel(el)) return false;
+  return el.type !== 'shape' || !isPlacedShape(el.shape ?? '');
+}
+
 // The element-level answer to "can this be resized?": no for a fixed-size shape kind, a placed piece (a chair, a
 // bar stool, an Avatar Pad: it has its own size, so it shows no resize handles and keeps its size through a union
 // resize), or any shape stamped `fixedSize`. Structural param so leaf callers don't need the full Element union.
@@ -51,6 +62,8 @@ export function isFixedSizeElement(el: {
   if (isLongTable({ shape: el.shape, variant: el.variant })) return false;
   // A Screen resizes up to a wall (screen-and-room-sign.md "Any size up to a wall", Work Tracker 1427).
   if (el.shape === 'screen') return false;
+  // A Poster is any size of frame (docs/specs/009-elements/poster.md "The piece").
+  if (el.shape === 'poster') return false;
   return isPlacedShape(el.shape);
 }
 

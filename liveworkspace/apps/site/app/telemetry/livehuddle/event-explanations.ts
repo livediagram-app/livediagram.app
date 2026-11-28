@@ -1157,6 +1157,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
   'UI|Added|Slide':
     'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one.',
+  'UI|Changed|AvatarBuild':
+    "Someone changed the Avatar-mode character's build (Skinny to Large), in the avatar palette's Build menu. Never which.",
   'UI|Changed|AvatarClothing':
     "Someone changed the Avatar-mode character's clothing, in the Avatar panel.",
   'UI|Changed|AvatarGender':

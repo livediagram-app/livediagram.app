@@ -100,6 +100,7 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
       { x: seat.x, y: seat.y },
       fences,
       fenceReachFor(avatarScale(config.size)),
+      true,
     );
     if (
       Math.abs(at.x - from.x) < SEAT_FOLLOW_EPSILON &&

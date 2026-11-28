@@ -11,7 +11,7 @@ six [rooms](../009-elements/office.md#room) either side of a corridor, every doo
 
 | Row    | Room             | What is in it                                                                                                                                                                                                                                                                    |
 | ------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Top    | **Reception**    | A [Reception Desk](../009-elements/workday-pieces.md#reception-desk) (its Welcome and its bell) off the back wall, with room behind it for the Receptionist, a World Clock, a sofa to wait on, on a rug, and a plant; a coat rack and an umbrella stand by the door              |
+| Top    | **Reception**    | A [Reception Desk](../009-elements/workday-pieces.md#reception-desk) (its Welcome and its bell) off the back wall, with room behind it for the Receptionist, a Clock, a sofa to wait on, on a rug, and a plant; a coat rack and an umbrella stand by the door                    |
 | Top    | **Desks**        | Six desks in two rows, every sitter facing their screen; a bookshelf, a plant and a printer                                                                                                                                                                                      |
 | Top    | **Meeting Room** | A [meeting table](../009-elements/office.md#meeting-table) of six, a [Screen](../009-elements/screen-and-room-sign.md) over it, a plant either side; glass walls and a sliding glass door, so you see who is meeting                                                             |
 | Bottom | **Kitchen**      | A kitchenette along the back wall ([Office amenities](../009-elements/office-amenities.md)): a fridge, a counter with a microwave and a kettle, a sink and a coffee machine; a water cooler, a [Suggestion Box](../009-elements/team-pieces.md) and two chairs facing each other |
@@ -28,7 +28,7 @@ where everyone arrives in a beam of light, and a line under it saying how to wal
 Every Space's pad stands in the middle of the action, on open floor, with room above it for the character standing on
 it ([Where a Space's pad stands](../009-elements/avatar-pad.md#where-a-spaces-pad-stands)): the character's feet go on
 the pad's core ([Entering on a pad](../008-canvas/avatar-mode.md#entering-on-a-pad)), so neither the pad nor that
-figure ever overlaps furniture or a wall; a test checks the pad, the standing figure and the how-to line in every
+figure ever overlaps furniture or a wall; a test checks the pad and the standing figure in every
 Space.
 
 Before 2026-11-06 the way in was a [Selection Mode button](../009-elements/mode-button.md) labelled **Walk In** in the
@@ -43,7 +43,8 @@ Space, so the board needs an entrance, not a switch. A Space made before keeps i
 ## Spaces
 
 Nine siblings, built the same way (`template-office-parts.ts`: open-air floors such as grass and garden paths first,
-then rooms, rugs and stages, furniture after, and an **Avatar Pad** in the middle of the action with a how-to line under it). The first
+then rooms, rugs and stages, furniture after, and an **Avatar Pad** in the middle of the action). No Space holds a text or a sticky note, so none has a heading above
+its plan or a how-to line under its pad ([The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)). The first
 three (`template-builders-spaces.ts`):
 
 - **Coworking Space**: one open room of two desk clusters (four desks each pair facing across a shared bench), a coffee
@@ -52,16 +53,16 @@ three (`template-builders-spaces.ts`):
   for a call away from the floor. Since Work Tracker 1076 the floor is wider for a glass **Meeting Room** (a Meeting
   Table, a Screen, a Room Sign on its front wall by the door) above the Lockers, and a members' **Notice Board** with three notes pinned.
 - **Team Pod**: one room for a small team: a cluster of four desks, a meeting table for the stand-up, a coffee
-  machine, a plant and a bookshelf, a **World Clock** for the team's time zones, a **Phone Booth** for a call away from
-  the team and a **Timer** under the board for the stand-up (Work Tracker 1076), and beside it a **Team Board** of four stickies (This week, Blocked on, Wins,
-  Questions). Its Avatar Pad waits **in the middle of the pod**, between the desks and the table, its how-to line under
-  it (Work Tracker #601). It first stood under the pod's door, where (seen at 100% from a desk or the table, the pod's
+  machine, a plant and a bookshelf, a **Clock** on the wall, a **Phone Booth** for a call away from
+  the team and a **Timer** inside the pod, on the floor between the table and the bookshelf, for the stand-up (Work Tracker 1076; it stood outside the right wall, half hidden by it in 3D, until QA 2026-11-27); the **Team Board** of four stickies that
+  stood beside it went with the sticky notes (2026-11-27). Its Avatar Pad waits **in the middle of the pod**, between
+  the desks and the table (Work Tracker #601). It first stood under the pod's door, where (seen at 100% from a desk or the table, the pod's
   bottom edge along the canvas's bottom) it sat under the bottom-right cluster, then beside the pod under the Team
   Board (#580).
 - **All-Hands Hall**: one big room with a real [Stage](../009-elements/office.md#stage) up front (400 × 160,
   centred, with Show Cameras on; whoever speaks from it is heard by the whole hall,
-  [Meeting rooms and the stage](meeting-rooms-and-stage.md#the-stages-way-in-part-4-built)) and a [Bring Focus](bring-focus.md) button
-  for the presenter, [Stage Curtains and a Podium](../009-elements/venue-pieces.md#stage-curtains-podium) on the
+  [Meeting rooms and the stage](meeting-rooms-and-stage.md#the-stages-way-in-part-4-built),
+  [Stage Curtains and a Podium](../009-elements/venue-pieces.md#stage-curtains-podium) on the
   stage, thirty-two chairs in four rows facing the stage either side of a centre aisle, plants, a
   water cooler and a **Suggestion Box** at the back for anonymous questions (Work Tracker 1076).
 
@@ -70,8 +71,8 @@ And six more, one module a category (`template-builders-office-more.ts`, `templa
 
 - **Focus Library** (Office): one quiet room, a row of bookshelves and six study desks, two **Office Pods** along the
   back for a call for two, a reading corner (a sofa and a chair on a rug) and a water cooler.
-- **Training Room** (Events): one room with a small Stage up front (cameras on, a Podium on it) and Bring Focus beside it, four meeting
-  tables in two pairs either side of a centre aisle for group work, a **Timer** beside Bring Focus to timebox them, a
+- **Training Room** (Events): one room with a small Stage up front (cameras on, a Podium on it), four meeting
+  tables in two pairs either side of a centre aisle for group work, a **Timer** to timebox them, a
   **Suggestion Box** by the way out for feedback, a coffee machine, a water cooler and plants.
 - **Rooftop Bar** (Recreation): an open terrace (one room) with a long **Bar** of two counters and eight **Bar Stools**
   in front of it, a **Drinks Cabinet** and a **Drinks Fridge** behind, two lounges (a sofa and a chair on a rug each)
@@ -80,14 +81,14 @@ And six more, one module a category (`template-builders-office-more.ts`, `templa
   (meeting tables) on the right, a pair of chairs facing each other, and a sofa nook on a rug.
 - **Garden Retreat** (Outdoor): a lawn of **Grass** fenced by a **Garden Fence** with a gateway in the bottom, a
   **Garden Path** from the gate to a **Summer House** (a room with a meeting table) and two side paths, one to a
-  **Bench** and one to two chairs round a **Campfire**, a **Pond** under the trees, a **Hammock** between the first trees, **Trees** and Outdoor Plants round
+  **Bench** and one to two Benches round a **Campfire**, a **Pond** under the trees, a **Hammock** between the first trees, **Trees** and Outdoor Plants round
   it (the social pieces: [social-pieces.md](../009-elements/social-pieces.md)).
 - **City Park**: an open lawn crossed by two Garden Paths that meet at a round plaza with a **Fountain** in its
   middle, trees in each corner, two **Benches** facing the plaza, a **Picnic Table**, and a bandstand (a Stage) with
-  four chairs facing it, and a **Hammock** under the corner trees.
+  two Benches facing it, and a **Hammock** under the corner trees.
 
-The open-air Spaces have no walls round them: the fence and the trees hold the edge, and the Avatar Pad waits under the
-gate or the path, so walking in is walking up it.
+The open-air Spaces have no walls round them: the fence and the trees hold the edge, and the Avatar Pad waits on the
+grass beside the path in, so walking in is walking up it.
 
 ## Campus Spaces
 
@@ -98,20 +99,21 @@ Company Campus, the Startup HQ, the School Quad and the Co-working Tower); the C
 built the same way, are filed under [Venues](#venues) since Work Tracker #641.
 
 - **Company Campus**: down the left, **Desks** (two islands of four), a **Meeting Room** (a table and a Screen) and a
-  **Focus Room**; across the top, an **Auditorium** with a Stage (cameras on), a Screen, Bring Focus and sixteen chairs
+  **Focus Room**; across the top, an **Auditorium** with a Stage (cameras on), a Screen and sixteen chairs
   in two rows either side of a centre aisle; down the right, a **Bar** (a bar with four stools, a drinks cabinet and
   fridge, a jukebox, a sofa and a chair on a rug) and a **Games Room** (a ping-pong table, two arcade machines, a
   fireplace, a sofa and a chair on a rug). Between them a garden: a walk along each column's doors, a cross path
   between them and the main path from the gate to the auditorium meeting at a round fountain plaza, benches facing
   it, a picnic table, a pond, a garden umbrella, a hammock and trees; by the gate, a
-  [Car Park](../009-elements/venue-pieces.md#car-park-bike-rack) of two rows and a Bike Rack.
-- **Conference Venue**: across the top, a **Foyer Bar**, a **Main Hall** (a Stage with Stage Curtains and a Podium, two Screens, Bring Focus and twenty
+  [Car Park](../009-elements/venue-pieces.md#car-park-bike-rack) of two rows and a Bike Rack; outside the gate, a
+  [Road](../009-elements/road.md) along the site's front with the odd car going by.
+- **Conference Venue**: across the top, a **Foyer Bar**, a **Main Hall** (a Stage with Stage Curtains and a Podium, and two Screens, and twenty
   chairs in two rows either side of a centre aisle) and a speakers' **Green Room**; along the bottom, **Breakout 1** to
   **Breakout 3** (a table and a Screen each) and a **Quiet Room** of two Office Pods. Between them a courtyard: a
   promenade with a path to every door, crossing the main path at a round fountain plaza, a cafe terrace of garden
   umbrellas, two ponds, benches and trees.
 - **Startup HQ**: along the top, a **Studio** (two islands of four desks, a bookshelf, coffee and a notice board), a
-  **Town Hall** (a Stage, a Screen, Bring Focus and twelve chairs) and a **Kitchen Bar** (a bar with stools, coffee, two
+  **Town Hall** (a Stage, a Screen and twelve chairs) and a **Kitchen Bar** (a bar with stools, coffee, two
   chairs); below, a **Games Room** (a ping-pong table, two arcade machines and a jukebox). The garden in front is
   for working outside: a path along the front meeting the main path at a small round junction, a campfire circle of
   three chairs, two **Office Pods** on the lawn for calls, a pond, a hammock, trees, a garden umbrella and a Bike Rack
@@ -121,7 +123,7 @@ built the same way, are filed under [Venues](#venues) since Work Tracker #641.
 
 - **Hotel and Suites** (three floors, three tabs, [Spaces with floors](#spaces-with-floors)): the **Lobby** (marble),
   with a reception, sofas on rugs, four [Columns](../009-elements/venue-pieces.md#pillar-column) and the **Lobby Lift**, round it a **Lobby Bar** (a bar with stools, a drinks cabinet,
-  a sofa on a rug), a **Ballroom** (a Stage, a Screen, Bring Focus and twelve chairs either side of a centre aisle), a
+  a sofa on a rug), a **Ballroom** (a Stage, a Screen and twelve chairs either side of a centre aisle), a
   **Business Centre** (a table and a Screen) and a **Library Lounge** (shelves, a fireplace, a sofa on a rug); the
   **Suites** (carpet), six suites either side of a corridor, each a sofa on a rug, a desk and a plant, with the
   **Suites Lift** and a Directory at the corridor's end; the **Rooftop** (decking), a **Rooftop Bar**, a **Spa Room**
@@ -132,10 +134,10 @@ built the same way, are filed under [Venues](#venues) since Work Tracker #641.
   four, a print corner and lockers), a **Meeting Room**, a **Cafe** (a counter with stools, coffee, a fridge, two chairs)
   and the **North Lift** and **South Lift** off the open floor by the entrance, a coat rack and an umbrella stand
   inside it; **Level 2** (carpet tiles), **Phone Booths** (six Office Pods in two rows), a **Quiet Room**, two meeting
-  rooms and a **Restroom** (two cubicles, a hand dryer and two basins); **Level 3** (parquet), the **Event Floor** (a Stage, two Screens, Bring Focus
+  rooms and a **Restroom** (two cubicles, a hand dryer and two basins); **Level 3** (parquet), the **Event Floor** (a Stage, two Screens
   and twenty chairs either side of a centre aisle), a **Green Room** and a **Roof Bar**. Every floor has both lifts,
   in the same places, so riding one steps out where you expect.
-- **School Quad** (one tab, a garden): a **Lecture Hall** (a Stage, a Screen, Bring Focus and twelve chairs), two
+- **School Quad** (one tab, a garden): a **Lecture Hall** (a Stage, a Screen and twelve chairs), two
   classrooms (**Classroom A**, **Classroom B**: two rows of desks facing a Screen), a **Library** (shelves and desks)
   and a **Canteen** (a counter with stools, coffee and a table), round a grassy quad: a path round the quad to every
   door, a main path from the gate meeting the walk at a round fountain plaza, benches, trees and
@@ -165,7 +167,7 @@ What every campus shares:
   (16 px or less apart) or an aisle apart, and one behind the other share an edge or are an aisle apart. A hall's
   centre aisle is 160 px wide, the first 96 px inside every Door is clear of seats and scenery, and no seat stands on a
   path.
-- **Sizes.** The garden sites are 2100 to 2560 px wide and 1300 to 1460 px tall under the heading, rooms at the other Spaces'
+- **Sizes.** The garden sites are 2100 to 2560 px wide and 1300 to 1460 px tall under the heading band, rooms at the other Spaces'
   scale (a room 220 to 640 px deep, a hall 960 to 1120 px wide); they open walking, like every Space, so the camera
   follows the character rather than fitting the site.
 
@@ -185,14 +187,14 @@ The **Hotel and Suites** and the **Co-working Tower** are buildings, one floor p
   you in the same spot a floor away. The Hotel and Suites has one flight of Stairs on every floor too (Work Tracker
   #641), beside that floor's lift with open floor below it to step off onto. Its lifts stand in a different place on
   each floor, so its Stairs do too; with one flight a floor, a climb always lands on that floor's flight.
-- **Each floor is its own Space plan**: a heading naming the floor, closed rooms with a Door and a Room Sign each, and
+- **Each floor is its own Space plan**: closed rooms with a Door and a Room Sign each, and
   the same aisle and door rules as the other Spaces. A floor's tab is named after the floor ("Lobby", "Suites",
   "Rooftop"), and each floor has its own floor pattern.
 
 ## More Spaces
 
 - **Expo Hall** (Events, one tab, concrete): sponsor booths, twelve **Office Pods** in rows of three, round a central
-  keynote **Stage** (with Stage Curtains and a Podium) with Bring Focus and twelve chairs on the open floor, four
+  keynote **Stage** (with Stage Curtains and a Podium) and twelve chairs on the **Expo Floor**, a room of its own, four
   **Pillars** between the booths and the seats, aisles of at least 160 px between the rows; a
   **Food Court** (two counters with stools, coffee and tables), a **Speaker Lounge** and a **Meeting Room**, each closed
   with a Door and a Room Sign; the Avatar Pad in the aisle facing the stage, and a Directory by the entrance.
@@ -203,40 +205,43 @@ The **Hotel and Suites** and the **Co-working Tower** are buildings, one floor p
 
 ## Games Rooms
 
-Places to play together (Work Tracker #641), each one tab, a building of closed rooms off an open floor as the Expo
-Hall is (`template-builders-games.ts`, `campusPlan` with indoor rooms): every room has a Door, a Room Sign and 160 px
-of open floor in front of its Door, the Avatar Pad waits on the open floor among the games, and a Directory stands by
-the entrance. They are built round the playable and moving pieces: the [Arcade Machine](../009-elements/social-pieces.md#arcade-machine)
+Places to play together (Work Tracker #641), each one tab, a building of closed rooms sharing their walls round a floor
+that is a room of its own (the Arcade Floor, the Hall, the Games Floor), as the Expo Hall is
+(`template-builders-games.ts`, `campusPlan` with indoor rooms): every room has a Door, a Room Sign inside it by the
+Door and 160 px clear in front of its Door, the Avatar Pad waits on that floor among the games, and a Directory stands
+by the entrance. They are built round the playable and moving pieces: the [Arcade Machine](../009-elements/social-pieces.md#arcade-machine)
 and its Moon Mail, the [Ping-Pong Table](../009-elements/social-pieces.md#ping-pong-table)'s game, the Pool Table,
 Foosball Table and Dartboard, the [Pet Bed](../009-elements/workday-pieces.md#pet-bed-and-its-dog)'s dog, and the
 [piece moments](../009-elements/piece-moments.md) (a Vending Machine's can, a Fireplace stoked, a Plant rustled).
 
-- **Arcade Lounge** (Games Rooms, carpet): the arcade floor itself is the open floor, two banks of **Arcade Machines**
-  (each two rows of five, twenty machines in all) with a Bean Bag island (Bean Bags on a round rug) beside each, a **Prize Counter** (a Reception Desk) by the entrance; across the top a **Snack
+- **Arcade Lounge** (Games Rooms, carpet): the **Arcade Floor**, a room below the others, twenty **Arcade Machines**
+  with their backs to its side and front walls, two Bean Bag islands (Bean Bags along a round rug) on the floor, a
+  **Prize Counter** (a Reception Desk) by the entrance; across the top a **Snack
   Bar** (a bar with stools, a Vending Machine, a Drinks Fridge and coffee), a glass-walled **Party Room** (a table and a
   Screen, so you see the party from the floor) and a **Chill Lounge** (Bean Bags on a round rug, a sofa on a rug, a
-  Jukebox and a Team Photo Wall for the high scores). The Avatar Pad waits between the two Bean Bag islands. A
+  Jukebox and a Team Photo Wall for the high scores). The Avatar Pad waits in the middle of the Arcade Floor. A
   **Notice Board** by the doors has three notes pinned: tournament night, the Prize Counter's bell and the Party
   Room's sign (Work Tracker 1076).
 - **Games Night Den** (Games Rooms, wood): a cosy **Den** (a Fireplace on the back wall with a Pet Bed beside it, a
   sofa on a bordered rug facing the fire, two games tables, three Bookshelves of games and windows in its back wall), a
   **Games Room** (a Pool Table, a Foosball Table, a Dartboard on the wall and a Jukebox) and a **Kitchen** (a counter
-  run with a kettle and a microwave, a fridge and coffee; its door in its left wall, onto the hall). In the hall a Reading Nook, a coat
-  rack and an umbrella stand by the front door.
+  run with a kettle and a microwave, a fridge and coffee) side by side across the top, and below them the **Hall**, a
+  room every Door opens onto: a Reading Nook, a coat rack and an umbrella stand by the front door.
 - **Sports Bar** (Games Rooms, also in Recreation; wood): a **Bar** (two counters with eight stools, a Drinks Cabinet,
-  a Drinks Fridge, a Dartboard on the wall and two tables) and a glass-walled **Screen Lounge** (two Screens, a World Clock for the kick-offs and five
-  sofas on rugs in two rows), and on the open floor the **Games Floor**: two Ping-Pong Tables, a Pool
-  Table, a Foosball Table and a Jukebox, a Vending Machine and a Notice Board of fixtures.
+  a Drinks Fridge, a Dartboard on the wall and two tables) and a glass-walled **Screen Lounge** (two Screens, a Clock for the kick-offs and five
+  sofas on rugs in two rows), and below them the **Games Floor**, a room of its own: two Ping-Pong Tables, a Pool
+  Table, a Foosball Table, and a Jukebox, a Vending Machine and a Notice Board of fixtures on its walls.
 
 ## Homes
 
 Houses to meet in (Work Tracker #641), every one on two or three floors, one tab each, named **Downstairs** and
 **Upstairs** (and the City Townhouse's **Roof Terrace**), joined by [Stairs](../009-elements/stairs.md) standing in the
 same place on every floor, so a climb lands where you would expect a floor away (`template-builders-homes.ts`,
-`template-floors.ts`). A home is a building of closed rooms off a hall (the open floor), as the Co-working Tower is, with
+`template-floors.ts`). A home is a building of closed rooms round a hall (Downstairs a room of its own, upstairs the
+open landing), as the Co-working Tower is, with
 three differences: rooms have **no Room Sign** (a home's rooms need no sign saying whether they are free), there is **no
 Directory** (a home's few rooms are all in view from the hall), and there is **no Elevator** (the Stairs are the way up).
-Every floor has its own Avatar Pad: Downstairs in the hall, the middle of the action, with the how-to line; upstairs
+Every floor has its own Avatar Pad: Downstairs in the hall, the middle of the action; upstairs
 on the landing beside the Stairs, where someone who changes floor from the tab bar arrives. **Windows** stand in the
 outside walls, light falling in ([Window](../009-elements/room-builder.md#window)), never in a wall a room shares with
 the hall.
@@ -248,7 +253,8 @@ the hall.
   (Bean Bags on a round rug, an Arcade Machine and a Foosball Table) below them, the Stairs at the top of the hall and a
   coat rack, an umbrella stand and a doormat inside the front door. Upstairs, a **Study** (two desks, a Bookshelf and a
   Calendar Wall), a **Kids' Room** (Bean Bags, a Reading Nook, a Ping-Pong Table), a **Bathroom** (a toilet cubicle and
-  a basin) and a **Reading Room** (a Reading Nook, Bookshelves and a plant), windows in every outside wall, and a Team Photo Wall on the landing.
+  a basin) and a **Reading Room** (a Reading Nook, Bookshelves and a plant), windows in every outside wall, and a Team
+  Photo Wall of the family on the Study's front wall.
 - **City Townhouse** (Downstairs parquet, Upstairs carpet, Roof Terrace deck; three floors): Downstairs, a
   **Kitchen-Diner** across the back (a counter run, a fridge, coffee and a Long Table; three windows) and a **Front
   Room** (a sofa on a rug, a Screen, a Bookshelf and the Pet Bed). Upstairs, a glass-walled **Home Office** (two desks
@@ -271,14 +277,15 @@ category for Venues"), and the **Expo Hall** (Events) is cross-listed here. Buil
 (a Door, a Room Sign and a path or open floor at every room, a Directory at the entrance).
 
 - **Music Hall** (Venues, parquet; `template-builders-venues.ts`): a **Main Hall** (a Stage with Stage Curtains, two
-  Screens, Bring Focus, a standing floor in front of the stage and twenty chairs in two rows either side of a centre
-  aisle), a **Foyer Bar** (a bar with stools, a Drinks Cabinet, a Drinks Fridge and a Jukebox), a **Green Room** (a sofa
-  on a rug, a chair, coffee and a water cooler) and a **Cloakroom** (coat racks, Lockers and an umbrella stand), round a
-  foyer of four Columns, a **Merch Stand** (a Reception Desk and a Notice Board of the line-up) and the Directory by the
-  doors. The Avatar Pad waits on the standing floor in front of the stage, clear of the rows.
+  Screens, a standing floor in front of the stage and twenty chairs in two rows either side of a centre
+  aisle), the **Green Room** backstage (a sofa on a rug, a chair, coffee and a water cooler; its door onto the hall by
+  the stage), the **Foyer Bar** below it (a bar with stools, a Drinks Cabinet, a Drinks Fridge and a Jukebox), and along
+  the front the **Cloakroom** (coat racks, Lockers and an umbrella stand) and the **Foyer**, a room of its own: four
+  Columns, a **Merch Stand** (a Reception Desk and a Notice Board of the line-up) and the Directory by the doors. The Avatar Pad waits on the standing floor in front of the stage, clear of the rows.
 - **Festival Field** (Venues, also in Outdoor; grass; `template-builders-festival.ts`, Work Tracker #648): the open-air
   venue, a fenced field built with `campusPlan` as the Beach Offsite is. Across the top, the open-air **Main Stage** (a
-  Stage with Show Cameras on, Stage Curtains as its backdrop, a big Screen either side and Bring Focus beside it), and
+  Stage with Show Cameras on, Stage Curtains as its backdrop, and a big Screen either side, hung on the outside wall
+  of the nearest tent, as a Screen hangs on a wall), and
   in front of it the open crowd field where everyone arrives. Down the left, three **food stalls**, each a small tent
   (a closed Room with a Door and a Room Sign) with a counter (a Bar) and stools: the **Pizza Stall** (a Kitchen
   Counter), the **Taco Stall** (a Drinks Fridge) and the **Coffee Stall** (a Coffee Machine), on a lane with Picnic
@@ -292,8 +299,7 @@ category for Venues"), and the **Expo Hall** (Events) is cross-listed here. Buil
 Every Space is made for its use case with livehuddle's whole feature set built in, never generic defaults (owner,
 Work Tracker 1076). Each one has:
 
-- **An arrival**: an [Avatar Pad](../009-elements/avatar-pad.md) in the middle of the action, its how-to line naming
-  what to do first.
+- **An arrival**: an [Avatar Pad](../009-elements/avatar-pad.md) in the middle of the action.
 - **Meeting spaces with doors**: a room people meet in has walls and a Door, so it is a call of its own
   ([Rooms are calls](meeting-rooms-and-stage.md)); where people knock, a Room Sign stands beside its Door
   ([Knock](knock.md)). A sign reads the innermost room it stands in, so in a Space that is one big room (the Coworking
@@ -301,7 +307,7 @@ Work Tracker 1076). Each one has:
   Summer House, bandstand or tents.
 - **A reason to walk to every room**: a piece that does something when you reach it (a Reception Desk's bell, a Screen,
   a Jukebox, a Pet Bed's dog, a Nap Pod, a Phone Booth, a Timer, a bar), not furniture alone.
-- **Walk-up pieces with answers where they fit**: a Notice Board with notes already pinned, a World Clock, a Calendar
+- **Walk-up pieces with answers where they fit**: a Notice Board with notes already pinned, a Clock, a Calendar
   Wall, a Suggestion Box, a Hammock or a Window, so a first press on one reads something real.
 
 A Space that already met this is left as it is; the PR for Work Tracker 1076 records the audit of every Space. The
@@ -325,10 +331,10 @@ Room Sign and 160 px of open floor in front of its Door, and a Directory stands 
 
 - **Interview Suite** (Office, carpet): **Interview 1** and **Interview 2** (a Meeting Table and a Screen each, a
   call of its own, named short so the whole name fits on the Room Sign) and a **Debrief Room** (a table, a Screen, a
-  Timer and a water cooler) along the top. Below them the waiting area: a Notice Board of three notes for candidates, two sofas on rugs, a World Clock, coffee, a
+  Timer and a water cooler) along the top. Below them the waiting area: a Notice Board of three notes for candidates, two sofas on rugs, a Clock, coffee, a
   water cooler and a Phone Booth, and the **front desk** (a Reception Desk) by the entrance. The Avatar Pad waits in
   the waiting area.
-- **Client Lounge** (Office, parquet): a **Boardroom** round a Long Table with a Screen and a World Clock, a glass
+- **Client Lounge** (Office, parquet): a **Boardroom** round a Long Table with a Screen and a Clock, a glass
   **Pitch Room** (a table and a Screen, a sliding Door) and a **Quiet Room** of two Phone Booths and an Office Pod
   along the top. Below them the lounge: two sofas on rugs, a **coffee bar** (a Bar, four stools, a coffee machine and
   a drinks fridge) and the front desk by the entrance. The Avatar Pad waits in the lounge.
@@ -337,15 +343,17 @@ Room Sign and 160 px of open floor in front of its Door, and a Directory stands 
 
 Two Events Spaces for learning and making together (`template-builders-events-more.ts`), built as above.
 
-- **Classroom** (Events, carpet tiles): the **Classroom** (a Notice Board of three notes, Bring Focus, a Screen, the
+- **Classroom** (Events, carpet tiles): the **Classroom** (a Notice Board of three notes, a Screen, the
   teacher's desk and a Timer at the front, and twelve desks in two rows facing it either side of the aisle up from
-  the door) and **Breakout 1** to **Breakout 3** down the right, each a table, a Screen and a Timer. A lobby with
+  the door) and **Breakout 1** to **Breakout 3** down the right, each a table, a Screen and a Timer. Between them the
+  **Lobby**, a room every Door opens onto, with
   Lockers, a coat rack and a water cooler; the Avatar Pad waits in the lobby, before the Classroom's door.
 - **Hackathon Hall** (Events, concrete): the **Main Stage** (a Stage with Show Cameras on and a Podium, a Screen either
-  side, Bring Focus, and twelve chairs in two rows either side of a 160 px aisle), a **Mentor Room** (a table and a
+  side, and twelve chairs in two rows either side of a 160 px aisle), a **Mentor Room** (a table and a
   Screen), a **Nap Room** (two Nap Pods) and a **Snack Bar** (two bars, eight stools, a Vending Machine, a Drinks
   Fridge and a coffee machine). On the hack floor, six team tables, a Notice Board of the rules, a Timer for the
-  countdown and bean bags on a round rug. The Avatar Pad waits on the hack floor below the Snack Bar.
+  countdown and bean bags on a round rug, the **Hack Floor** a room of its own that every Door opens onto. The Avatar
+  Pad waits on the hack floor among the team tables.
 
 ### Art Gallery and Wellness Studio
 
@@ -355,12 +363,13 @@ Two Spaces unlike the rest of the set (`template-builders-gallery-wellness.ts`, 
   either side), a **Sculpture Hall** (four Columns as plinths either side of a runner, two Photo Walls, two benches)
   and a **Talk Room** (a Podium under a Screen and six chairs in two rows). Below them the foyer: the front desk, a
   Notice Board of three notes, a coat rack and an umbrella stand, and a café corner (a Bar, four stools, a coffee
-  machine, a drinks fridge and two bean bags on a round rug). The Avatar Pad waits in the foyer.
-- **Wellness Studio** (Recreation, wood): a **Yoga Studio** (a teacher's mat and four mats facing it, a Screen, a
-  Timer and Bring Focus), a **Meditation Room** (a fountain on a round rug, four bean bags round it, a plant in every
+  machine, a drinks fridge and bean bags on a round rug), the **Foyer** a room of its own. The Avatar Pad waits in the
+  foyer.
+- **Wellness Studio** (Recreation, wood): a **Yoga Studio** (a teacher's mat and four mats facing it, a Screen and a
+  Timer), a **Meditation Room** (a fountain on a round rug, four bean bags round it, a plant in every
   corner), a **Gym** (three Treadmills, Lockers and a water cooler) and a **Nap Room** (two Nap Pods and a reading
   nook). Below them the lobby: the front desk, a Notice Board of class times, a juice bar (a Bar, four stools, a
-  drinks fridge and a water cooler) and a hammock. The Avatar Pad waits in the lobby.
+  drinks fridge and a water cooler) and a hammock, the **Lobby** a room of its own. The Avatar Pad waits in the lobby.
 
 ### Document Room
 
@@ -379,54 +388,74 @@ started from a file in another app opens in ([Calls from other apps](calls-from-
 - A **Notice Board** of two notes left of the screen (how the screen works, and how to sit), a **Timer** right of it
   to timebox the discussion, a coffee machine and a water cooler either side of the rows, a plant in each front
   corner, and a window in each side wall.
-- The **Avatar Pad** waits in the aisle just behind the last row, the screen ahead. Its how-to line: "You arrive on the
-  Avatar Pad: take a seat, and press the screen to open the file large."
+- The **Avatar Pad** waits in the aisle just behind the last row, the screen ahead.
+
+## Laid out for the 3D view
+
+The owner, 2026-11-27: "Rebuild all of the templates for livehuddle to suit the 3d, items against walls, facing the
+right way etc, not too tight spaces". Every Space here is laid out by
+[templates-by-mode.md](../007-editor/templates-by-mode.md) "Made for 3D" and passes its check (`template3dFit`). What
+that means for these Spaces:
+
+- **Drawn at their final size** (`DRAWN_TO_SIZE`, `template-roomy.ts`): no `roomier` pass grows them afterwards.
+- **Wall pieces stand on a wall, facing into the room**: placed by where the model stands, its back on the wall's
+  inner face (`template-3d-place.ts` `against`), so its drawn box may reach over the back wall; a hung piece hangs on
+  the wall's face. A Screen always hangs on a wall, so the Festival Field's hang on the outside of a tent.
+- **Seats face what they belong to**: chairs into their table or desk, a sofa toward the fire or the Screen on the rug
+  in front of it (`sofaOnRug`), an audience toward the stage, stools to their bar, benches to the fire or the view.
+- **Room to walk**: aisles between seats are 120 px (two characters side by side) or seats stand side by side in one
+  row; 160 px in front of every Door is clear; outdoor paths are 112 px wide, two abreast, and a path up to a Door is
+  as wide as its doorway.
+- **Rooms that touch share one wall** (office.md "Rooms line up"), so an open floor became a room of its own (the
+  Arcade Floor, the Hall, the Games Floor, the Lobby, the Hack Floor, the Expo Floor, the Foyer). A room's Door then
+  opens onto another room, and its Room Sign hangs inside it by the Door (`withSigns`), where it reads its own room.
+- **Each Space keeps its purpose, name, rooms and key pieces**: rooms are resized and pieces moved or turned, never
+  removed from what the sections above describe.
 
 ## The catalogue plan
 
 Every category, the templates in it and the element types each one uses (Work Tracker #641). Floors are the Room and
-the Corridor, the Rug, the Stage, Grass and the Garden Path; every Space also has an Avatar Pad, a how-to line, a
-heading, a Door on every room and, outside Homes, a Room Sign by every Door.
+the Corridor, the Rug, the Stage, Grass and the Garden Path; every Space also has an Avatar Pad, a Door on every room and, outside Homes, a Room Sign by every Door.
 
-| Category    | Template                      | Tabs | Element types                                                                                                                                                                                                                                                                |
-| ----------- | ----------------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Campus      | Company Campus                | 1    | Desk, Meeting Table, Screen, Stage, Chair, Bring Focus, Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Jukebox, Sofa, Ping-Pong Table, Arcade Machine, Fireplace, garden set, Pet Bed, Window                                                                                |
-| Campus      | Startup HQ                    | 1    | Desk, Bookshelf, Coffee Machine, Notice Board, Stage, Screen, Bring Focus, Bar, Ping-Pong Table, Arcade Machine, Jukebox, Office Pod, Campfire, Hammock, Bike Rack, Pet Bed, Standing Desk, Dartboard, Window, Suggestion Box, Signpost                                      |
-| Campus      | School Quad                   | 1    | Stage, Screen, Bring Focus, Chair, Desk, Bookshelf, Bar, Bar Stool, Coffee Machine, Meeting Table, Fountain, Bench, Tree, Picnic Table, Bean Bag, Window                                                                                                                     |
-| Campus      | Co-working Tower              | 3    | Elevator, Stairs, Directory, Desk, Hot Desk, Copier, Printer, Lockers, Office Pod, Nap Pod, Restroom set, Stage, Screen, Bar, Jukebox, Vending Machine, Ping-Pong Table, Foosball Table, Dartboard, Window                                                                   |
-| Campus      | Beach Offsite (cross-listed)  | 1    | Bar, Bar Stool, Drinks Fridge, Jukebox, Screen, Bench, Campfire, Hammock, Tree, Garden Umbrella, Pond, Swimming Pool, Ping-Pong Table, Window                                                                                                                                |
-| Events      | All-Hands Hall                | 1    | Stage, Stage Curtains, Podium, Bring Focus, Chair, Plant, Water Cooler, Window, Suggestion Box                                                                                                                                                                               |
-| Events      | Training Room                 | 1    | Stage, Podium, Bring Focus, Meeting Table, Coffee Machine, Water Cooler, Plant, Window, Timer, Suggestion Box                                                                                                                                                                |
-| Events      | Classroom                     | 1    | Desk, Notice Board, Bring Focus, Screen, Timer, Meeting Table, Lockers, Coat Rack, Water Cooler, Plant, Directory, Window                                                                                                                                                    |
-| Events      | Hackathon Hall                | 1    | Stage, Podium, Screen, Bring Focus, Chair, Meeting Table, Nap Pod, Bar, Bar Stool, Vending Machine, Drinks Fridge, Coffee Machine, Notice Board, Timer, Bean Bag, Rug, Directory, Window                                                                                     |
-| Events      | Art Gallery                   | 1    | Photo Wall, Bench, Pillar, Column, Rug, Screen, Podium, Chair, Reception Desk, Notice Board, Coat Rack, Umbrella Stand, Bar, Bar Stool, Coffee Machine, Drinks Fridge, Bean Bag, Plant, Directory, Window                                                                    |
-| Events      | Expo Hall                     | 1    | Office Pod, Stage, Stage Curtains, Podium, Pillar, Chair, Bar, Bar Stool, Meeting Table, Notice Board, Directory, Team Photo Wall, Vending Machine, Lockers, Coat Rack, Umbrella Stand                                                                                       |
-| Games Rooms | Arcade Lounge                 | 1    | Arcade Machine, Reception Desk, Bar, Bar Stool, Vending Machine, Drinks Fridge, Coffee Machine, Meeting Table, Screen, Bean Bag, Sofa, Jukebox, Team Photo Wall, Plant, glass walls, Notice Board                                                                            |
-| Games Rooms | Games Night Den               | 1    | Fireplace, Pet Bed, Sofa, Meeting Table, Bookshelf, Pool Table, Foosball Table, Dartboard, Jukebox, kitchen set, Reading Nook, Coat Rack, Umbrella Stand, Window                                                                                                             |
-| Games Rooms | Sports Bar                    | 1    | Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Dartboard, Meeting Table, Screen, Sofa, Ping-Pong Table, Pool Table, Foosball Table, Jukebox, Vending Machine, Notice Board, World Clock, glass walls                                                                         |
-| Homes       | Family House                  | 2    | Stairs, Fireplace, Pet Bed, Sofa, Chair, Bookshelf, Screen, kitchen set, Long Table, toilet and basin, Bean Bag, Arcade Machine, Foosball Table, Desk, Calendar Wall, Team Photo Wall, Reading Nook, Ping-Pong Table, Window                                                 |
-| Homes       | City Townhouse                | 3    | Stairs, kitchen set, Long Table, Sofa, Screen, Bookshelf, Pet Bed, Desk, Standing Desk, toilet and basin, Jukebox, Reading Nook, Grass, Picnic Table, Garden Umbrella, Hammock, Campfire, Bench, Swimming Pool, Garden Fence, Window, glass walls                            |
-| Homes       | Country Cottage               | 2    | Stairs, Fireplace, kitchen set, Meeting Table, Reading Nook, Sofa, Bookshelf, Pet Bed, Grass, Garden Fence, Pond, Bench, Tree, Hammock, Standing Desk, Desk, Team Photo Wall, Bean Bag, Window                                                                               |
-| Office      | Virtual Office                | 1    | Desk, Bookshelf, Printer, Meeting Table, kitchen set, Water Cooler, Coffee Machine, Sofa, Chair, Coat Rack, Umbrella Stand, Plant, Pet Bed, Window, glass walls, Reception Desk, World Clock, Screen, Room Sign, Suggestion Box, Notice Board, Jukebox, Nap Pod, Phone Booth |
-| Office      | Coworking Space               | 1    | Desk, Phone Booth, Coffee Machine, Water Cooler, Sofa, Chair, Bookshelf, Plant, Lockers, Window, glass walls, Meeting Table, Screen, Room Sign, Notice Board                                                                                                                 |
-| Office      | Document Room                 | 1    | Screen, Chair, Timer, Notice Board, Coffee Machine, Water Cooler, Plant, Window                                                                                                                                                                                              |
-| Office      | Team Pod                      | 1    | Desk, Meeting Table, Coffee Machine, Bookshelf, Plant, Sticky Note, Pet Bed, Window, World Clock, Phone Booth, Timer                                                                                                                                                         |
-| Office      | Interview Suite               | 1    | Meeting Table, Screen, Timer, Notice Board, Sofa, Rug, World Clock, Coffee Machine, Water Cooler, Phone Booth, Reception Desk, Directory, Plant, Window                                                                                                                      |
-| Office      | Client Lounge                 | 1    | Long Table, Screen, World Clock, Meeting Table, Phone Booth, Office Pod, Sofa, Rug, Bar, Bar Stool, Coffee Machine, Drinks Fridge, Reception Desk, Directory, Plant, Window, glass walls                                                                                     |
-| Office      | Focus Library                 | 1    | Bookshelf, Desk, Office Pod, Sofa, Chair, Water Cooler, Reading Nook, Window                                                                                                                                                                                                 |
-| Outdoor     | Garden Retreat                | 1    | Grass, Garden Fence, Garden Path, Summer House (Room), Meeting Table, Bench, Campfire, Pond, Tree, Outdoor Plant, Pet Bed, Window, Hammock                                                                                                                                   |
-| Outdoor     | City Park                     | 1    | Grass, Garden Path, Fountain, Bench, Picnic Table, Stage, Chair, Tree, Ping-Pong Table, Hammock                                                                                                                                                                              |
-| Outdoor     | Beach Offsite                 | 1    | as above                                                                                                                                                                                                                                                                     |
-| Outdoor     | Festival Field (cross-listed) | 1    | as above                                                                                                                                                                                                                                                                     |
-| Recreation  | Rooftop Bar                   | 1    | Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Sofa, Chair, Tree, Outdoor Plant, Hammock                                                                                                                                                                                     |
-| Recreation  | Cafe                          | 1    | Bar, Bar Stool, Coffee Machine, Drinks Fridge, Meeting Table, Chair, Sofa, Plant, Pet Bed, Window                                                                                                                                                                            |
-| Recreation  | Sports Bar (cross-listed)     | 1    | as above                                                                                                                                                                                                                                                                     |
-| Recreation  | Wellness Studio               | 1    | Rug, Screen, Timer, Bring Focus, Fountain, Bean Bag, Treadmill, Lockers, Water Cooler, Nap Pod, Reading Nook, Reception Desk, Notice Board, Bar, Bar Stool, Drinks Fridge, Hammock, Plant, Directory, Window                                                                 |
-| Venues      | Conference Venue              | 1    | Bar, Stage, Stage Curtains, Podium, Screen, Bring Focus, Chair, Meeting Table, Office Pod, garden set, Coat Rack, Umbrella Stand, Window                                                                                                                                     |
-| Venues      | Hotel and Suites              | 3    | Elevator, Directory, Column, Bar, Stage, Screen, Fireplace, Sofa, Desk, Office Pod, Garden Umbrella, Hammock, Swimming Pool, Stairs, Ping-Pong Table, Window                                                                                                                 |
-| Venues      | Music Hall                    | 1    | Stage, Stage Curtains, Screen, Bring Focus, Chair, Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Jukebox, Sofa, Coat Rack, Lockers, Umbrella Stand, Column, Reception Desk, Notice Board                                                                                    |
-| Venues      | Expo Hall (cross-listed)      | 1    | as above                                                                                                                                                                                                                                                                     |
-| Venues      | Festival Field                | 1    | Stage, Stage Curtains, Screen, Bring Focus, Bar, Bar Stool, Kitchen Counter, Drinks Fridge, Coffee Machine, Jukebox, Sofa, Rug, Picnic Table, Garden Umbrella, Campfire, Bench, Hammock, garden set                                                                          |
+| Category    | Template                      | Tabs | Element types                                                                                                                                                                                                                                                          |
+| ----------- | ----------------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Campus      | Company Campus                | 1    | Desk, Meeting Table, Screen, Stage, Chair, Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Jukebox, Sofa, Ping-Pong Table, Arcade Machine, Fireplace, garden set, Pet Bed, Window                                                                                       |
+| Campus      | Startup HQ                    | 1    | Desk, Bookshelf, Coffee Machine, Notice Board, Stage, Screen, Bar, Ping-Pong Table, Arcade Machine, Jukebox, Office Pod, Campfire, Hammock, Bike Rack, Pet Bed, Standing Desk, Dartboard, Window, Suggestion Box, Signpost                                             |
+| Campus      | School Quad                   | 1    | Stage, Screen, Chair, Desk, Bookshelf, Bar, Bar Stool, Coffee Machine, Meeting Table, Fountain, Bench, Tree, Picnic Table, Bean Bag, Window                                                                                                                            |
+| Campus      | Co-working Tower              | 3    | Elevator, Stairs, Directory, Desk, Hot Desk, Copier, Printer, Lockers, Office Pod, Nap Pod, Restroom set, Stage, Screen, Bar, Jukebox, Vending Machine, Ping-Pong Table, Foosball Table, Dartboard, Window                                                             |
+| Campus      | Beach Offsite (cross-listed)  | 1    | Bar, Bar Stool, Drinks Fridge, Jukebox, Screen, Bench, Campfire, Hammock, Tree, Garden Umbrella, Pond, Swimming Pool, Ping-Pong Table, Window                                                                                                                          |
+| Events      | All-Hands Hall                | 1    | Stage, Stage Curtains, Podium, Chair, Plant, Water Cooler, Window, Suggestion Box                                                                                                                                                                                      |
+| Events      | Training Room                 | 1    | Stage, Podium, Meeting Table, Coffee Machine, Water Cooler, Plant, Window, Timer, Suggestion Box                                                                                                                                                                       |
+| Events      | Classroom                     | 1    | Desk, Notice Board, Screen, Timer, Meeting Table, Lockers, Coat Rack, Water Cooler, Plant, Directory, Window                                                                                                                                                           |
+| Events      | Hackathon Hall                | 1    | Stage, Podium, Screen, Chair, Meeting Table, Nap Pod, Bar, Bar Stool, Vending Machine, Drinks Fridge, Coffee Machine, Notice Board, Timer, Bean Bag, Rug, Directory, Window                                                                                            |
+| Events      | Art Gallery                   | 1    | Photo Wall, Bench, Pillar, Column, Rug, Screen, Podium, Chair, Reception Desk, Notice Board, Coat Rack, Umbrella Stand, Bar, Bar Stool, Coffee Machine, Drinks Fridge, Bean Bag, Plant, Directory, Window                                                              |
+| Events      | Expo Hall                     | 1    | Office Pod, Stage, Stage Curtains, Podium, Pillar, Chair, Bar, Bar Stool, Meeting Table, Notice Board, Directory, Team Photo Wall, Vending Machine, Lockers, Coat Rack, Umbrella Stand                                                                                 |
+| Games Rooms | Arcade Lounge                 | 1    | Arcade Machine, Reception Desk, Bar, Bar Stool, Vending Machine, Drinks Fridge, Coffee Machine, Meeting Table, Screen, Bean Bag, Sofa, Jukebox, Team Photo Wall, Plant, glass walls, Notice Board                                                                      |
+| Games Rooms | Games Night Den               | 1    | Fireplace, Pet Bed, Sofa, Meeting Table, Bookshelf, Pool Table, Foosball Table, Dartboard, Jukebox, kitchen set, Reading Nook, Coat Rack, Umbrella Stand, Window                                                                                                       |
+| Games Rooms | Sports Bar                    | 1    | Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Dartboard, Meeting Table, Screen, Sofa, Ping-Pong Table, Pool Table, Foosball Table, Jukebox, Vending Machine, Notice Board, Clock, glass walls                                                                         |
+| Homes       | Family House                  | 2    | Stairs, Fireplace, Pet Bed, Sofa, Chair, Bookshelf, Screen, kitchen set, Long Table, toilet and basin, Bean Bag, Arcade Machine, Foosball Table, Desk, Calendar Wall, Team Photo Wall, Reading Nook, Ping-Pong Table, Window                                           |
+| Homes       | City Townhouse                | 3    | Stairs, kitchen set, Long Table, Sofa, Screen, Bookshelf, Pet Bed, Desk, Standing Desk, toilet and basin, Jukebox, Reading Nook, Grass, Picnic Table, Garden Umbrella, Hammock, Campfire, Bench, Swimming Pool, Garden Fence, Window, glass walls                      |
+| Homes       | Country Cottage               | 2    | Stairs, Fireplace, kitchen set, Meeting Table, Reading Nook, Sofa, Bookshelf, Pet Bed, Grass, Garden Fence, Pond, Bench, Tree, Hammock, Standing Desk, Desk, Team Photo Wall, Bean Bag, Window                                                                         |
+| Office      | Virtual Office                | 1    | Desk, Bookshelf, Printer, Meeting Table, kitchen set, Water Cooler, Coffee Machine, Sofa, Chair, Coat Rack, Umbrella Stand, Plant, Pet Bed, Window, glass walls, Reception Desk, Clock, Screen, Room Sign, Suggestion Box, Notice Board, Jukebox, Nap Pod, Phone Booth |
+| Office      | Coworking Space               | 1    | Desk, Phone Booth, Coffee Machine, Water Cooler, Sofa, Chair, Bookshelf, Plant, Lockers, Window, glass walls, Meeting Table, Screen, Room Sign, Notice Board                                                                                                           |
+| Office      | Document Room                 | 1    | Screen, Chair, Timer, Notice Board, Coffee Machine, Water Cooler, Plant, Window                                                                                                                                                                                        |
+| Office      | Team Pod                      | 1    | Desk, Meeting Table, Coffee Machine, Bookshelf, Plant, Pet Bed, Window, Clock, Phone Booth, Timer                                                                                                                                                                      |
+| Office      | Interview Suite               | 1    | Meeting Table, Screen, Timer, Notice Board, Sofa, Rug, Clock, Coffee Machine, Water Cooler, Phone Booth, Reception Desk, Directory, Plant, Window                                                                                                                      |
+| Office      | Client Lounge                 | 1    | Long Table, Screen, Clock, Meeting Table, Phone Booth, Office Pod, Sofa, Rug, Bar, Bar Stool, Coffee Machine, Drinks Fridge, Reception Desk, Directory, Plant, Window, glass walls                                                                                     |
+| Office      | Focus Library                 | 1    | Bookshelf, Desk, Office Pod, Sofa, Chair, Water Cooler, Reading Nook, Window                                                                                                                                                                                           |
+| Outdoor     | Garden Retreat                | 1    | Grass, Garden Fence, Garden Path, Summer House (Room), Meeting Table, Bench, Campfire, Pond, Tree, Outdoor Plant, Pet Bed, Window, Hammock                                                                                                                             |
+| Outdoor     | City Park                     | 1    | Grass, Garden Path, Fountain, Bench, Picnic Table, Stage, Chair, Tree, Ping-Pong Table, Hammock                                                                                                                                                                        |
+| Outdoor     | Beach Offsite                 | 1    | as above                                                                                                                                                                                                                                                               |
+| Outdoor     | Festival Field (cross-listed) | 1    | as above                                                                                                                                                                                                                                                               |
+| Recreation  | Rooftop Bar                   | 1    | Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Sofa, Chair, Tree, Outdoor Plant, Hammock                                                                                                                                                                               |
+| Recreation  | Cafe                          | 1    | Bar, Bar Stool, Coffee Machine, Drinks Fridge, Meeting Table, Chair, Sofa, Plant, Pet Bed, Window                                                                                                                                                                      |
+| Recreation  | Sports Bar (cross-listed)     | 1    | as above                                                                                                                                                                                                                                                               |
+| Recreation  | Wellness Studio               | 1    | Rug, Screen, Timer, Fountain, Bean Bag, Treadmill, Lockers, Water Cooler, Nap Pod, Reading Nook, Reception Desk, Notice Board, Bar, Bar Stool, Drinks Fridge, Hammock, Plant, Directory, Window                                                                        |
+| Venues      | Conference Venue              | 1    | Bar, Stage, Stage Curtains, Podium, Screen, Chair, Meeting Table, Office Pod, garden set, Coat Rack, Umbrella Stand, Window                                                                                                                                            |
+| Venues      | Hotel and Suites              | 3    | Elevator, Directory, Column, Bar, Stage, Screen, Fireplace, Sofa, Desk, Office Pod, Garden Umbrella, Hammock, Swimming Pool, Stairs, Ping-Pong Table, Window                                                                                                           |
+| Venues      | Music Hall                    | 1    | Stage, Stage Curtains, Screen, Chair, Bar, Bar Stool, Drinks Cabinet, Drinks Fridge, Jukebox, Sofa, Coat Rack, Lockers, Umbrella Stand, Column, Reception Desk, Notice Board                                                                                           |
+| Venues      | Expo Hall (cross-listed)      | 1    | as above                                                                                                                                                                                                                                                               |
+| Venues      | Festival Field                | 1    | Stage, Stage Curtains, Screen, Bar, Bar Stool, Kitchen Counter, Drinks Fridge, Coffee Machine, Jukebox, Sofa, Rug, Picnic Table, Garden Umbrella, Campfire, Bench, Hammock, garden set                                                                                 |
 
 The "garden set" is a site's Grass, Garden Fence, Garden Paths, plazas, Fountain, Benches, Picnic Table, Pond, Garden
 Umbrella, Hammock, Trees and Outdoor Plants; the "kitchen set" a Kitchen Counter, a Kitchen Sink, a Fridge, a Microwave
@@ -477,12 +506,7 @@ and Games Rooms, Homes and Venues came with Work Tracker #641.
 As every template: an Editor creates a document or tab from it. Everyone on the board walks, sits, talks and drinks
 in it ([Office](../009-elements/office.md#share-roles)). What the spaces add follows the elements' own rules:
 
-- **The hall's Bring Focus**: an Editor presses it; a Participant or a Viewer cannot
-  ([Bring Focus](bring-focus.md#rules)).
-- **The Team Board's stickies**: an Editor and a Participant write on, move and recolour them; a Viewer reads them
-  ([Share roles](../013-workspace/share-roles.md)).
+- **No Bring Focus**: no template places one ([Bring Focus](../002-project-scope/not-in-livehuddle.md#bring-focus)).
 - The **raised hand** an attendee is told to use is the Call dock's **Raise Hand**, offered while someone is on the
-  stage and the attendee is in its audience ([Meeting rooms and the stage](meeting-rooms-and-stage.md)). The hall's
-  how-to line under its Avatar Pad says so conditionally: "You arrive on the Avatar Pad: take a seat, and Raise Hand
-  when someone is on the stage." (Work Tracker 511, now calls are live). An Editor and a Participant may raise a hand;
-  a Viewer is not offered it. A Reactions burst plays on its sender's screen only, so the line never points at one.
+  stage and the attendee is in its audience ([Meeting rooms and the stage](meeting-rooms-and-stage.md)). An Editor and a Participant may raise a hand;
+  a Viewer is not offered it.

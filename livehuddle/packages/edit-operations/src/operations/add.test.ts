@@ -5,7 +5,7 @@ import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
 import type { EditOperation } from '../types';
 
-const sticky = { type: 'sticky', label: 'Idea', x: 400, y: 0, width: 200, height: 200 };
+const sticky = { type: 'shape', shape: 'desk', label: 'Idea', x: 400, y: 0, width: 200, height: 200 };
 const run = (operations: EditOperation[], tab: Tab = checkoutFlow()) =>
   applyEditOperations(tab, operations, { makeId: fixedIds() });
 
@@ -16,7 +16,7 @@ describe('add with an element', () => {
     expect(tab.elements.at(-1)).toMatchObject({ id: 'idea', x: 400, y: 0, width: 200 });
     expect(createdIds).toEqual(['idea']);
     expect(targets).toEqual([]);
-    expect(lines(outcome)).toEqual(['+ idea  sticky "Idea" @440,0 200×200']);
+    expect(lines(outcome)).toEqual(['+ idea  desk "Idea" @440,0 200×200']);
   });
 
   it('mints an id with makeId when the element has none', () => {
@@ -86,11 +86,11 @@ describe('add with an element', () => {
   });
 
   it('refuses an element the tab could not hold, naming the field', () => {
-    const rejection = refused(run([{ op: 'add', element: { id: 'bad', type: 'sticky', x: 0 } }]));
+    const rejection = refused(run([{ op: 'add', element: { id: 'bad', type: 'shape', shape: 'desk', x: 0 } }]));
     expect(rejection).toEqual({
       code: 'invalid_result',
       details: ['bad y: a finite number'],
-      hint: 'see the format: livehuddle schema sticky',
+      hint: 'see the format: livehuddle schema desk',
     });
   });
 

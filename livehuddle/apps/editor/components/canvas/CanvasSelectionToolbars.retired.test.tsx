@@ -50,9 +50,6 @@ function renderToolbars(readOnly: boolean, onDeleteSelected: () => void, selecte
     onDuplicateSelected: vi.fn(),
     onDeleteSelected,
     onBeginEdit: vi.fn(),
-    onStartFormatPainter: vi.fn(),
-    onBringSelectedToFront: vi.fn(),
-    onSendSelectedToBack: vi.fn(),
     onOpenElementContextMenu: vi.fn(),
   } as unknown as CanvasProps;
   const store = createSelectionStore();
@@ -62,7 +59,7 @@ function renderToolbars(readOnly: boolean, onDeleteSelected: () => void, selecte
       <ViewportStoreProvider store={createViewportStore(0.25)}>
         <CanvasSelectionToolbars
           props={props}
-          selectionInput={{ elements, editingId: null, isPaintMode: false, readOnly }}
+          selectionInput={{ elements, editingId: null, readOnly }}
         />
       </ViewportStoreProvider>
     </SelectionStoreProvider>,
@@ -83,7 +80,6 @@ describe("the selection toolbar's Delete on a retired element", () => {
       setSelectedId: () => {},
       setEditingId: () => {},
       setMultiSelectedIds: () => {},
-      setFormatSourceId: () => {},
       lockedByOther: () => false,
     });
     renderToolbars(false, actions.deleteSelected);

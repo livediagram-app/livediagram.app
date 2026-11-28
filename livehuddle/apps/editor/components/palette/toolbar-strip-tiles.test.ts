@@ -3,7 +3,6 @@
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tilesForCategory } from './palette-tile-defs';
-import { paletteCategories } from './palette-layouts';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
@@ -15,7 +14,6 @@ import {
 
 const NONE = { hasImage: true };
 // Workshop's Popular, as its palette layout fills it.
-const workshopPopular = paletteCategories().find((c) => c.id === 'popular')!.tiles!;
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {
@@ -40,11 +38,9 @@ describe('stripTilesFor', () => {
   });
 
   it('shows a short category whole, with no More', () => {
-    const write = tilesForCategory('write');
-    expect(write.length).toBeGreaterThan(0);
-    expect(write.length).toBeLessThanOrEqual(STRIP_TILE_LIMIT);
-    const strip = stripTilesFor('write', NONE);
-    expect(strip.tiles.map((t) => t.id)).toEqual(write.map((t) => t.id));
+    const meet = tilesForCategory('collab-meeting').slice(0, 3);
+    const strip = stripTilesFor('popular', { ...NONE, tiles: meet });
+    expect(strip.tiles.map((t) => t.id)).toEqual(meet.map((t) => t.id));
     expect(strip.hasMore).toBe(false);
   });
 
@@ -70,13 +66,6 @@ describe('stripTilesFor', () => {
     );
   });
 
-  it('keeps every tile of a category short of the strip', () => {
-    const write = stripTilesFor('write', NONE);
-    expect(write.tiles).toHaveLength(2);
-    expect(write.hasMore).toBe(false);
-    expect([...write.dividersAfter]).toEqual([]);
-  });
-
   it('gives a divided category one tile less when it overflows, to make room', () => {
     const perks = stripTilesFor('collab-amenities', NONE);
     expect(perks.hasMore).toBe(true);
@@ -84,14 +73,14 @@ describe('stripTilesFor', () => {
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {
-    // The meeting palette's Popular divides after Text (the second tile). With room
-    // for 6.26 tiles, six tiles and that divider (6.2) fit.
-    const popular = { ...NONE, tiles: workshopPopular };
-    const roomy = stripTilesFor('popular', { ...popular, limit: 6.26 });
+    // Seven tiles that divide after the second: with room for 6.26 tiles, six tiles and that divider (6.2) fit.
+    const seven = tilesForCategory('collab-amenities').slice(0, 7);
+    const divided = seven.map((t, i) => (i === 1 ? { ...t, dividerAfter: true as const } : t));
+    const roomy = stripTilesFor('popular', { ...NONE, tiles: divided, limit: 6.26 });
     expect(roomy.tiles).toHaveLength(6);
-    expect([...roomy.dividersAfter]).toEqual(['tools:text']);
+    expect([...roomy.dividersAfter]).toEqual([seven[1]!.id]);
     // Without the slack the divider costs the sixth tile, as before.
-    expect(stripTilesFor('popular', { ...popular, limit: 6 }).tiles).toHaveLength(5);
+    expect(stripTilesFor('popular', { ...NONE, tiles: divided, limit: 6 }).tiles).toHaveLength(5);
   });
 
   it('drops the dividers before any tile when only the tiles fit', () => {

@@ -1,6 +1,13 @@
 import type { Page } from '@playwright/test';
 import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livehuddle/api-schema';
-import { dismissQuickTour, expect, expectNoPageErrors, test, serverNewUrl } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  paletteTile,
+  test,
+  serverNewUrl,
+} from './fixtures';
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
 // the "older editor", and the server is made "newer" by raising the document format number every
@@ -10,8 +17,7 @@ import { dismissQuickTour, expect, expectNoPageErrors, test, serverNewUrl } from
 const CANVAS = '[data-canvas-a11y-root]';
 const prompt = (page: Page) =>
   page.getByRole('status').filter({ hasText: /new version|Saving|saved yet/ });
-const notes = (page: Page) =>
-  page.locator(CANVAS).getByRole('img', { name: 'Sticky note', exact: true });
+const notes = (page: Page) => page.locator(CANVAS).getByRole('img', { name: 'Chair', exact: true });
 
 // Every api response says the server's format is one ahead of this editor; optionally, saves fail.
 async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
@@ -51,8 +57,8 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
 }
 
 // A blank canvas with its start closed (Start Blank, `?blank=1`, docs/specs/007-editor/new-document-route.md). A
-// `?template=blank-session` tab opens on Start a Space a moment after the canvas mounts; when that moment came after
-// addNote's Escape, its N went into the start's search and its click picked Company Campus.
+// `?template=blank-session` tab opens on Start a Space a moment after the canvas mounts, over the canvas addNote
+// clicks.
 async function openBoard(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
@@ -61,10 +67,10 @@ async function openBoard(page: Page) {
   await dismissQuickTour(page);
 }
 
-// A sticky note from its key (N), `dy` px below the first so a second never lands on it, and out of its editor.
+// A chair from the palette's Seats, `dy` px below the first so a second never lands on it, and deselected.
 async function addNote(page: Page, dy = 0) {
   await page.keyboard.press('Escape');
-  await page.keyboard.press('n');
+  await (await paletteTile(page, 'Add Chair')).click();
   await page.mouse.click(700, 450 + dy);
   await page.keyboard.press('Escape');
 }

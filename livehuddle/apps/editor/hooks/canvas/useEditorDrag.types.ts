@@ -31,17 +31,6 @@ export type EditorDragDeps = {
   // A Participant moves what it may despite isReadOnly (docs/specs/013-workspace/share-roles.md).
   canMove?: (el: Element) => boolean;
   canResize?: (el: Element) => boolean;
-  // Modal interaction state. When format-painter is active, a click
-  // on an element applies the format instead of dragging. The drag
-  // dispatcher checks this and routes appropriately.
-  formatSourceId: string | null;
-  applyFormatFromSource: (targetId: string) => void;
-  // The persistent Format canvas tool is active. A click on an element
-  // picks it as the paint source (first click) or paints the armed
-  // source's style onto it and stays armed (subsequent clicks) — instead
-  // of selecting / dragging. `setFormatSourceId` arms the source.
-  formatToolActive: boolean;
-  setFormatSourceId: (id: string | null) => void;
   // Element setters from the editor. `tick` writes elements without
   // taking a history checkpoint (used during the move-effect's
   // 60+/sec updates); `commit` writes elements AND snapshots history
@@ -86,6 +75,4 @@ export type EditorDragApi = {
   // renders only the chrome that draws it (useSnapGuideState).
   snapGuideStore: SnapGuideStore;
   beginDrag: (elementId: string, mode: DragMode, e: ReactPointerEvent) => void;
-  // The armed action (the format painter) a press on an element takes instead of selecting it.
-  pressArmedAction: (elementId: string) => boolean;
 };

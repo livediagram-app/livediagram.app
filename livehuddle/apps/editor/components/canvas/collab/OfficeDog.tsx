@@ -7,19 +7,18 @@
 import { memo, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   msToNextWalk,
-  petLeg,
   petWalkAt,
   PET_RADIUS,
   WORKDAY_TONES,
   type PetArea,
   type ShapeElement,
 } from '@livehuddle/document';
-import { buildNavGrid, findWalkPath } from '@livehuddle/avatar/pathing';
-import type { FenceSegment } from '@livehuddle/avatar/collision';
+import { findWalkPath, findWalkRoute, type NavGrid } from '@livehuddle/avatar/pathing';
 import { useReducedMotion } from '@/lib/reduced-motion';
 import { pieceControlProps } from '@/lib/piece-control';
 import { track } from '@/lib/telemetry';
 import { usePetArea } from '@/lib/office/useWorkdayPieces';
+import { petGrid, petSpot } from '@/lib/office/pet-route';
 import { dogAtTime, dogTrot } from './dog-trot';
 
 // --- The office dog -------------------------------------------------------------------------------------------------
@@ -56,55 +55,45 @@ function usePetWalk(still: boolean): number {
   return leg;
 }
 
-/** Where the dog's feet go on a leg, relative to the bed's box: its spot, or its bed (null spot). */
+/**
+ * Where the dog's feet go on a leg, relative to the bed's box: its spot, one it can walk to round the walls and pieces
+ * (pet-route.ts), or its bed (null spot).
+ */
 export function dogOffset(
   bed: { id: string; x: number; y: number; width: number; height: number },
   area: PetArea | null,
   leg: number,
+  grid: NavGrid | null = null,
 ): { x: number; y: number; asleep: boolean } {
   const home = { x: bed.width / 2, y: bed.height * 0.72, asleep: true };
   if (!area) return home;
-  const spot = petLeg(bed.id, leg, area);
+  const spot = petSpot(bed, area, grid, leg);
   if (!spot) return home;
   return { x: spot.x - bed.x, y: spot.y - bed.y, asleep: false };
 }
 
 // The dog's pace on its way, in canvas px a second: a trot across its room takes a few seconds.
 const DOG_SPEED = 70;
-// How far its body keeps from a piece's box as it walks round it, in canvas px.
-const DOG_REACH = 18;
 
 // Where each bed's dog stands now, in canvas px, kept across a re-mount (the view going 3D or turning, a tab coming
 // back), so it walks on from where it was and never jumps (the owner, 2026-11-18: "transport back to his bed or to
 // random nearby places").
 const dogAt = new Map<string, { x: number; y: number }>();
 
-/** The pieces in the dog's area as lines it cannot cross: each box's four edges. */
-function blockLines(area: PetArea | null): FenceSegment[] {
-  const out: FenceSegment[] = [];
-  for (const b of area?.blocks ?? []) {
-    const tl = { x: b.x, y: b.y };
-    const tr = { x: b.x + b.width, y: b.y };
-    const br = { x: b.x + b.width, y: b.y + b.height };
-    const bl = { x: b.x, y: b.y + b.height };
-    out.push({ a: tl, b: tr }, { a: tr, b: br }, { a: br, b: bl }, { a: bl, b: tl });
-  }
-  return out;
-}
-
 export function PetDog({ element }: { element: ShapeElement }) {
   // Reduced motion sends a trotting dog straight back to sleep in its bed.
   const still = useReducedMotion();
   const area = usePetArea(element.id);
   const leg = usePetWalk(still);
-  const at = still ? dogOffset(element, null, 0) : dogOffset(element, area, leg);
+  // Its room's walls and the pieces it walks round (pet-route.ts), as a walking grid, built once per change to them.
+  const grid = useMemo(() => petGrid(area), [area]);
+  // Its spot this walk, worked out once per walk (a route or two per try), not on every render.
+  const at = useMemo(
+    () => (still ? dogOffset(element, null, 0) : dogOffset(element, area, leg, grid)),
+    [still, area, leg, grid, element],
+  );
   // Where it is going, on the canvas.
   const goal = { x: element.x + at.x, y: element.y + at.y };
-  // The pieces it walks round (pet-wander.ts PetArea's blocks), as a walking grid, built once per change to them.
-  const grid = useMemo(() => {
-    const lines = blockLines(area);
-    return lines.length > 0 ? buildNavGrid(lines, DOG_REACH) : null;
-  }, [area]);
   // Where it stands now: where it was (kept across a re-mount) when that is near its bed, else where it is going.
   const start = (() => {
     const was = dogAt.get(element.id);
@@ -148,9 +137,16 @@ export function PetDog({ element }: { element: ShapeElement }) {
       place(goal);
       return;
     }
-    const path =
-      Math.hypot(goal.x - from.x, goal.y - from.y) < 1 ? [] : findWalkPath(grid, from, goal);
-    if (path.length === 0) return;
+    if (Math.hypot(goal.x - from.x, goal.y - from.y) < 1) return;
+    // Round its room's walls and the pieces, to a spot it can walk to from its bed (pet-route.ts). With no such route
+    // from where it stands (home to a bed tucked within a piece's reach, or a piece put down over the dog): as near as
+    // the route goes, then the last step there.
+    let path = findWalkRoute(grid, from, goal);
+    if (!path) {
+      path = findWalkPath(grid, from, goal);
+      const last = path[path.length - 1]!;
+      if (Math.hypot(last.x - goal.x, last.y - goal.y) >= 1) path = [...path, goal];
+    }
     const trot = dogTrot(from, path, DOG_SPEED, facingLeft.current);
     const end = path[path.length - 1]!;
     const el = node.current;

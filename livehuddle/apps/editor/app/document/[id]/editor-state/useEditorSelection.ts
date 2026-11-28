@@ -10,7 +10,7 @@ import type { EditorDocumentSlice } from './useEditorDocument';
 export function useEditorSelection({ fromDocument }: { fromDocument: EditorDocumentSlice }) {
   const { initialTabs } = fromDocument;
   // Ephemeral selection / edit UI (active tab, single + multi selection,
-  // edit + format-painter source, the two transient picker flags). See
+  // edit, the two transient picker flags). See
   // editor-ui-state. Destructured here because the body references these
   // names directly throughout; the whole slice is spread into the
   // returned view-model below (the `...panelLayout` / `...dialogs`
@@ -29,8 +29,6 @@ export function useEditorSelection({ fromDocument }: { fromDocument: EditorDocum
     editingId,
     setEditingId,
     setEditCursorAtEnd,
-    formatSourceId,
-    setFormatSourceId,
     setMultiSelectedIds,
     identityPromptOpen,
     setIdentityPromptOpen,
@@ -38,7 +36,6 @@ export function useEditorSelection({ fromDocument }: { fromDocument: EditorDocum
   return {
     activeId,
     editingId,
-    formatSourceId,
     identityPromptOpen,
     readSelection,
     selectionStore,
@@ -46,7 +43,6 @@ export function useEditorSelection({ fromDocument }: { fromDocument: EditorDocum
     setActiveId,
     setEditCursorAtEnd,
     setEditingId,
-    setFormatSourceId,
     setIdentityPromptOpen,
     setMultiSelectedIds,
     setSelectedId,

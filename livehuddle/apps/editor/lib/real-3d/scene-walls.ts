@@ -1,10 +1,12 @@
 // Real 3D's walls, doors, windows, fences and roofs (docs/specs/008-canvas/3d-engine.md "The scene"): the walls the
 // 3D view stands up (spaceWalls, the same lines a walk is stopped by) built as boxes with a thickness, each its own
-// mesh so the ones in front of you can fade. Pure: no three.js, no DOM.
+// mesh so the ones in front of you can be cut down. Pure: no three.js, no DOM.
 
 import { SPACE_DOOR_HEIGHT, type SpaceWall } from '@/lib/space-3d/space-3d-walls';
 import { roofShape, type SpaceRoof } from '@/lib/space-3d/space-3d-roofs';
 import { MeshBuilder, mix, parseColour, shade, type Rgb } from './mesh-builder';
+import { DOOR_FRAME } from './scene-doors';
+import { wallLabel } from './scene-labels';
 
 /** The wall colours, read from the 3D view's tokens (a tab's wall colour and the evening light included). */
 export type WallPalette = {
@@ -46,11 +48,11 @@ export const WALL_THICKNESS = {
   window: 8,
   stage: 4,
 } as const;
-const SKIRTING = 4;
+const SKIRTING = 7;
+/** The capping strip along a wall's top, proud of both faces. */
+const COPING = 3;
 const WINDOW_SILL = 46;
 const WINDOW_HEAD = 118;
-const DOOR_FRAME = 4;
-const LEAF_T = 3;
 
 export type WallMesh = { id: string; builder: MeshBuilder };
 
@@ -59,20 +61,32 @@ const along = (a: { x: number; y: number }, b: { x: number; y: number }, t: numb
   y: a.y + (b.y - a.y) * t,
 });
 
-/** One wall's blocks. */
-export function wallMesh(wall: SpaceWall, p: WallPalette): MeshBuilder {
+/** How high a wall cut away in front of you stands (3d-view.md "Walls in front of you are cut away"). */
+export const WALL_CUT_HEIGHT = 14;
+
+/**
+ * One wall's blocks; with `cap`, the wall cut down to that height: every block above it left out, every block through
+ * it cut at it and its top capped in the wall's top colour (glass becomes a solid kerb), as a doll's house is drawn.
+ */
+export function wallMesh(wall: SpaceWall, p: WallPalette, cap = Infinity): MeshBuilder {
   const m = new MeshBuilder();
+  const slab = (...[a, b, t, z0, z1, colour, opts = {}]: Parameters<MeshBuilder['slab']>) => {
+    if (z0 >= cap) return;
+    if (z1 <= cap) return m.slab(a, b, t, z0, z1, colour, opts);
+    m.slab(a, b, t, z0, cap, opts.glass ? mix(p.glass, 0x94a3b8, 0.7) : colour, { top: p.wallTop });
+  };
   const { a, b, height: h } = wall;
   const len = Math.hypot(b.x - a.x, b.y - a.y);
   switch (wall.kind) {
     case 'wall':
-      m.slab(a, b, WALL_THICKNESS.wall + 2, 0, SKIRTING, p.skirting, { bare: true });
-      m.slab(a, b, WALL_THICKNESS.wall, SKIRTING, h, p.wall, { top: p.wallTop });
+      slab(a, b, WALL_THICKNESS.wall + 2, 0, SKIRTING, p.skirting, { top: p.skirting });
+      slab(a, b, WALL_THICKNESS.wall, SKIRTING, h - COPING, p.wall, { top: p.wallTop });
+      slab(a, b, WALL_THICKNESS.wall + 2, h - COPING, h, mix(p.wallTop, 0xffffff, 0.25));
       break;
     case 'glass':
-      m.slab(a, b, WALL_THICKNESS.glass + 2, 0, 3, mix(p.glass, 0x64748b, 0.6), { bare: true });
-      m.slab(a, b, WALL_THICKNESS.glass, 3, h, p.glass, { glass: true, bare: true });
-      m.slab(a, b, WALL_THICKNESS.glass + 1, h - 3, h, mix(p.glass, 0x94a3b8, 0.7), { bare: true });
+      slab(a, b, WALL_THICKNESS.glass + 2, 0, 3, mix(p.glass, 0x64748b, 0.6), { bare: true });
+      slab(a, b, WALL_THICKNESS.glass, 3, h, p.glass, { glass: true, bare: true });
+      slab(a, b, WALL_THICKNESS.glass + 1, h - 3, h, mix(p.glass, 0x94a3b8, 0.7), { bare: true });
       break;
     case 'fence': {
       // Posts and two rails, as the plan's fence is drawn.
@@ -80,7 +94,7 @@ export function wallMesh(wall: SpaceWall, p: WallPalette): MeshBuilder {
       for (let i = 0; i < posts; i++) {
         const c = along(a, b, i / (posts - 1));
         const u = { x: (b.x - a.x) / len, y: (b.y - a.y) / len };
-        m.slab(
+        slab(
           { x: c.x - u.x * 2.5, y: c.y - u.y * 2.5 },
           { x: c.x + u.x * 2.5, y: c.y + u.y * 2.5 },
           6,
@@ -89,60 +103,55 @@ export function wallMesh(wall: SpaceWall, p: WallPalette): MeshBuilder {
           p.fence,
         );
       }
-      m.slab(a, b, WALL_THICKNESS.fence - 2, h * 0.55, h * 0.55 + 4, mix(p.fence, 0xffffff, 0.12));
-      m.slab(a, b, WALL_THICKNESS.fence - 2, h - 5, h, mix(p.fence, 0xffffff, 0.12));
+      slab(a, b, WALL_THICKNESS.fence - 2, h * 0.55, h * 0.55 + 4, mix(p.fence, 0xffffff, 0.12));
+      slab(a, b, WALL_THICKNESS.fence - 2, h - 5, h, mix(p.fence, 0xffffff, 0.12));
       break;
     }
     case 'picket': {
-      const n = Math.max(2, Math.round(len / 9));
+      // Fewer, broader pickets than the plan's row (a fine row shimmers as the camera moves), on two rails.
+      const n = Math.max(2, Math.round(len / 12));
       const u = { x: (b.x - a.x) / len, y: (b.y - a.y) / len };
       for (let i = 0; i < n; i++) {
         const c = along(a, b, (i + 0.5) / n);
-        m.slab(
-          { x: c.x - u.x * 2.2, y: c.y - u.y * 2.2 },
-          { x: c.x + u.x * 2.2, y: c.y + u.y * 2.2 },
+        slab(
+          { x: c.x - u.x * 3, y: c.y - u.y * 3 },
+          { x: c.x + u.x * 3, y: c.y + u.y * 3 },
           3,
           0,
           h,
           p.picket,
         );
       }
-      m.slab(a, b, 2, h * 0.6, h * 0.6 + 3, mix(p.picket, 0x94a3b8, 0.25), { bare: true });
+      const rail = mix(p.picket, 0x94a3b8, 0.25);
+      slab(a, b, 2, h * 0.25, h * 0.25 + 3, rail, { bare: true });
+      slab(a, b, 2, h * 0.7, h * 0.7 + 3, rail, { bare: true });
       break;
     }
-    case 'grass': {
-      // Tufts along the lawn's edge.
-      const n = Math.max(1, Math.round(len / 10));
-      for (let i = 0; i < n; i++) {
-        const c = along(a, b, (i + 0.5) / n);
-        const t = (i * 7) % 3;
-        m.box({
-          x: c.x - 1.5,
-          y: c.y - 1.5,
-          z: 0,
-          w: 3,
-          d: 3,
-          h: h - t,
-          colour: mix(p.grass, 0x84cc16, 0.35),
-          bare: true,
-        });
-      }
+    // Lawns grow real blades instead (grass-field.ts); Real3DLayer leaves their rows out.
+    case 'grass':
       break;
-    }
+    // A Stage is its own model, a raised deck on solid sides (models/stage.ts), so its edge lines draw nothing here.
     case 'stage':
-      m.slab(a, b, WALL_THICKNESS.stage, 0, h, 0x8a5a33);
       break;
     case 'window': {
       const t = WALL_THICKNESS.window;
-      m.slab(a, b, t + 2, 0, SKIRTING, p.skirting, { bare: true });
-      m.slab(a, b, t, SKIRTING, WINDOW_SILL, p.wall, { top: p.wallTop });
-      m.slab(a, b, t + 4, WINDOW_SILL - 3, WINDOW_SILL, mix(p.wallTop, 0xffffff, 0.3));
-      m.slab(a, b, 2, WINDOW_SILL, WINDOW_HEAD, p.glass, { glass: true, bare: true });
-      m.slab(a, b, t, WINDOW_HEAD, h, p.wall, { top: p.wallTop });
-      // The frame's jambs.
-      const u = 3 / Math.max(len, 1);
-      m.slab(a, along(a, b, u), t, WINDOW_SILL, WINDOW_HEAD, 0xf8fafc);
-      m.slab(along(a, b, 1 - u), b, t, WINDOW_SILL, WINDOW_HEAD, 0xf8fafc);
+      slab(a, b, t + 2, 0, SKIRTING, p.skirting, { top: p.skirting });
+      slab(a, b, t, SKIRTING, WINDOW_SILL, p.wall, { top: p.wallTop });
+      // A sill standing proud of the wall on both sides, the glass set back in a frame all round, split by a bar.
+      slab(a, b, t + 6, WINDOW_SILL - 4, WINDOW_SILL, mix(p.wallTop, 0xffffff, 0.35));
+      slab(a, b, 2, WINDOW_SILL, WINDOW_HEAD, p.glass, { glass: true, bare: true });
+      slab(a, b, t, WINDOW_HEAD, h - COPING, p.wall, { top: p.wallTop });
+      slab(a, b, t + 2, h - COPING, h, mix(p.wallTop, 0xffffff, 0.25));
+      const frame = 0xf8fafc;
+      const u = 4 / Math.max(len, 1);
+      slab(a, along(a, b, u), t + 1, WINDOW_SILL, WINDOW_HEAD, frame);
+      slab(along(a, b, 1 - u), b, t + 1, WINDOW_SILL, WINDOW_HEAD, frame);
+      slab(a, b, t + 1, WINDOW_HEAD - 4, WINDOW_HEAD, frame);
+      slab(a, b, t + 1, WINDOW_SILL, WINDOW_SILL + 3, frame);
+      if (len > 40) {
+        const m = 1.5 / len;
+        slab(along(a, b, 0.5 - m), along(a, b, 0.5 + m), 4, WINDOW_SILL, WINDOW_HEAD, frame);
+      }
       break;
     }
     case 'doorway': {
@@ -150,42 +159,23 @@ export function wallMesh(wall: SpaceWall, p: WallPalette): MeshBuilder {
       const top = SPACE_DOOR_HEIGHT;
       const glass = wall.glass === true;
       // The lintel over the door, in the wall's own stuff.
-      if (glass) m.slab(a, b, WALL_THICKNESS.glass, top, h, p.glass, { glass: true, bare: true });
-      else m.slab(a, b, t, top, h, p.wall, { top: p.wallTop });
+      if (glass) slab(a, b, WALL_THICKNESS.glass, top, h, p.glass, { glass: true, bare: true });
+      else {
+        slab(a, b, t, top, h - COPING, p.wall, { top: p.wallTop });
+        slab(a, b, t + 2, h - COPING, h, mix(p.wallTop, 0xffffff, 0.25));
+      }
       // The frame: two jambs and a head.
       const frame = glass ? 0xcbd5e1 : p.doorFrame;
       const u = DOOR_FRAME / Math.max(len, 1);
-      m.slab(a, along(a, b, u), t + 2, 0, top, frame);
-      m.slab(along(a, b, 1 - u), b, t + 2, 0, top, frame);
-      m.slab(a, b, t + 2, top - DOOR_FRAME, top, frame);
-      const ia = along(a, b, u);
-      const ib = along(a, b, 1 - u);
-      if (wall.shut) {
-        if (glass) m.slab(ia, ib, LEAF_T, 0, top - DOOR_FRAME, p.glass, { glass: true });
-        else
-          m.slab(ia, ib, LEAF_T, 0, top - DOOR_FRAME, p.door, { top: mix(p.door, 0xffffff, 0.2) });
-      } else if (wall.hinge) {
-        // Open: the leaf stands out of the wall at its hinge, swung most of the way open.
-        const hinge = wall.hinge === 'start' ? ia : ib;
-        const other = wall.hinge === 'start' ? ib : ia;
-        const w = Math.hypot(other.x - hinge.x, other.y - hinge.y);
-        const dir = { x: (other.x - hinge.x) / w, y: (other.y - hinge.y) / w };
-        const swing = (80 * Math.PI) / 180;
-        // Toward the wall's front (its +y side as built), which is where the plan's swing arc lies.
-        const s = wall.hinge === 'start' ? 1 : -1;
-        const c = Math.cos(swing);
-        const sn = Math.sin(swing) * s;
-        const out = { x: dir.x * c - dir.y * sn, y: dir.x * sn + dir.y * c };
-        const end = { x: hinge.x + out.x * w, y: hinge.y + out.y * w };
-        if (glass) m.slab(hinge, end, LEAF_T, 0, top - DOOR_FRAME, p.glass, { glass: true });
-        else
-          m.slab(hinge, end, LEAF_T, 0, top - DOOR_FRAME, p.door, {
-            top: mix(p.door, 0xffffff, 0.2),
-          });
-      }
+      slab(a, along(a, b, u), t + 2, 0, top, frame);
+      slab(along(a, b, 1 - u), b, t + 2, 0, top, frame);
+      slab(a, b, t + 2, top - DOOR_FRAME, top, frame);
+      // The door itself stands in the frame as its own parts, which open and shut (scene-doors.ts, door-motion.ts).
       break;
     }
   }
+  // A room's name on its nameplate (scene-labels.ts), on the lintel over its door or its back wall.
+  if (wall.label) wallLabel(m, wall, wall.glass || wall.kind === 'glass' ? 4 : 8, cap);
   return m;
 }
 

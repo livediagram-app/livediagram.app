@@ -9,7 +9,7 @@
 //
 // Pure: takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
-import { createShape, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
 import {
   campusPlan,
@@ -27,6 +27,9 @@ const W = 2560;
 const H = 1380;
 const MID = W / 2;
 const GATE = 72;
+// The street outside the gate: a Road's default width, a step clear of the fence.
+const STREET_GAP = 16;
+const STREET_H = 136;
 
 // The two columns of rooms, and the walks REACH_SIDE out from their doors.
 const LEFT_X = 60;
@@ -60,18 +63,19 @@ const ROOMS: CampusRoom[] = [
       { side: 'w', at: 480 },
     ],
     pieces: [
-      // Two islands of four desks, 120 px apart, and the way in from the door clear to both.
-      { kind: 'desk', x: 40, y: 56, facing: 'n' },
-      { kind: 'desk', x: 176, y: 56, facing: 'n' },
-      { kind: 'desk', x: 40, y: 168, facing: 's' },
-      { kind: 'desk', x: 176, y: 168, facing: 's' },
+      // Two islands of four desks, 120 px apart, and the way in from the door clear to both; the far island stands
+      // off the back wall for a walk behind its chairs.
+      { kind: 'desk', x: 40, y: 96, facing: 'n' },
+      { kind: 'desk', x: 176, y: 96, facing: 'n' },
+      { kind: 'desk', x: 40, y: 208, facing: 's' },
+      { kind: 'desk', x: 176, y: 208, facing: 's' },
       { kind: 'desk', x: 40, y: 400, facing: 'n' },
       { kind: 'desk', x: 176, y: 400, facing: 'n' },
       { kind: 'desk', x: 40, y: 512, facing: 's' },
       { kind: 'desk', x: 176, y: 512, facing: 's' },
       { kind: 'bookshelf', x: 360, y: 40 },
-      { kind: 'water-cooler', x: 340, y: 470 },
-      { kind: 'plant', x: 430, y: 500 },
+      { kind: 'water-cooler', x: 440, y: 440, facing: 'e' },
+      { kind: 'plant', x: 430, y: 560 },
     ],
   },
   {
@@ -149,7 +153,7 @@ const ROOMS: CampusRoom[] = [
       { kind: 'bar', x: 140, y: 40 },
       { kind: 'drinks-fridge', x: 400, y: 36 },
       ...[160, 220, 280, 340].map((x) => ({ kind: 'bar-stool' as const, x, y: 170 })),
-      { kind: 'jukebox', x: 410, y: 300 },
+      { kind: 'jukebox', x: 430, y: 290, facing: 'e' },
       { kind: 'rug', x: 200, y: 420 },
       { kind: 'sofa', x: 224, y: 440, facing: 'n' },
       { kind: 'chair', x: 142, y: 448, facing: 'w' },
@@ -172,9 +176,11 @@ const ROOMS: CampusRoom[] = [
       { kind: 'fireplace', x: 20, y: 40 },
       // The dog's bed by the fire (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog"), above the way in.
       { kind: 'pet-bed', x: 30, y: 166 },
-      { kind: 'ping-pong-table', x: 190, y: 60 },
-      { kind: 'arcade-machine', x: 410, y: 44 },
-      { kind: 'arcade-machine', x: 410, y: 230 },
+      // The table out in the floor, room to play round it; the two arcade machines side by side against the back
+      // wall in the far corner, facing the room, their full depth on the floor (3d-engine.md "Block models").
+      { kind: 'ping-pong-table', x: 150, y: 170 },
+      { kind: 'arcade-machine', x: 340, y: 40 },
+      { kind: 'arcade-machine', x: 420, y: 40 },
       { kind: 'rug', x: 160, y: 360 },
       { kind: 'sofa', x: 184, y: 380, facing: 'n' },
       { kind: 'chair', x: 342, y: 380, facing: 'e' },
@@ -202,8 +208,8 @@ const GARDEN: OfficePiece[] = [
   // The fountain in the middle of the plaza, a bench facing it from either side above the cross path.
   { kind: 'fountain', x: MID - 68, y: CROSS_Y - 60 },
   { kind: 'tree', x: 780, y: 690, w: 96 },
-  { kind: 'bench', x: 980, y: 840 },
-  { kind: 'bench', x: MID + PLAZA_D / 2 + 14, y: 840 },
+  { kind: 'bench', x: 1000, y: 770, facing: 'w' },
+  { kind: 'bench', x: MID + PLAZA_D / 2 + 14, y: 770, facing: 'e' },
   { kind: 'tree', x: 1640, y: 690, w: 96 },
   // Below it, left: a picnic table and a pond; right: a garden umbrella and a hammock.
   { kind: 'picnic-table', x: 790, y: 1040 },
@@ -216,6 +222,8 @@ const GARDEN: OfficePiece[] = [
   { kind: 'car-park', x: 1430, y: 1200 },
   { kind: 'car-park', x: 1670, y: 1200 },
   { kind: 'bike-rack', x: MID - PATH / 2 - 148, y: 1250 },
+  // The street along the front, just outside the gate, the odd car driving by (docs/specs/009-elements/road.md).
+  { kind: 'road', x: 0, y: H + STREET_GAP, w: W, h: STREET_H },
   // A tree in each top corner between the columns and the auditorium.
   { kind: 'tree', x: 600, y: 60, w: 96 },
   { kind: 'tree', x: 1850, y: 60, w: 96 },
@@ -229,21 +237,10 @@ export function buildCompanyCampus(cx: number, cy: number): Element[] {
     height: H,
     rooms: ROOMS,
     open: GARDEN,
-    title: {
-      text: 'Company Campus',
-      width: 330,
-      sticker: 'emoji-sunflower',
-      subtitle:
-        'The whole company on one site: offices, an auditorium, a bar and a games room, joined by a garden.',
-    },
     // In the Auditorium, the company's meeting place, in the aisle between its first two rows, facing the stage.
     arrival: {
       dx: 0,
       dy: -246,
-      hintW: 360,
-      hint: 'You arrive on the Avatar Pad in the Auditorium. The Directory by the gate walks you to any room.',
     },
-    // The presenter's Bring Focus, beside the stage.
-    extra: (left, top) => [createShape('focus-button', left + HALL.x + 730, top + HALL.y + 64)],
   });
 }

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 // routes and stored keys still say document. This scans the editor's sources, comments aside, for the old words in
 // the places copy sits (command and button labels in Title Case, the untitled name, a plural in a string), so a new
 // "New Document" or "New Canvas" doesn't creep back in. The flowchart Document shape is a shape, not an item, and
-// keeps its name; "canvas" stays the drawing surface's word ("Open Canvas Options", "Reset This Canvas?").
+// keeps its name; "canvas" stays the drawing surface's word ("Reset This Canvas?").
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 const DIRS = [

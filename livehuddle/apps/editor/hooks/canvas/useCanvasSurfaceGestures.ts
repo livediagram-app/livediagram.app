@@ -1,3 +1,4 @@
+import { rightPressTurned } from '@/lib/space-3d/right-turn-drag';
 import {
   useRef,
   type PointerEvent as ReactPointerEvent,
@@ -7,7 +8,7 @@ import { pointerToCanvas } from '@/lib/canvas';
 import { floorPointAt } from '@/lib/space-3d/space-3d-camera';
 import { standingPiecePointAt } from '@/lib/space-3d/space-3d-pieces';
 import { real3DDrawing, real3DPointAt } from '@/lib/real-3d/real-3d-pick';
-import { doorPointAt, standingPiecesOnScreen } from '@/lib/space-3d/standing-pieces-on-screen';
+import { standingPiecesOnScreen } from '@/lib/space-3d/standing-pieces-on-screen';
 import { space3DTiltNow } from '@/lib/space-3d/space-3d-preference';
 import { space3DTurn } from '@/lib/space-3d/space-3d-turn';
 import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
@@ -33,13 +34,12 @@ import {
 } from '@/lib/avatar-click-intent';
 import { frontWalkPoint } from '@/lib/front-walk-point';
 import { elementAt, onPaintedText } from '@/lib/avatar-press-target';
-import { avatarDoorPress } from '@/lib/avatar-door-press';
 import { avatarMomentPress, replayMoment } from '@/lib/avatar-moment-press';
 import type { Element as CanvasElement } from '@livehuddle/document';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
-// The bottom-right cluster (Undo / Redo, Layers, Theme & Canvas, Zoom) is chrome, never canvas.
+// The bottom-right cluster (Undo / Redo, Layers, Zoom) is chrome, never canvas.
 // Its buttons stop the press only in the bubble phase, after the capture intercept: without this,
 // an armed shape acted under the button.
 const inCornerCluster = (target: EventTarget | null): boolean =>
@@ -81,7 +81,6 @@ export function useCanvasSurfaceGestures({
   readPeerAvatars,
   onPushPeer,
   elements,
-  onToggleDoor,
   onReadElement,
   beginPendingDrawGesture,
   onCanvasContextMenu,
@@ -109,10 +108,8 @@ export function useCanvasSurfaceGestures({
   readPeerAvatars: () => readonly RemoteAvatarRow[];
   // Shove a peer: fired once our character has walked up to theirs.
   onPushPeer?: (targetId: string, dx: number, dy: number) => void;
-  // The tab's elements, for the Door under a walking click (lib/avatar-door-press), and the swing it may ask for:
-  // false when the viewer may not swing that door (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
+  // The tab's elements, for the piece under a walking click (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
   elements?: readonly CanvasElement[];
-  onToggleDoor?: (doorId: string) => boolean;
   // Open an element large in the reader (docs/specs/008-canvas/avatar-mode.md "The reader").
   onReadElement?: (elementId: string) => void;
   // Starts the queued draw-to-size gesture; true when it
@@ -159,11 +156,10 @@ export function useCanvasSurfaceGestures({
     const tilt = space3DTiltNow();
     const main = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (tilt !== 0 && main)
-      // A press on a doorway is a press on its Door (3d-view.md "Doorways"), over a standing piece a press on that
-      // piece (3d-view.md "Pieces stand up"), else the floor.
+      // Real 3D (3d-engine.md) answers from the scene itself, doors included (the owner, 2026-11-27: the old view's
+      // door boxes reached over the desks beside them). Until its first frame, a press over a standing piece is a
+      // press on that piece (3d-view.md "Pieces stand up"), else the floor.
       return (
-        doorPointAt(main, elements ?? [], { x: clientX, y: clientY }) ??
-        // Real 3D (3d-engine.md): the model the press lands on, from the scene itself.
         (real3DDrawing()
           ? real3DPointAt(clientX, clientY)
           : standingPiecePointAt(
@@ -307,16 +303,6 @@ export function useCanvasSurfaceGestures({
             );
             return;
           }
-          // A Door: next to it the click swings it where you stand; farther away (or a Viewer) it walks you to its
-          // near side and swings nothing (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
-          const feet = avatar.readPos();
-          const door =
-            elements && feet ? avatarDoorPress(elements, point, feet, viewportZoom) : null;
-          if (door) {
-            if (door.next && onToggleDoor?.(door.doorId)) return;
-            avatar.walkTo(door.nearSide);
-            return;
-          }
           // Only a `walk` kind is walked to; a `use` piece does its main action (or opens in the reader when it has
           // none right now, unless it is only a control that is not yours to press: then nothing), and a `read`
           // element opens in the reader (docs/specs/008-canvas/avatar-mode.md "Clicking a piece";
@@ -333,6 +319,7 @@ export function useCanvasSurfaceGestures({
           // A moment piece you already stand beside (a tree, a kettle, a Window; never a seat) replays its moment
           // where you stand, rather than a walk that goes nowhere (docs/specs/009-elements/piece-moments.md "A press
           // beside it"). Farther away the click walks, and arriving plays it.
+          const feet = avatar.readPos();
           const moment = avatarMomentPress(hit, feet);
           if (moment) {
             replayMoment(moment);
@@ -347,7 +334,16 @@ export function useCanvasSurfaceGestures({
         // its drag pans, and only a press that never moved, a tap, walks.
         if (e.pointerType === 'touch') startPan(e, walk);
         else walk();
-      } else if (e.button === 2) avatar.toggleLookAt(point);
+      } else if (e.button === 2) {
+        // A right press may yet be a right-drag turning the camera (3d-view.md "Turning the camera"): the toggle
+        // waits for the release, and a press that turned toggles nothing.
+        const onUp = (u: PointerEvent) => {
+          if (u.pointerId !== e.pointerId) return;
+          window.removeEventListener('pointerup', onUp);
+          if (u.button === 2 && !rightPressTurned()) avatar.toggleLookAt(point);
+        };
+        window.addEventListener('pointerup', onUp);
+      }
       return;
     }
     // Whiteboard, Select in hand (docs/specs/023-draw-mode/draw-mode.md "Selecting"): Shift + press always

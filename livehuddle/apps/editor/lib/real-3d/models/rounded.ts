@@ -163,7 +163,15 @@ function hoop(m: Builder, x0: number, x1: number, y: number, z0: number, h: numb
  * A car facing +y (nose to the front of the bay) about (cx, cy), `w` wide and `l` long: a body with eased edges, a
  * glass cabin with its pillars and roof, four wheels, lamps, tail lights, a number plate and mirrors.
  */
-function car(m: Builder, cx: number, cy: number, w: number, l: number, body: Rgb, deep: Rgb): void {
+export function car(
+  m: Builder,
+  cx: number,
+  cy: number,
+  w: number,
+  l: number,
+  body: Rgb,
+  deep: Rgb,
+): void {
   const x0 = cx - w / 2;
   const x1 = cx + w / 2;
   const y0 = cy - l / 2;

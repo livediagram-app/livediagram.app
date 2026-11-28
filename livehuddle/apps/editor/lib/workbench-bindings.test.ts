@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { resetWorkbenchForTests, workbench } from '@liveworkspace/workbench/bindings';
-import { PANEL_LAYOUT_CHANGED_EVENT } from './panel-layout';
 import { bindWorkbench } from './workbench-bindings';
 import {
   APP_RECOVERY_FLAG,
@@ -11,6 +10,7 @@ import {
   FORMAT_CONFIG_KEY,
   LOCAL_MOVE_DISMISSED_PREFIX,
   OPEN_SETTINGS_EVENT,
+  PANEL_LAYOUT_CHANGED_EVENT,
   PANEL_PRESENCE_EVENT,
   RELOAD_GUARD_KEY,
   SPOTLIGHT_CONFIG_KEY,
@@ -26,6 +26,7 @@ describe('workbench bindings', () => {
     expect(APP_RECOVERY_FLAG).toBe('__livehuddleChunkRecovery');
     expect(OPEN_SETTINGS_EVENT).toBe('livehuddle:open-settings');
     expect(PANEL_PRESENCE_EVENT).toBe('livehuddle:panel-presence');
+    expect(PANEL_LAYOUT_CHANGED_EVENT).toBe('livehuddle:panel-layout-changed');
     expect(START_QUERY_KEY).toBe('livehuddle:v2:start-query');
     expect(HIDE_CURSORS_KEY).toBe('livehuddle:v2:hide-cursors');
     expect(LOCAL_MOVE_DISMISSED_PREFIX).toBe('livehuddle:v2:local-move-dismissed:');

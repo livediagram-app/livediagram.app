@@ -1,14 +1,15 @@
 import { RUG_PRESET_TILES } from '../palette-floor-presets';
 import { RugIcon } from '@/components/palette/palette-icons';
 import { RoomSignIcon, ScreenIcon } from '../palette-icons-meeting';
-import { CalendarWallIcon, PhotoWallIcon, SuggestionBoxIcon } from '../palette-icons-team';
-import { ColumnIcon, PillarIcon } from '../palette-icons-venue';
+import { SCREEN_PRESET_TILES } from '../palette-screen-presets';
 import {
-  NoticeBoardIcon,
-  StopwatchIcon,
-  TimerPieceIcon,
-  WorldClockIcon,
-} from '../palette-icons-social';
+  CalendarWallIcon,
+  PhotoWallIcon,
+  PosterIcon,
+  SuggestionBoxIcon,
+} from '../palette-icons-team';
+import { ColumnIcon, PillarIcon } from '../palette-icons-venue';
+import { NoticeBoardIcon, StopwatchIcon, TimerPieceIcon, ClockIcon } from '../palette-icons-social';
 import { TILE_GLYPH_PX, type PaletteTileDef } from './types';
 
 // The Space meeting pieces and room fixtures: one section of the palette tile catalogue,
@@ -28,6 +29,9 @@ export const MEETING_TILES: PaletteTileDef[] = [
       'A wall screen. When someone in its room shares their screen in the call, it shows for everyone in the room; otherwise it plays a video link set from its menu. Click it to open it large.',
     filled: true,
     action: { type: 'shape', kind: 'screen' },
+    // Screen sizes (docs/specs/009-elements/screen-and-room-sign.md "Sizes"): Monitor to Cinema.
+    variants: SCREEN_PRESET_TILES,
+    variantsHint: 'Pick a size to hang.',
     icon: <ScreenIcon size={TILE_GLYPH_PX} />,
   },
   {
@@ -64,16 +68,15 @@ export const MEETING_TILES: PaletteTileDef[] = [
     // Social pieces (docs/specs/009-elements/social-pieces.md).
     id: 'tools:world-clock',
     tileGroup: 'meeting',
-    blurb: 'Clocks for several time zones',
+    blurb: 'A wall clock at your own time',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add World Clock',
-    caption: 'World Clock',
-    description:
-      'A wall clock with a dial per time zone. It shows each viewer their own time until you add zones from its menu.',
+    label: 'Add Clock',
+    caption: 'Clock',
+    description: 'A round wall clock. Everyone who looks at it sees their own local time.',
     filled: true,
     action: { type: 'shape', kind: 'world-clock' },
-    icon: <WorldClockIcon size={TILE_GLYPH_PX} />,
+    icon: <ClockIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Team pieces (docs/specs/009-elements/team-pieces.md).
@@ -119,6 +122,21 @@ export const MEETING_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'photo-wall' },
     icon: <PhotoWallIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // The Poster (docs/specs/009-elements/poster.md).
+    id: 'tools:poster',
+    tileGroup: 'meeting',
+    blurb: 'A picture for the wall',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Poster',
+    caption: 'Poster',
+    description:
+      'A picture frame that hangs on a wall. Double-click it to choose its picture: upload one, pick from your gallery or search.',
+    filled: true,
+    action: { type: 'shape', kind: 'poster' },
+    icon: <PosterIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Timer (docs/specs/009-elements/timer-and-stopwatch.md).

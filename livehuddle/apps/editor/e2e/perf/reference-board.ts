@@ -1,16 +1,12 @@
 // The reference Space (docs/specs/008-canvas/canvas-performance.md "The reference board"): one synthetic office,
 // built from a seed, so every run of the performance probe measures the same thing and no user content is involved.
 // 1,000 elements laid out as a real Space is: 96 rooms on a 12 by 8 grid over four screens by three, each with its
-// door, a rug, two desks with their chairs, a sofa, a plant and a sticky note, and the first 40 named by a text label
+// door, a rug, two desks with their chairs, a sofa, a plant and a Notice
+// Board, and the first 40 named by a Room Sign (no text or sticky notes: docs/specs/002-project-scope/not-in-livehuddle.md
+// "The Write category")
 // (Work Tracker 649: measured on a Space of rooms and furniture rather than shapes scattered at random).
 
-import {
-  createShape,
-  createSticky,
-  createText,
-  type Element,
-  type ShapeKind,
-} from '@livehuddle/document';
+import { createShape, type Element, type ShapeKind } from '@livehuddle/document';
 
 // docs/specs/008-canvas/blueprints/DEFAULTS.md D65.
 export const REFERENCE_SEED = 1;
@@ -26,7 +22,7 @@ const CELL = {
   height: REFERENCE_AREA.height / ROOM_ROWS,
 };
 const GAP = 32;
-// The rooms named by a text label, so the board holds exactly REFERENCE_COUNT elements.
+// The rooms named by a Room Sign, so the board holds exactly REFERENCE_COUNT elements.
 const LABELLED_ROOMS = REFERENCE_COUNT - ROOM_COLUMNS * ROOM_ROWS * 10;
 
 /** The furniture kinds the probe drags (a piece, the commonest thing moved in a Space). */
@@ -88,17 +84,17 @@ export function buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COU
       }
       piece('sofa', x + width / 2, y + 16, half, inner / 2);
       piece('plant', x + width / 2, y + 16 + inner / 2, half, inner / 2);
-      // A small note on the wall, clear of the sofa (a default sticky covers a quarter of the room).
-      const sticky = { ...createSticky(0, 0), width: 96, height: 96 };
+      // A small Notice Board on the wall, clear of the sofa.
+      const board = { ...createShape('notice-board', 0, 0), width: 96, height: 96 };
       add({
-        ...sticky,
-        x: Math.round(x + width - sticky.width - 16),
+        ...board,
+        x: Math.round(x + width - board.width - 16),
         y: Math.round(y + 16),
         label: `Idea ${n + 1}`,
       });
       if (n < LABELLED_ROOMS) {
-        const text = createText(0, 0);
-        add({ ...text, x: x + 16, y: y + height - text.height - 16, label: `Team ${n + 1}` });
+        const sign = createShape('room-sign', 0, 0);
+        add({ ...sign, x: x + 16, y: y + height - sign.height - 16, label: `Team ${n + 1}` });
       }
     }
   return out.slice(0, count);

@@ -22,7 +22,7 @@ describe('settings search', () => {
   });
 
   it('finds a setting by its label', () => {
-    expect(keysFor('minimap')).toContain('showMinimap');
+    expect(keysFor('alignment guides')).toContain('alignmentGuides');
   });
 
   it('finds a setting by a synonym it never displays', () => {
@@ -35,15 +35,16 @@ describe('settings search', () => {
   });
 
   it('finds a setting by its category or section name', () => {
-    // "panels" appears in no Map row's own label.
-    expect(keysFor('panels')).toContain('mapDimOutside');
+    // "panels" appears in no Panel Opacity keyword; "mouse" is Middle-Mouse Pan's section.
+    expect(keysFor('panels')).toContain('panelOpacity');
+    expect(keysFor('mouse')).toContain('middleMousePan');
   });
 
   it('narrows on a second term rather than widening', () => {
-    const one = keysFor('minimap');
-    const two = keysFor('minimap height');
+    const one = keysFor('scale');
+    const two = keysFor('scale toolbar');
     expect(two.length).toBeLessThan(one.length);
-    expect(two).toContain('mapSize');
+    expect(two).toContain('uiScale-toolbar');
   });
 
   it('is case-insensitive', () => {

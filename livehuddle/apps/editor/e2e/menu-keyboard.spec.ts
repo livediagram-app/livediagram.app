@@ -36,9 +36,9 @@ test.describe('menus by keyboard', () => {
   }) => {
     await startBlankDocument(page);
     await dismissQuickTour(page);
-    await (await paletteTile(page, 'Add Sticky Note')).click();
+    await (await paletteTile(page, 'Add Chair')).click();
     await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
-    const square = page.getByRole('img', { name: 'Sticky note', exact: true });
+    const square = page.getByRole('img', { name: 'Chair', exact: true });
     await expect(square).toHaveCount(1);
     const elementMenu = page.getByRole('dialog', { name: 'Element menu' });
 

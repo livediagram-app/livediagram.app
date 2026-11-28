@@ -1,14 +1,7 @@
-// Palette illustrations (liveworkspace/docs/specs/017-help/help-centre.md): images and the image picker, and sticky notes.
+// Palette illustrations (liveworkspace/docs/specs/017-help/help-centre.md): images and the image picker.
 // Composed only from the shared primitives so the house style holds.
 
-import {
-  Scene,
-  SelectionBox,
-  Cursor,
-  Dialog,
-  Tabs,
-  TextBar,
-} from '@liveworkspace/help-site/art/primitives';
+import { Scene, SelectionBox, Cursor, Dialog, Tabs } from '@liveworkspace/help-site/art/primitives';
 
 /** An image element placed on the canvas: a framed picture with a sky / hill
  *  motif, selected. */
@@ -74,31 +67,6 @@ export function ImagePicker() {
           );
         })}
       </Dialog>
-    </Scene>
-  );
-}
-
-/** A small wall of coloured sticky notes with text, the way a brainstorm looks. */
-export function StickyNotes() {
-  const notes: [number, number, string, string][] = [
-    [48, 50, 'fill-amber-100', 'fill-amber-300'],
-    [186, 38, 'fill-emerald-100', 'fill-emerald-300'],
-    [300, 70, 'fill-rose-100', 'fill-rose-300'],
-    [120, 132, 'fill-violet-100', 'fill-violet-300'],
-    [256, 140, 'fill-brand-100', 'fill-brand-300'],
-  ];
-  return (
-    <Scene w={420} h={220}>
-      {notes.map(([x, y, fill, bar], i) => (
-        <g key={i}>
-          {/* Square corners and no border, as a sticky draws by default */}
-          <rect x={x} y={y} width={84} height={68} className={fill} />
-          <rect x={x} y={y} width={84} height={68} className="fill-slate-900/5" />
-          <TextBar x={x + 12} y={y + 18} w={56} />
-          <TextBar x={x + 12} y={y + 32} w={44} tone="faint" />
-          <rect x={x + 12} y={y + 48} width={20} height={8} rx={2} className={bar} />
-        </g>
-      ))}
     </Scene>
   );
 }

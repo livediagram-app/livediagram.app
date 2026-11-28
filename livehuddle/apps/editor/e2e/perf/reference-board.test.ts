@@ -33,8 +33,8 @@ describe('buildReferenceBoard', () => {
     expect(count(board, 'chair')).toBe(rooms * 2);
     expect(count(board, 'sofa')).toBe(rooms);
     expect(count(board, 'plant')).toBe(rooms);
-    expect(count(board, 'sticky')).toBe(rooms);
-    expect(count(board, 'text')).toBe(REFERENCE_COUNT - rooms * 10);
+    expect(count(board, 'notice-board')).toBe(rooms);
+    expect(count(board, 'room-sign')).toBe(REFERENCE_COUNT - rooms * 10);
     const furniture = board.filter((el) => (FURNITURE_KINDS as string[]).includes(kindOf(el)));
     expect(furniture).toHaveLength(rooms * 6);
   });

@@ -39,8 +39,8 @@ const singleKeyRows = EDITOR_SECTIONS.flatMap((section) =>
 describe('the Keyboard settings list matches the keys the editor binds', () => {
   it('reads real rows (guard against this test going blind)', () => {
     expect(SHORTCUT_SECTIONS.length).toBeGreaterThan(3);
-    expect(singleKeyRows.length).toBeGreaterThanOrEqual(5);
-    expect(handledKeys.size).toBeGreaterThanOrEqual(8);
+    expect(singleKeyRows.length).toBeGreaterThanOrEqual(3);
+    expect(handledKeys.size).toBeGreaterThanOrEqual(4);
   });
 
   it('lists no key the editor does not bind', () => {
@@ -76,7 +76,8 @@ describe('the While walking rows match the Avatar action keys', () => {
   it('lists each action key once, on a key that plays it', () => {
     const walking = SHORTCUT_SECTIONS.find((s) => s.heading.startsWith('While walking'))!;
     const actionRows = walking.rows.filter((row) => /^[A-Z0-9]$/.test(row.keys[0]!));
-    expect(actionRows).toHaveLength(10);
+    // Nine Behaviours (five for fun, four for meetings) and five Reaction bursts.
+    expect(actionRows).toHaveLength(14);
     for (const row of actionRows) {
       const key = row.keys[0]!.toLowerCase();
       const plain = { key, metaKey: false, ctrlKey: false, altKey: false, shiftKey: false };

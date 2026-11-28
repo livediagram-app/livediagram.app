@@ -23,6 +23,9 @@ pointer exactly and can be placed or sized off-grid.
   guides draw. (A multi-selection or rotated resize never snaps anyway.) A dragged arrow endpoint over a shape's body
   stays free there instead of pinning to the shape's facing anchor ([Canvas and palette](canvas-and-palette.md)
   "Dropped on a shape"); an end on an anchor itself still pins.
+- Also applies to **adding** a Room ([Office](../009-elements/office.md) "Rooms line up"): held while a tile is dragged
+  in from the palette, or at the click that drops an armed Room, the room lands at the pointer, with no edge or
+  shared-wall snap and no guides.
 
 ## Implementation
 

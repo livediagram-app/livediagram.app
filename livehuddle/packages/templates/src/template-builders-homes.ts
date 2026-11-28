@@ -1,7 +1,9 @@
 // The Homes (docs/specs/012-collaboration/virtual-office-template.md "Homes"): houses to meet in, Downstairs and Upstairs
 // (and the City Townhouse's Roof Terrace) one tab each, joined by Stairs standing in the same place on every floor, so a
 // climb lands where you expect. Closed rooms off a hall (campusPlan, IndoorRoom), as the Co-working Tower's floors are,
-// but with no Room Signs, no Directory and no Elevator, and windows in the outside walls.
+// but with no Room Signs, no Directory and no Elevator, and windows in the outside walls. The hall is a room of its
+// own, its walls shared with the rooms round it, drawn at its final size for the 3D view (virtual-office-template.md
+// "Laid out for the 3D view").
 //
 // Every floor of a house is the same size, so its Stairs stand at the same canvas point on every tab. The first floor's
 // Avatar Pad waits in the hall with its how-to line; an upper floor's on the landing beside the Stairs.
@@ -11,397 +13,374 @@
 import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
 import { campusPlan, FENCE, run, type CampusSite, type IndoorRoom } from './template-campus-parts';
+import { against, besideX, belowY, standAt, sofaOnRug } from './template-3d-place';
 
 type Floor = Omit<CampusSite, 'width' | 'height' | 'signs' | 'rooms'> & {
   rooms: readonly IndoorRoom[];
 };
+type Box = { x: number; y: number; w: number; h: number };
 
-/** A floor of a house `width` x `height`: no Room Signs, its Stairs among its open pieces. */
+/** A floor of a house `width` x `height`: no Room Signs, its Stairs among its open pieces. Built when it is made. */
 const houseFloor =
-  (width: number, height: number, floor: Floor) =>
+  (width: number, height: number, floor: () => Floor) =>
   (cx: number, cy: number): Element[] =>
-    campusPlan(cx, cy, { width, height, signs: false, ...floor });
+    campusPlan(cx, cy, { width, height, signs: false, ...floor() });
 
-// Two desks facing each other across a shared edge, the first's sitter facing up.
+/** A room of the house at `box`, its pieces laid out against that box. */
+const room = (
+  name: string,
+  box: Box,
+  door: IndoorRoom['door'],
+  windows: IndoorRoom['windows'],
+  pieces: OfficePiece[],
+  glass?: true,
+): IndoorRoom => ({
+  name,
+  ...box,
+  indoor: true,
+  door,
+  windows,
+  pieces,
+  ...(glass ? { glass } : {}),
+});
+
+// The arrival's offset from the plan's centre for a site point (campusPlan centres the site under its old heading's band).
+const padAt = (width: number, height: number, x: number, y: number) => ({
+  dx: x - width / 2,
+  dy: 96 + y - (96 + height + 120) / 2,
+});
+// The landing's Avatar Pad, its middle on a site point.
+const landingPad = (x: number, y: number): OfficePiece => ({
+  kind: 'avatar-pad',
+  x: x - 64,
+  y: y - 40,
+});
+
+// Two desks facing each other across a shared edge: the first's sitter above it, the second's below.
 const deskPair = (x: number, y: number): OfficePiece[] => [
   { kind: 'desk', x, y, facing: 'n' },
   { kind: 'desk', x, y: y + 112, facing: 's' },
 ];
 
-// Three Bean Bags on a round rug, the rug's top left at (x, y): two side by side, one in front sharing their edge.
+// Three Bean Bags side by side along the bottom of a round rug, its top left at (x, y), facing up across it.
 const beanBags = (x: number, y: number): OfficePiece[] => [
   { kind: 'rug', x, y, variant: 'round' },
-  { kind: 'bean-bag', x: x + 16, y: y + 30 },
-  { kind: 'bean-bag', x: x + 92, y: y + 30 },
-  { kind: 'bean-bag', x: x + 54, y: y + 86 },
+  ...[10, 80, 150].map((dx) => standAt('bean-bag', x + dx, y + 140, 's')),
 ];
 
-// A kitchen's back wall, from the room's top left plus (x, 0): a fridge, a sink with the kettle on it, a counter with
-// the microwave on it, and coffee.
-const kitchenRun = (x: number): OfficePiece[] => [
-  { kind: 'fridge', x, y: 36 },
-  { kind: 'kitchen-sink', x: x + 86, y: 84 },
-  { kind: 'kettle', x: x + 116, y: 76 },
-  { kind: 'kitchen-counter', x: x + 198, y: 84 },
-  { kind: 'microwave', x: x + 224, y: 74 },
-  { kind: 'coffee-machine', x: x + 326, y: 76 },
+// A kitchen's back wall from `x` along it: a fridge, a sink with the kettle on it, a counter with the microwave on
+// it, and coffee, all flush on the wall.
+const kitchenRun = (x: number, box: Box): OfficePiece[] => [
+  against('fridge', 'n', x + 40, box),
+  against('kitchen-sink', 'n', x + 152, box),
+  standAt('kettle', x + 166, 58),
+  against('kitchen-counter', 'n', x + 266, box),
+  standAt('microwave', x + 266, 58),
+  against('coffee-machine', 'n', x + 380, box),
 ];
 
-// A toilet cubicle, a basin and a plant along a small bathroom's back wall.
+// A toilet cubicle and a basin along a small bathroom's back wall, a plant in the corner by the door.
 const bathroom = (
   name: string,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
+  box: Box,
   door: IndoorRoom['door'],
   windows: IndoorRoom['windows'],
-): IndoorRoom => ({
-  name,
-  x,
-  y,
-  w,
-  h,
-  indoor: true,
-  door,
-  windows,
-  pieces: [
-    { kind: 'toilet-cubicle', x: 40, y: 40 },
-    { kind: 'washbasin', x: 170, y: 44 },
-    { kind: 'plant', x: 40, y: h - 110 },
-  ],
-});
+): IndoorRoom =>
+  room(name, box, door, windows, [
+    against('toilet-cubicle', 'n', 90, box),
+    against('washbasin', 'n', 230, box),
+    against('plant', 's', 60, box),
+  ]);
 
 // --- Family House ------------------------------------------------------------------
 
-const FAMILY_W = 1900;
-const FAMILY_H = 1200;
+// Living Room and Kitchen either side of the hall, the Cloakroom and Playroom below them; the same plan upstairs.
+const F_LEFT: Box = { x: 75, y: 75, w: 900, h: 760 };
+const F_HALL: Box = { x: besideX(F_LEFT), y: 75, w: 360, h: 0 };
+const F_RIGHT: Box = { x: besideX(F_HALL), y: 75, w: 900, h: 760 };
+const F_LOW_LEFT: Box = { x: 465, y: belowY(F_LEFT), w: F_HALL.x + 10 - 465, h: 465 };
+const F_LOW_RIGHT: Box = { x: F_RIGHT.x, y: belowY(F_RIGHT), w: 900, h: 465 };
+F_HALL.h = F_LOW_LEFT.y + F_LOW_LEFT.h - F_HALL.y;
+const FAMILY_W = F_RIGHT.x + F_RIGHT.w + 75;
+const FAMILY_H = F_HALL.y + F_HALL.h + 75;
 // The Stairs at the top of the hall, the landing's pad below them.
-const FAMILY_STAIRS: OfficePiece = { kind: 'stairs', x: 902, y: 140 };
-const FAMILY_LANDING: OfficePiece = { kind: 'avatar-pad', x: 886, y: 380 };
-// The hall is 260 px wide between the Living Room and the Kitchen: the how-to line keeps inside it.
-const FAMILY_HINT_W = 240;
+const FAMILY_STAIRS: OfficePiece = { kind: 'stairs', x: F_HALL.x + 132, y: 130 };
+const FAMILY_PAD = { x: F_HALL.x + F_HALL.w / 2, y: 450 };
 
-const familyDownstairs = houseFloor(FAMILY_W, FAMILY_H, {
+const familyDownstairs = houseFloor(FAMILY_W, FAMILY_H, () => ({
   rooms: [
-    {
-      name: 'Living Room',
-      x: 60,
-      y: 60,
-      w: 760,
-      h: 640,
-      indoor: true,
-      door: { side: 'e', at: 540, sign: 1 },
-      windows: [
-        { side: 'n', at: 238 },
-        { side: 'w', at: 260 },
-        { side: 'w', at: 480 },
-      ],
-      pieces: [
-        { kind: 'bookshelf', x: 40, y: 40 },
-        // The fire, the dog's bed beside it, and the Screen at the end of the wall.
-        { kind: 'fireplace', x: 316, y: 40 },
-        { kind: 'pet-bed', x: 460, y: 112 },
-        { kind: 'screen', x: 560, y: 44, w: 150 },
-        // A sofa on a bordered rug facing the fire, a chair either side.
-        { kind: 'rug', x: 260, y: 230, variant: 'bordered' },
-        { kind: 'chair', x: 220, y: 250, facing: 'e' },
-        { kind: 'sofa', x: 304, y: 250, facing: 'n' },
-        { kind: 'chair', x: 464, y: 250, facing: 'w' },
-        { kind: 'plant', x: 40, y: 540 },
-      ],
-    },
-    {
-      name: 'Kitchen',
-      x: 1080,
-      y: 60,
-      w: 760,
-      h: 640,
-      indoor: true,
-      door: { side: 'w', at: 540, sign: 1 },
-      windows: [
-        { side: 'n', at: 560 },
-        { side: 'e', at: 260 },
-        { side: 'e', at: 480 },
-      ],
-      pieces: [
-        ...kitchenRun(24),
-        { kind: 'plant', x: 680, y: 44 },
-        // The family's Long Table.
-        { kind: 'meeting-table', x: 120, y: 330, variant: 'long' },
-      ],
-    },
-    {
-      name: 'Cloakroom',
-      x: 60,
-      y: 800,
-      w: 400,
-      h: 340,
-      indoor: true,
-      door: { side: 'e', at: 170, sign: 1 },
-      windows: [{ side: 'w', at: 170 }],
-      pieces: [
-        { kind: 'toilet-cubicle', x: 40, y: 40 },
-        { kind: 'washbasin', x: 180, y: 44 },
-        { kind: 'plant', x: 40, y: 230 },
-      ],
-    },
-    {
-      name: 'Playroom',
-      x: 1300,
-      y: 800,
-      w: 540,
-      h: 340,
-      indoor: true,
-      door: { side: 'w', at: 170, sign: 1 },
-      windows: [
-        { side: 'e', at: 170 },
-        { side: 's', at: 270 },
-      ],
-      pieces: [
-        ...beanBags(160, 120),
-        { kind: 'arcade-machine', x: 420, y: 40 },
-        { kind: 'foosball-table', x: 340, y: 200 },
-      ],
-    },
-  ],
-  open: [
-    FAMILY_STAIRS,
-    // Inside the front door: the coat rack, the umbrella stand and the mat.
-    { kind: 'coat-rack', x: 640, y: 1040 },
-    { kind: 'umbrella-stand', x: 710, y: 1100 },
-    { kind: 'rug', x: 890, y: 1120, variant: 'doormat' },
-    { kind: 'plant', x: 1180, y: 1080 },
-  ],
-  title: {
-    text: 'Family House',
-    width: 280,
-    sticker: 'emoji-dog',
-    subtitle:
-      'Downstairs: the living room by the fire, the kitchen and the playroom. The Stairs go up to the study.',
-  },
-  // In the hall, below the Stairs, between the Living Room's door and the Kitchen's.
-  arrival: {
-    dx: FAMILY_LANDING.x + 64 - FAMILY_W / 2,
-    dy: FAMILY_LANDING.y + 40 - FAMILY_H / 2 - 12,
-    hintW: FAMILY_HINT_W,
-    hint: 'You arrive on the Avatar Pad in the hall. Walk onto the Stairs to go Upstairs.',
-  },
-});
-
-const familyUpstairs = houseFloor(FAMILY_W, FAMILY_H, {
-  rooms: [
-    {
-      name: 'Study',
-      x: 60,
-      y: 60,
-      w: 760,
-      h: 640,
-      indoor: true,
-      door: { side: 'e', at: 540, sign: 1 },
-      windows: [
-        { side: 'n', at: 420 },
+    room(
+      'Living Room',
+      F_LEFT,
+      { side: 'e', at: 600, sign: 1 },
+      [
+        { side: 'n', at: 300 },
         { side: 'w', at: 300 },
-        { side: 'w', at: 520 },
+        { side: 'w', at: 560 },
       ],
-      pieces: [
-        { kind: 'calendar-wall', x: 40, y: 36 },
-        { kind: 'bookshelf', x: 600, y: 40 },
-        ...deskPair(300, 220),
-        { kind: 'plant', x: 40, y: 540 },
+      [
+        against('bookshelf', 'n', 110, F_LEFT),
+        // The fire with the dog's bed beside it, and the Screen at the end of the wall.
+        against('fireplace', 'n', 540, F_LEFT),
+        standAt('pet-bed', 640, 150),
+        against('screen', 'n', 790, F_LEFT),
+        // A sofa against the front wall facing the fire across a bordered rug, a chair beside the rug turned in.
+        ...sofaOnRug('s', 540, F_LEFT, { w: 240, h: 180, variant: 'bordered' }),
+        standAt('chair', 380, 440, 'w'),
+        against('plant', 's', 60, F_LEFT),
       ],
-    },
-    {
-      name: 'Kids’ Room',
-      x: 1080,
-      y: 60,
-      w: 760,
-      h: 640,
-      indoor: true,
-      door: { side: 'w', at: 540, sign: 1 },
-      windows: [
-        { side: 'n', at: 160 },
+    ),
+    room(
+      'Kitchen',
+      F_RIGHT,
+      { side: 'w', at: 600, sign: 1 },
+      [
+        { side: 'n', at: 640 },
         { side: 'e', at: 260 },
         { side: 'e', at: 480 },
       ],
-      pieces: [
-        { kind: 'ping-pong-table', x: 300, y: 120 },
-        ...beanBags(120, 330),
-        { kind: 'reading-nook', x: 520, y: 420 },
-        { kind: 'plant', x: 680, y: 44 },
+      [
+        ...kitchenRun(40, F_RIGHT),
+        against('plant', 'n', 840, F_RIGHT),
+        // The family's Long Table.
+        { kind: 'meeting-table', x: 170, y: 380, variant: 'long' },
       ],
-    },
-    bathroom('Bathroom', 60, 800, 400, 340, { side: 'e', at: 170, sign: 1 }, [
-      { side: 'w', at: 170 },
-    ]),
-    {
-      name: 'Reading Room',
-      x: 1300,
-      y: 800,
-      w: 540,
-      h: 340,
-      indoor: true,
-      door: { side: 'w', at: 170, sign: 1 },
-      windows: [
-        { side: 'e', at: 170 },
-        { side: 's', at: 120 },
+    ),
+    room(
+      'Cloakroom',
+      F_LOW_LEFT,
+      { side: 'e', at: 240, sign: 1 },
+      [{ side: 's', at: 250 }],
+      [
+        against('toilet-cubicle', 'n', 100, F_LOW_LEFT),
+        against('washbasin', 'n', 250, F_LOW_LEFT),
+        against('plant', 's', 60, F_LOW_LEFT),
       ],
-      pieces: [
-        { kind: 'bookshelf', x: 140, y: 40 },
-        { kind: 'bookshelf', x: 270, y: 40 },
-        { kind: 'bookshelf', x: 400, y: 40 },
-        { kind: 'reading-nook', x: 300, y: 190 },
-        { kind: 'plant', x: 40, y: 240 },
+    ),
+    room(
+      'Playroom',
+      F_LOW_RIGHT,
+      { side: 'w', at: 240, sign: 1 },
+      [
+        { side: 'e', at: 240 },
+        { side: 's', at: 450 },
       ],
-    },
+      [
+        ...beanBags(150, 180),
+        against('arcade-machine', 'n', 700, F_LOW_RIGHT),
+        standAt('foosball-table', 560, 300),
+        against('plant', 'e', 400, F_LOW_RIGHT),
+      ],
+    ),
+    room(
+      'Hall',
+      F_HALL,
+      { side: 's', at: F_HALL.w / 2, sign: 1 },
+      [],
+      [
+        // Inside the front door: the coat rack, the umbrella stand and the mat.
+        against('coat-rack', 's', F_HALL.w / 2 - 110, F_HALL),
+        against('umbrella-stand', 's', F_HALL.w / 2 + 100, F_HALL),
+        { kind: 'rug', x: 120, y: F_HALL.h - 90, variant: 'doormat' },
+        against('plant', 'e', 1100, F_HALL),
+      ],
+    ),
+  ],
+  open: [FAMILY_STAIRS],
+  // In the hall, below the Stairs, between the Living Room's door and the Kitchen's.
+  arrival: padAt(FAMILY_W, FAMILY_H, FAMILY_PAD.x, FAMILY_PAD.y),
+}));
+
+const familyUpstairs = houseFloor(FAMILY_W, FAMILY_H, () => ({
+  rooms: [
+    room(
+      'Study',
+      F_LEFT,
+      { side: 'e', at: 600, sign: 1 },
+      [
+        { side: 'n', at: 480 },
+        { side: 'w', at: 300 },
+        { side: 'w', at: 560 },
+      ],
+      [
+        against('calendar-wall', 'n', 180, F_LEFT),
+        against('bookshelf', 'n', 760, F_LEFT),
+        ...deskPair(390, 300),
+        // The family's photos on the front wall.
+        against('photo-wall', 's', 450, F_LEFT),
+        against('plant', 's', 60, F_LEFT),
+      ],
+    ),
+    room(
+      'Kids’ Room',
+      F_RIGHT,
+      { side: 'w', at: 600, sign: 1 },
+      [
+        { side: 'n', at: 160 },
+        { side: 'e', at: 300 },
+      ],
+      [
+        standAt('ping-pong-table', 450, 230),
+        ...beanBags(220, 440),
+        // A Reading Nook on the right wall looking over its rug.
+        { kind: 'rug', x: 560, y: 540 },
+        against('reading-nook', 'e', 600, F_RIGHT),
+        against('plant', 'n', 840, F_RIGHT),
+      ],
+    ),
+    bathroom('Bathroom', F_LOW_LEFT, { side: 'e', at: 240, sign: 1 }, [{ side: 's', at: 250 }]),
+    room(
+      'Reading Room',
+      F_LOW_RIGHT,
+      { side: 'w', at: 240, sign: 1 },
+      [
+        { side: 'e', at: 240 },
+        { side: 's', at: 300 },
+      ],
+      [
+        against('bookshelf', 'n', 260, F_LOW_RIGHT),
+        against('bookshelf', 'n', 390, F_LOW_RIGHT),
+        against('bookshelf', 'n', 520, F_LOW_RIGHT),
+        { kind: 'rug', x: 560, y: 220 },
+        against('reading-nook', 'e', 280, F_LOW_RIGHT),
+        against('plant', 'n', 840, F_LOW_RIGHT),
+      ],
+    ),
   ],
   open: [
     FAMILY_STAIRS,
-    FAMILY_LANDING,
-    // The family's photos on the landing wall, and a plant.
-    { kind: 'photo-wall', x: 560, y: 712 },
-    { kind: 'plant', x: 1180, y: 1080 },
+    landingPad(FAMILY_PAD.x, FAMILY_PAD.y),
+    // The landing is open between the rooms either side, a plant at its end.
+    standAt('plant', F_HALL.x + F_HALL.w - 60, F_LOW_RIGHT.y + 400),
   ],
-  title: {
-    text: 'Upstairs',
-    width: 200,
-    sticker: 'emoji-books',
-    subtitle:
-      'The study, the kids’ room with a ping-pong table, the reading room and the bathroom.',
-  },
-});
+}));
 
 // --- City Townhouse ----------------------------------------------------------------
 
-const TOWN_W = 1400;
-const TOWN_H = 1200;
-const TOWN_STAIRS: OfficePiece = { kind: 'stairs', x: 1180, y: 780 };
-const TOWN_LANDING: OfficePiece = { kind: 'avatar-pad', x: 976, y: 860 };
-// Downstairs you arrive a step into the hall, clear of the plan's bottom-right corner once it opens out (template-roomy.ts).
-const TOWN_ARRIVAL_X = 900;
+// The Kitchen-Diner across the back, the Front Room and the hall below it; upstairs the Home Office and Bathroom over
+// them, the Music Room and the landing below.
+const T_BACK: Box = { x: 75, y: 75, w: 1600, h: 650 };
+const T_LOW_LEFT: Box = { x: 75, y: belowY(T_BACK), w: 875, h: 500 };
+const T_HALL: Box = {
+  x: besideX(T_LOW_LEFT),
+  y: T_LOW_LEFT.y,
+  w: T_BACK.x + T_BACK.w - besideX(T_LOW_LEFT),
+  h: 500,
+};
+const T_OFFICE: Box = { x: 75, y: 75, w: 1000, h: 650 };
+const T_BATH: Box = {
+  x: besideX(T_OFFICE),
+  y: 75,
+  w: T_BACK.x + T_BACK.w - besideX(T_OFFICE),
+  h: 650,
+};
+const TOWN_W = T_BACK.x + T_BACK.w + 75;
+const TOWN_H = T_HALL.y + T_HALL.h + 75;
+const TOWN_STAIRS: OfficePiece = {
+  kind: 'stairs',
+  x: T_HALL.x + T_HALL.w - 200,
+  y: T_HALL.y + 110,
+};
+const TOWN_PAD = { x: T_HALL.x + 340, y: T_HALL.y + 250 };
 
-const townDownstairs = houseFloor(TOWN_W, TOWN_H, {
+const townDownstairs = houseFloor(TOWN_W, TOWN_H, () => ({
   rooms: [
-    {
-      name: 'Kitchen-Diner',
-      x: 60,
-      y: 60,
-      w: 1280,
-      h: 520,
-      indoor: true,
-      door: { side: 's', at: 960, sign: 1 },
-      windows: [
-        { side: 'n', at: 760 },
-        { side: 'n', at: 1000 },
+    room(
+      'Kitchen-Diner',
+      T_BACK,
+      { side: 's', at: 1250, sign: 1 },
+      [
+        { side: 'n', at: 900 },
+        { side: 'n', at: 1250 },
         { side: 'w', at: 300 },
       ],
-      pieces: [
-        ...kitchenRun(24),
-        { kind: 'kitchen-counter', x: 446, y: 84 },
-        { kind: 'meeting-table', x: 80, y: 240, variant: 'long' },
-        // A sofa on a rug at the garden end.
-        { kind: 'rug', x: 760, y: 300 },
-        { kind: 'sofa', x: 784, y: 320, facing: 'n' },
-        { kind: 'plant', x: 1200, y: 44 },
+      [
+        ...kitchenRun(40, T_BACK),
+        against('kitchen-counter', 'n', 532, T_BACK),
+        { kind: 'meeting-table', x: 200, y: 330, variant: 'long' },
+        // A sofa against the garden end's wall, looking over its rug.
+        ...sofaOnRug('e', 390, T_BACK, { w: 140, h: 200 }),
+        against('plant', 'n', 1530, T_BACK),
       ],
-    },
-    {
-      name: 'Front Room',
-      x: 60,
-      y: 760,
-      w: 700,
-      h: 400,
-      indoor: true,
-      door: { side: 'e', at: 120, sign: 1 },
-      windows: [
-        { side: 'w', at: 210 },
-        { side: 's', at: 350 },
+    ),
+    room(
+      'Front Room',
+      T_LOW_LEFT,
+      { side: 'e', at: 250, sign: 1 },
+      [
+        { side: 'w', at: 250 },
+        { side: 's', at: 700 },
       ],
-      pieces: [
-        { kind: 'bookshelf', x: 40, y: 40 },
-        { kind: 'screen', x: 250, y: 44 },
-        { kind: 'pet-bed', x: 520, y: 120 },
-        { kind: 'rug', x: 240, y: 200 },
-        { kind: 'sofa', x: 264, y: 220, facing: 'n' },
-        { kind: 'plant', x: 620, y: 300 },
+      [
+        against('bookshelf', 'n', 110, T_LOW_LEFT),
+        against('screen', 'n', 450, T_LOW_LEFT),
+        standAt('pet-bed', 700, 130),
+        // The sofa against the front wall facing the Screen across its rug.
+        ...sofaOnRug('s', 450, T_LOW_LEFT),
+        against('plant', 's', 800, T_LOW_LEFT),
       ],
-    },
+    ),
+    room(
+      'Hall',
+      T_HALL,
+      { side: 's', at: 300, sign: 1 },
+      [{ side: 'e', at: 280 }],
+      [
+        against('coat-rack', 's', 150, T_HALL),
+        against('umbrella-stand', 's', 90, T_HALL),
+        { kind: 'rug', x: 240, y: T_HALL.h - 90, variant: 'doormat' },
+        against('plant', 's', T_HALL.w - 60, T_HALL),
+      ],
+    ),
   ],
+  open: [TOWN_STAIRS],
+  arrival: padAt(TOWN_W, TOWN_H, TOWN_PAD.x, TOWN_PAD.y),
+}));
+
+const townUpstairs = houseFloor(TOWN_W, TOWN_H, () => ({
+  rooms: [
+    room(
+      'Home Office',
+      T_OFFICE,
+      // Glass, so you see who is working before you knock.
+      { side: 's', at: 930, sign: 1, variant: 'sliding' },
+      [{ side: 'n', at: 800 }],
+      [
+        against('bookshelf', 'n', 110, T_OFFICE),
+        against('screen', 'n', 500, T_OFFICE),
+        ...deskPair(380, 250),
+        standAt('standing-desk', 750, 330, 's'),
+        against('plant', 'w', 560, T_OFFICE),
+      ],
+      true,
+    ),
+    bathroom('Bathroom', T_BATH, { side: 's', at: 200, sign: 1 }, [{ side: 'e', at: 300 }]),
+    room(
+      'Music Room',
+      T_LOW_LEFT,
+      { side: 'e', at: 380, sign: 1 },
+      [
+        { side: 'w', at: 250 },
+        { side: 's', at: 700 },
+      ],
+      [
+        against('jukebox', 'n', 90, T_LOW_LEFT),
+        against('bookshelf', 'n', 220, T_LOW_LEFT),
+        against('plant', 'n', 400, T_LOW_LEFT),
+        // A sofa against the front wall facing the Jukebox across its rug, a Reading Nook by the right wall.
+        ...sofaOnRug('s', 300, T_LOW_LEFT),
+        { kind: 'rug', x: 560, y: 110, w: 120, h: 200 },
+        against('reading-nook', 'e', 210, T_LOW_LEFT),
+      ],
+    ),
+  ],
+  // The landing is open between the Music Room and the house's right wall.
   open: [
     TOWN_STAIRS,
-    { kind: 'coat-rack', x: 800, y: 1040 },
-    { kind: 'umbrella-stand', x: 870, y: 1100 },
-    { kind: 'rug', x: 1000, y: 1120, variant: 'doormat' },
-    { kind: 'plant', x: 1260, y: 1080 },
+    landingPad(TOWN_PAD.x, TOWN_PAD.y),
+    standAt('plant', TOWN_W - 140, TOWN_H - 140),
   ],
-  title: {
-    text: 'City Townhouse',
-    width: 300,
-    sticker: 'emoji-key',
-    subtitle:
-      'Downstairs: the kitchen-diner and the front room. The Stairs go up to the office and the roof terrace.',
-  },
-  arrival: {
-    dx: TOWN_ARRIVAL_X + 64 - TOWN_W / 2,
-    dy: TOWN_LANDING.y + 40 - TOWN_H / 2 - 12,
-    hint: 'You arrive on the Avatar Pad in the hall. Walk onto the Stairs to go Upstairs.',
-  },
-});
-
-const townUpstairs = houseFloor(TOWN_W, TOWN_H, {
-  rooms: [
-    {
-      name: 'Home Office',
-      x: 60,
-      y: 60,
-      w: 760,
-      h: 520,
-      indoor: true,
-      // Glass, so you see who is working before you knock.
-      glass: true,
-      door: { side: 's', at: 380, sign: 1, variant: 'sliding' },
-      windows: [{ side: 'n', at: 380 }],
-      pieces: [
-        { kind: 'bookshelf', x: 40, y: 40 },
-        { kind: 'screen', x: 560, y: 44, w: 150 },
-        ...deskPair(200, 200),
-        { kind: 'standing-desk', x: 480, y: 220 },
-        { kind: 'plant', x: 680, y: 420 },
-      ],
-    },
-    bathroom('Bathroom', 900, 60, 440, 400, { side: 's', at: 220, sign: 1 }, [
-      { side: 'e', at: 200 },
-    ]),
-    {
-      name: 'Music Room',
-      x: 60,
-      y: 760,
-      w: 700,
-      h: 400,
-      indoor: true,
-      door: { side: 'e', at: 120, sign: 1 },
-      windows: [
-        { side: 'w', at: 210 },
-        { side: 's', at: 350 },
-      ],
-      pieces: [
-        { kind: 'jukebox', x: 40, y: 40 },
-        { kind: 'bookshelf', x: 140, y: 40 },
-        { kind: 'plant', x: 400, y: 40 },
-        { kind: 'rug', x: 200, y: 220 },
-        { kind: 'sofa', x: 224, y: 240, facing: 'n' },
-        { kind: 'reading-nook', x: 500, y: 260 },
-      ],
-    },
-  ],
-  open: [TOWN_STAIRS, TOWN_LANDING, { kind: 'plant', x: 1260, y: 1080 }],
-  title: {
-    text: 'Upstairs',
-    width: 200,
-    sticker: 'emoji-laptop',
-    subtitle: 'The glass home office, the music room and the bathroom. Up again for the roof.',
-  },
-});
+}));
 
 // The roof's railing: a fence round its edge (the Stairs come up inside it).
 const railing = (w: number, h: number): OfficePiece[] => [
@@ -411,181 +390,172 @@ const railing = (w: number, h: number): OfficePiece[] => [
   run('garden-fence', 0, h - FENCE, w, FENCE),
 ];
 
-const townRoof = houseFloor(TOWN_W, TOWN_H, {
+const townRoof = houseFloor(TOWN_W, TOWN_H, () => ({
   rooms: [],
   open: [
     // The roof garden: a lawn with a picnic table under an umbrella, a hammock and a tree.
-    { kind: 'grass', x: 80, y: 80, w: 640, h: 480 },
+    { kind: 'grass', x: 100, y: 100, w: 800, h: 600 },
     ...railing(TOWN_W, TOWN_H),
-    { kind: 'picnic-table', x: 140, y: 160 },
-    { kind: 'garden-umbrella', x: 360, y: 140 },
-    { kind: 'tree', x: 560, y: 100 },
-    { kind: 'hammock', x: 480, y: 400 },
-    { kind: 'outdoor-plant', x: 120, y: 440 },
-    // The fire pit, a bench either side of it.
-    { kind: 'bench', x: 972, y: 200 },
-    { kind: 'campfire', x: 1000, y: 300 },
-    { kind: 'bench', x: 972, y: 400 },
-    { kind: 'tree', x: 1200, y: 80 },
+    standAt('picnic-table', 300, 280),
+    standAt('garden-umbrella', 470, 240),
+    standAt('tree', 760, 220),
+    standAt('hammock', 640, 560),
+    standAt('outdoor-plant', 180, 600),
+    // The fire pit, a bench either side of it facing in.
+    standAt('bench', 1300, 260, 'n'),
+    standAt('campfire', 1300, 380),
+    standAt('bench', 1300, 500, 's'),
+    standAt('tree', 1560, 220),
     // A plunge pool by the Stairs, planters along the rail.
-    { kind: 'swimming-pool', x: 200, y: 760, w: 320, h: 200 },
-    { kind: 'outdoor-plant', x: 80, y: 1080 },
-    { kind: 'outdoor-plant', x: 640, y: 1080 },
-    { kind: 'outdoor-plant', x: 1260, y: 600 },
+    { kind: 'swimming-pool', x: 250, y: 860, w: 400, h: 250 },
+    standAt('outdoor-plant', 120, TOWN_H - 100),
+    standAt('outdoor-plant', 800, TOWN_H - 100),
+    standAt('outdoor-plant', TOWN_W - 100, 700),
     TOWN_STAIRS,
-    TOWN_LANDING,
+    landingPad(TOWN_PAD.x, TOWN_PAD.y),
   ],
-  title: {
-    text: 'Roof Terrace',
-    width: 260,
-    sticker: 'emoji-sun',
-    subtitle: 'A roof garden over the city: a picnic in the sun, the fire pit and a plunge pool.',
-  },
-});
+}));
 
 // --- Country Cottage ---------------------------------------------------------------
 
-const COTTAGE_W = 1900;
-const COTTAGE_H = 1200;
-const COTTAGE_STAIRS: OfficePiece = { kind: 'stairs', x: 300, y: 780 };
-const COTTAGE_LANDING: OfficePiece = { kind: 'avatar-pad', x: 496, y: 860 };
+// The Farmhouse Kitchen and the Snug across the back, the hall below; upstairs the Attic Studio and the Reading Room,
+// the landing and the Bathroom below. The cottage garden beside the house, its gate facing the hall's side door.
+const C_LEFT: Box = { x: 75, y: 75, w: 900, h: 725 };
+const C_RIGHT: Box = { x: besideX(C_LEFT), y: 75, w: 650, h: 725 };
+const C_HALL: Box = { x: 75, y: belowY(C_LEFT), w: C_RIGHT.x + C_RIGHT.w - 75, h: 400 };
+const C_LANDING_W = 1200;
+const C_BATH: Box = {
+  x: 75 + C_LANDING_W - 10,
+  y: C_HALL.y,
+  w: C_HALL.x + C_HALL.w - (75 + C_LANDING_W - 10),
+  h: 400,
+};
+const GARDEN = { x: C_HALL.x + C_HALL.w + 80, y: 75, w: 560, h: C_HALL.y + C_HALL.h - 75 };
+const COTTAGE_W = GARDEN.x + GARDEN.w + 75;
+const COTTAGE_H = C_HALL.y + C_HALL.h + 75;
+const COTTAGE_STAIRS: OfficePiece = { kind: 'stairs', x: C_HALL.x + 300, y: C_HALL.y + 90 };
+const COTTAGE_PAD = { x: C_HALL.x + 575, y: C_HALL.y + 220 };
+// The hall's side door, and the garden's gate in its fence across from it.
+const SIDE_DOOR = 200;
+const GATE = 140;
 
-// The cottage garden beside the house: a lawn fenced round, its gate in the side facing the hall.
-const GARDEN = { x: 1420, y: 60, w: 420, h: 1080 };
-const cottageGarden: OfficePiece[] = [
-  { kind: 'grass', ...GARDEN },
-  run('garden-fence', GARDEN.x, GARDEN.y, GARDEN.w, FENCE),
-  run('garden-fence', GARDEN.x + GARDEN.w - FENCE, GARDEN.y + FENCE, FENCE, GARDEN.h - 2 * FENCE),
-  run('garden-fence', GARDEN.x, GARDEN.y + GARDEN.h - FENCE, GARDEN.w, FENCE),
-  run('garden-fence', GARDEN.x, GARDEN.y + FENCE, FENCE, 400),
-  run('garden-fence', GARDEN.x, 700, FENCE, GARDEN.y + GARDEN.h - FENCE - 700),
-  { kind: 'tree', x: 1660, y: 120 },
-  { kind: 'outdoor-plant', x: 1480, y: 140 },
-  { kind: 'pond', x: 1480, y: 340 },
-  { kind: 'bench', x: 1520, y: 560 },
-  { kind: 'hammock', x: 1600, y: 800 },
-  { kind: 'tree', x: 1660, y: 920 },
-  { kind: 'outdoor-plant', x: 1500, y: 960 },
-];
+// The cottage garden: a lawn fenced round, its gate in the side facing the hall.
+const cottageGarden = (): OfficePiece[] => {
+  const gateY = C_HALL.y + SIDE_DOOR - GATE / 2;
+  return [
+    { kind: 'grass', ...GARDEN },
+    run('garden-fence', GARDEN.x, GARDEN.y, GARDEN.w, FENCE),
+    run('garden-fence', GARDEN.x + GARDEN.w - FENCE, GARDEN.y + FENCE, FENCE, GARDEN.h - 2 * FENCE),
+    run('garden-fence', GARDEN.x, GARDEN.y + GARDEN.h - FENCE, GARDEN.w, FENCE),
+    run('garden-fence', GARDEN.x, GARDEN.y + FENCE, FENCE, gateY - GARDEN.y - FENCE),
+    run('garden-fence', GARDEN.x, gateY + GATE, FENCE, GARDEN.y + GARDEN.h - FENCE - gateY - GATE),
+    standAt('tree', GARDEN.x + 420, 220),
+    standAt('outdoor-plant', GARDEN.x + 100, 180),
+    // The pond, a bench below it looking over the water.
+    { kind: 'pond', x: GARDEN.x + 160, y: 330 },
+    standAt('bench', GARDEN.x + 280, 600, 's'),
+    standAt('hammock', GARDEN.x + 300, 830),
+    standAt('tree', GARDEN.x + 460, 1040),
+    standAt('outdoor-plant', GARDEN.x + 120, 1080),
+  ];
+};
 
-const cottageDownstairs = houseFloor(COTTAGE_W, COTTAGE_H, {
+const cottageDownstairs = houseFloor(COTTAGE_W, COTTAGE_H, () => ({
   rooms: [
-    {
-      name: 'Farmhouse Kitchen',
-      x: 60,
-      y: 60,
-      w: 720,
-      h: 580,
-      indoor: true,
-      door: { side: 's', at: 560, sign: 1 },
-      windows: [
-        { side: 'w', at: 200 },
-        { side: 'w', at: 440 },
+    room(
+      'Farmhouse Kitchen',
+      C_LEFT,
+      { side: 's', at: 700, sign: 1 },
+      [
+        { side: 'w', at: 250 },
+        { side: 'w', at: 500 },
       ],
-      pieces: [
-        { kind: 'fridge', x: 24, y: 36 },
-        { kind: 'kitchen-sink', x: 110, y: 84 },
-        { kind: 'kettle', x: 140, y: 76 },
+      [
+        against('fridge', 'n', 80, C_LEFT),
+        against('kitchen-sink', 'n', 200, C_LEFT),
+        standAt('kettle', 214, 58),
         // The range: a fire in the middle of the back wall.
-        { kind: 'fireplace', x: 296, y: 40 },
-        { kind: 'kitchen-counter', x: 450, y: 84 },
-        { kind: 'plant', x: 640, y: 44 },
-        { kind: 'meeting-table', x: 200, y: 300 },
+        against('fireplace', 'n', 450, C_LEFT),
+        against('kitchen-counter', 'n', 640, C_LEFT),
+        against('plant', 'n', 840, C_LEFT),
+        { kind: 'meeting-table', x: 334, y: 330 },
       ],
-    },
-    {
-      name: 'Snug',
-      x: 840,
-      y: 60,
-      w: 520,
-      h: 580,
-      indoor: true,
-      door: { side: 's', at: 260, sign: 1 },
-      windows: [{ side: 'n', at: 260 }],
-      pieces: [
-        { kind: 'reading-nook', x: 40, y: 60 },
-        { kind: 'bookshelf', x: 360, y: 40 },
-        { kind: 'rug', x: 150, y: 280 },
-        { kind: 'sofa', x: 174, y: 300, facing: 'n' },
-        { kind: 'pet-bed', x: 380, y: 300 },
-        { kind: 'plant', x: 40, y: 460 },
+    ),
+    room(
+      'Snug',
+      C_RIGHT,
+      { side: 's', at: 325, sign: 1 },
+      [{ side: 'n', at: 325 }],
+      [
+        // A Reading Nook on the left wall and a sofa on the right, looking at each other over a rug, the dog's bed
+        // between them.
+        against('reading-nook', 'w', 330, C_RIGHT),
+        ...sofaOnRug('e', 330, C_RIGHT, { w: 320, h: 200 }),
+        standAt('pet-bed', 325, 520),
+        against('bookshelf', 'n', 540, C_RIGHT),
+        against('plant', 's', 60, C_RIGHT),
       ],
-    },
+    ),
+    room(
+      'Hall',
+      C_HALL,
+      { side: 's', at: 900, sign: 1 },
+      [],
+      [
+        against('coat-rack', 's', 1080, C_HALL),
+        against('umbrella-stand', 's', 1150, C_HALL),
+        { kind: 'rug', x: 840, y: C_HALL.h - 90, variant: 'doormat' },
+        against('plant', 'w', 300, C_HALL),
+      ],
+    ),
   ],
-  open: [
-    ...cottageGarden,
-    COTTAGE_STAIRS,
-    { kind: 'coat-rack', x: 940, y: 1040 },
-    { kind: 'umbrella-stand', x: 1010, y: 1100 },
-    { kind: 'rug', x: 640, y: 1120, variant: 'doormat' },
-    { kind: 'plant', x: 80, y: 1100 },
-  ],
-  title: {
-    text: 'Country Cottage',
-    width: 300,
-    sticker: 'emoji-sunflower',
-    subtitle:
-      'Downstairs: the farmhouse kitchen, the snug and the garden. The Stairs go up to the attic studio.',
-  },
-  arrival: {
-    dx: COTTAGE_LANDING.x + 64 - COTTAGE_W / 2,
-    dy: COTTAGE_LANDING.y + 40 - COTTAGE_H / 2 - 12,
-    hint: 'You arrive on the Avatar Pad in the hall. The garden is through the gate, and the Stairs go Upstairs.',
-  },
-});
+  open: [...cottageGarden(), COTTAGE_STAIRS],
+  arrival: padAt(COTTAGE_W, COTTAGE_H, COTTAGE_PAD.x, COTTAGE_PAD.y),
+}));
 
-const cottageUpstairs = houseFloor(COTTAGE_W, COTTAGE_H, {
+const cottageUpstairs = houseFloor(COTTAGE_W, COTTAGE_H, () => ({
   rooms: [
-    {
-      name: 'Attic Studio',
-      x: 60,
-      y: 60,
-      w: 720,
-      h: 580,
-      indoor: true,
-      door: { side: 's', at: 560, sign: 1 },
-      windows: [
-        { side: 'n', at: 300 },
+    room(
+      'Attic Studio',
+      C_LEFT,
+      { side: 's', at: 450, sign: 1 },
+      [
+        { side: 'n', at: 700 },
         { side: 'w', at: 300 },
       ],
-      pieces: [
-        { kind: 'bookshelf', x: 40, y: 40 },
-        { kind: 'photo-wall', x: 420, y: 36 },
-        { kind: 'plant', x: 640, y: 44 },
-        { kind: 'standing-desk', x: 80, y: 220 },
-        { kind: 'desk', x: 320, y: 220, facing: 's' },
+      [
+        against('bookshelf', 'n', 110, C_LEFT),
+        against('photo-wall', 'n', 420, C_LEFT),
+        against('plant', 'n', 840, C_LEFT),
+        standAt('standing-desk', 280, 400, 's'),
+        standAt('desk', 600, 400, 's'),
       ],
-    },
-    bathroom('Bathroom', 840, 60, 400, 400, { side: 's', at: 200, sign: 1 }, [
-      { side: 'e', at: 200 },
-    ]),
-    {
-      name: 'Reading Room',
-      x: 1300,
-      y: 60,
-      w: 540,
-      h: 580,
-      indoor: true,
-      door: { side: 's', at: 270, sign: 1 },
-      windows: [{ side: 'e', at: 300 }],
-      pieces: [
-        { kind: 'bookshelf', x: 40, y: 40 },
-        { kind: 'bookshelf', x: 170, y: 40 },
-        { kind: 'bookshelf', x: 380, y: 40 },
-        { kind: 'reading-nook', x: 40, y: 220 },
-        { kind: 'reading-nook', x: 320, y: 220 },
-        { kind: 'bean-bag', x: 240, y: 420 },
+    ),
+    room(
+      'Reading Room',
+      C_RIGHT,
+      { side: 's', at: 150, sign: 1 },
+      [{ side: 'e', at: 520 }],
+      [
+        against('bookshelf', 'n', 150, C_RIGHT),
+        against('bookshelf', 'n', 280, C_RIGHT),
+        against('bookshelf', 'n', 500, C_RIGHT),
+        // Two Reading Nooks looking at each other over a rug, a Bean Bag on it.
+        against('reading-nook', 'w', 380, C_RIGHT),
+        against('reading-nook', 'e', 380, C_RIGHT),
+        { kind: 'rug', x: 225, y: 320 },
+        standAt('bean-bag', 325, 380, 's'),
       ],
-    },
+    ),
+    bathroom('Bathroom', C_BATH, { side: 'w', at: 200, sign: 1 }, [{ side: 'e', at: 200 }]),
   ],
-  open: [COTTAGE_STAIRS, COTTAGE_LANDING, { kind: 'plant', x: 80, y: 1100 }],
-  title: {
-    text: 'Upstairs',
-    width: 200,
-    sticker: 'emoji-art-palette',
-    subtitle: 'Under the eaves: the attic studio, the reading room and the bathroom.',
-  },
-});
+  // The landing is open, under the two rooms and beside the Bathroom.
+  open: [
+    COTTAGE_STAIRS,
+    landingPad(COTTAGE_PAD.x, COTTAGE_PAD.y),
+    standAt('plant', 140, COTTAGE_H - 140),
+  ],
+}));
 
 export {
   cottageDownstairs as buildCountryCottage,

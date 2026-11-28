@@ -3,12 +3,11 @@
 import { nameChoiceViews, useNameCardAsked } from '@liveworkspace/workbench/lib/name-card';
 
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
-import { usePanelLayout } from '../usePanelLayout';
 import { useEditorDialogs as useDialogState } from '../useEditorDialogs';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorSelectionSlice } from './useEditorSelection';
 
-// Panel layout, the open dialogs, the context menu, and the join screen's chrome-hide flags. A slice of
+// The open dialogs, the context menu, and the join screen's chrome-hide flags. A slice of
 // useEditorState (../useEditorState.ts): it takes the slices composed before it and returns its own, with
 // `view`, its part of the editor's view-model.
 export function useEditorDialogs({
@@ -25,10 +24,6 @@ export function useEditorDialogs({
   // hook is invoked further down (after `tick`, `commit`,
   // `applyFormatFromSource` and the rest of the drag dependencies
   // exist).
-  // Panel layout (positions + open/visible flags) is one
-  // cohesive slice — see usePanelLayout. Spread wholesale into the
-  // returned view-model (see the return below).
-  const panelLayout = usePanelLayout();
   const dialogs = useDialogState();
 
   // Right-click context menu state (cursor position + element-scoped
@@ -71,7 +66,6 @@ export function useEditorDialogs({
     dialogs,
     setContextMenu,
     view: {
-      ...panelLayout,
       ...dialogs,
       anyWelcomeOpen,
       closeContextMenu,

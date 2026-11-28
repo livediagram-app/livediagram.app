@@ -87,7 +87,7 @@ describe('the social pieces', () => {
     }
   });
 
-  it('hangs the notice board, the world clock and the dartboard on the wall: nothing to walk into or stand on', () => {
+  it('hangs the notice board, the clock and the dartboard on the wall: nothing to walk into or stand on', () => {
     expect(isWallPieceShape('notice-board')).toBe(true);
     expect(isWallPieceShape('world-clock')).toBe(true);
     expect(isWallPieceShape('dartboard')).toBe(true);

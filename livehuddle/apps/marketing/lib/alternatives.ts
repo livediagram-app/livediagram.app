@@ -119,7 +119,7 @@ const LIST: Alternative[] = [
       {
         heading: 'More than a floor plan',
         paragraphs: [
-          'Every livehuddle Space is also a board, so the walls of a room hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch on the wall that anyone in the room can run. Bring Focus offers everyone a jump to what you mean.',
+          'Every livehuddle Space is also a board, so the walls of a room hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch on the wall that anyone in the room can run.',
           'Walk the office in 3D, with its walls standing and its doorways framed, or flat as a plan. The office has a life of its own: a Receptionist welcomes newcomers, the Arcade Machine keeps a High Scores table for the whole Space, two people can play on the Ping-Pong Table while everyone watches, and a Nap Pod or a Treadmill sets your status as you sit down.',
         ],
       },
@@ -235,7 +235,7 @@ const LIST: Alternative[] = [
       {
         heading: 'A meeting you can write on',
         paragraphs: [
-          'Every Space is also a board. Put a sticky note per person on the wall for the stand-up, and start the Timer on the wall. Bring Focus offers everyone a jump to what you mean, and a Snapshot keeps the wall as it was before you start again.',
+          'Every Space is also a board. Put a sticky note per person on the wall for the stand-up, and start the Timer on the wall. A Snapshot keeps the wall as it was before you start again.',
         ],
       },
       {

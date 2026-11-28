@@ -25,7 +25,10 @@ describe('fenceSegments on any board', () => {
     ]);
     // One fence line, five walls (the front wall broken at its doorway), four edges of the pot.
     expect(lines).toHaveLength(10);
-    expect(lines[0]).toEqual({ a: { x: 0, y: 12 }, b: { x: 240, y: 12 } });
+    expect(lines[0]).toEqual({ a: { x: 0, y: 12 }, b: { x: 240, y: 12 }, pad: 3 });
+    // The walls carry their pad (fence.md "A wall keeps the whole body out of it"); the pot's edges keep the plain reach.
+    expect(lines.slice(1, 6).every((l) => l.pad === 5)).toBe(true);
+    expect(lines.slice(6).every((l) => l.pad === undefined)).toBe(true);
   });
 });
 

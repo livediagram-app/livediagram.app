@@ -160,6 +160,15 @@ a wagging tail.
   desk, a plant, a fence) or another room inside its own is passed over for the generator's next spot, up to 12 tries;
   a room with no clear spot in 12 keeps the dog napping that leg. Floors are walked over: rugs, grass, paths, stages,
   pads and the beds. The same spot is chosen on every screen, as the pieces are the same.
+- **Only where it can walk, and never through anything** (the owner, 2026-11-27: "Make sure the receptionist and dog
+  don't clash with other elements, hit detection doesn't seem to affect them"). It trots round the pieces and inside
+  its room's walls by the walk's own route finder ([Finding the way](../008-canvas/avatar-mode.md#finding-the-way)),
+  never out round the room and back in, and a clear spot it cannot walk to from its bed (a corner penned in by
+  furniture) is passed over like a blocked one. A piece's whole box holds its footprint at any facing, so in the
+  [Real 3D](../008-canvas/3d-engine.md) view, where turned pieces block where their models stand, it still never
+  walks into a model. A dog left with no way to its spot (a piece put down over it) walks as near as it
+  can, then steps there. It does not step
+  round people: they move, and its spot is the same on every screen.
 - **The same dog for everyone, with nothing sent.** Each walk's spot comes from the bed's id and the walk's number
   (the time, `floor(now / 27000)`), through a small seeded generator, so every screen with a clock right to a second
   sees the dog in the same place. Nothing is stored, nothing rides presence, and nothing runs per frame: each dog has
@@ -174,6 +183,8 @@ a wagging tail.
   without its rise.
 - The dog never blocks and is never a destination; it is drawn over the floor and under people. An export draws the
   bed with the dog asleep in it.
+- **In the 3D view** the dog is a 3D model in the scene, curled asleep in its bed or trotting round its room, patted by
+  a press on it ([Real 3D](../008-canvas/3d-engine.md) "The office dog").
 
 ### Reception Desk
 

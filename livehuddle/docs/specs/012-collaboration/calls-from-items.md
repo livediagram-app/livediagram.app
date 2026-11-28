@@ -53,7 +53,8 @@ On joining, everyone sees one toast: "This call is about <item>. It isn't record
 ## Wrap Up
 
 A dialog centred on screen (a bottom sheet on a phone), with the hero header (art `meeting`), titled **Wrap Up** with
-the line "Send the summary and the actions where they belong." Three parts:
+the line "Send the summary and the actions where they belong." Two parts (its third, **Send Actions to Plan**, went
+with the sticky notes it sent, 2026-11-27: [The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)):
 
 1. **Summary**: a text area holding, to start with, the facts and the notes:
    ```
@@ -61,7 +62,8 @@ the line "Send the summary and the actions where they belong." Three parts:
    With: Ana, Bo, Cy.
 
    Notes:
-   - <each sticky and text on the Space's floors, in reading order, its first line>
+   - <each note pinned on the Space's Notice Boards: the boards in reading order, each board's notes in its order,
+     a note's title or else its words, first line>
    ```
    **Write With AI** (an account, under Ask AI's key rules: the host's key, their team's, or built-in AI's daily
    allowance; [Ask AI](../../../../liveworkspace/docs/specs/020-ask/ask.md)) asks for a summary of the notes, "What was
@@ -71,8 +73,6 @@ the line "Send the summary and the actions where they belong." Three parts:
 2. **Send To**: a knowledgebase, picked from a list of the knowledgebases the host can edit (most recent first), starting on
    the default the index offers (the one connected to the item, else the newest of the item's team). **Send Summary**
    writes the page, "<item title> Call, <date>", and shows **Open Page** in its place once it is written.
-3. **Actions**: **Send Actions to Plan** opens Send to Plan with every sticky on the open floor (one card each, at most
-   20, as the tab menu's Send Stickies to Plan does). Each card links to its sticky, and to the item.
 
 The dialog closes on **Done**, Escape or the close button; nothing is lost by closing it, and Wrap Up opens it again.
 

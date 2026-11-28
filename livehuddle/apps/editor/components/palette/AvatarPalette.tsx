@@ -82,10 +82,22 @@ function ShirtIcon() {
   );
 }
 
+// A figure between two arrows pointing out, for Build: how broad, not how tall.
+function BuildIcon() {
+  return (
+    <Glyph size={18} units={24}>
+      <circle cx="12" cy="4.5" r="2.5" />
+      <path d="M9 21v-5.5L8 9.5h8l-1 6V21" />
+      <path d="M2.5 12h3.5M4 10.5 2.5 12 4 13.5M21.5 12H18M20 10.5l1.5 1.5-1.5 1.5" />
+    </Glyph>
+  );
+}
+
 const ICONS: Record<AvatarPaletteCategoryId, () => ReactNode> = {
   character: lucideGlyph(lucideUser, 18),
   clothes: ShirtIcon,
   hair: lucideGlyph(lucideScissors, 18),
+  build: BuildIcon,
   status: lucideGlyph(lucideCircleDot, 18),
   behaviour: lucideGlyph(lucideHand, 18),
   reactions: lucideGlyph(lucidePartyPopper, 18),

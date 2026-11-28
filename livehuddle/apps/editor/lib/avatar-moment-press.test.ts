@@ -21,17 +21,12 @@ afterEach(() => {
 describe('which pieces replay on a press', () => {
   it('takes the moment pieces a click walks to, and never a seat or a piece a click uses', () => {
     const replays = MOMENT_KINDS.filter(replaysOnPress);
-    // 35 static pieces less the Podium (a seat you stand at), plus the Window.
-    expect(replays).toHaveLength(35);
+    // 38 static pieces (the three lamps among them) less the Podium (a seat you stand at), plus the Window and the
+    // Clock (social-pieces.md "Clock": scenery on the wall, nothing to open).
+    expect(replays).toHaveLength(39);
     expect(replays).toContain('window');
-    for (const k of [
-      'hammock',
-      'podium',
-      'notice-board',
-      'world-clock',
-      'calendar-wall',
-      'suggestion-box',
-    ])
+    expect(replays).toContain('world-clock');
+    for (const k of ['hammock', 'podium', 'notice-board', 'calendar-wall', 'suggestion-box'])
       expect(replaysOnPress(k)).toBe(false);
     // Not a moment piece at all.
     for (const k of ['chair', 'room', 'water-cooler']) expect(replaysOnPress(k)).toBe(false);

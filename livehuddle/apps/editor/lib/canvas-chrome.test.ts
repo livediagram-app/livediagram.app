@@ -85,7 +85,6 @@ describe('canvasCursorClass', () => {
     marquee: false,
     canvasTool: 'pan',
     spaceHeld: false,
-    isPaintMode: false,
   };
 
   it('a pending draw wins over everything', () => {
@@ -103,19 +102,14 @@ describe('canvasCursorClass', () => {
       'cursor-grab',
     );
   });
-  it('the format tool shows the copy cursor unless Space is held', () => {
-    expect(canvasCursorClass({ ...rest, canvasTool: 'format' })).toBe('cursor-copy');
-    // Space held suppresses it, falling through to the rest (pan -> grab).
-    expect(canvasCursorClass({ ...rest, canvasTool: 'format', spaceHeld: true })).toBe(
-      'cursor-grab',
-    );
+  // The Format painter left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and
+  // Clear Styles"): a stale 'format' tool reads as any unknown one, with no copy cursor.
+  it('shows no copy cursor for a stale format tool', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'format' })).toBe('cursor-grab');
   });
   it('the resting pan tool shows grab; select shows crosshair', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'pan' })).toBe('cursor-grab');
     expect(canvasCursorClass({ ...rest, canvasTool: 'select' })).toBe('cursor-crosshair');
-  });
-  it('format-paint mode shows copy', () => {
-    expect(canvasCursorClass({ ...rest, canvasTool: 'x', isPaintMode: true })).toBe('cursor-copy');
   });
   it('falls back to grab', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'x' })).toBe('cursor-grab');

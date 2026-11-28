@@ -241,6 +241,22 @@ const PHOTO_WALL_VIEW: FurnitureDrawing = {
   seats: [],
 };
 
+// The Poster (docs/specs/009-elements/poster.md): a thin dark frame round a white mat and a pale mount with a small
+// landscape mark (a sun over two hills). The 3D Space hangs the chosen picture in the mount; this is the plain frame
+// Edit selects and resizes.
+const POSTER_VIEW: FurnitureDrawing = {
+  width: 56,
+  height: 76,
+  parts: [
+    rect('panel', 0, 0, 56, 76, 1.5, T.frame),
+    rect('panel', 3, 3, 50, 70, 0.5, T.mat),
+    rect('panel', 8, 8, 40, 60, 0.5, T.strip),
+    ellipse('mark', 36, 28, 4, 4, T.silhouette),
+    path('mark', 'M10 60L22 42L30 52L36 46L46 60Z', T.silhouette),
+  ],
+  seats: [],
+};
+
 /** The grid pieces this module draws, for OFFICE_ART. */
 export const OFFICE_TEAM_ART = {
   'calendar-wall': allSides(CALENDAR_WALL_VIEW),
@@ -251,6 +267,7 @@ export const OFFICE_TEAM_ART = {
   },
   signpost: allSides(SIGNPOST_VIEW),
   'photo-wall': allSides(PHOTO_WALL_VIEW),
+  poster: allSides(POSTER_VIEW),
 } as const;
 
 // --- The Suggestion Box's limits ----------------------------------------------------------------------------------

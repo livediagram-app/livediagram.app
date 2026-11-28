@@ -103,6 +103,17 @@ export const HELP_REDIRECTS: readonly HelpRedirect[] = [
   { from: 'explorer/sharing', to: 'collaboration/sharing' },
   { from: 'explorer/signing-in', to: 'account-and-data/signing-in' },
   { from: 'explorer/moving', to: 'explorer/folders' },
+  // livehuddle's element menus lost Rotation and Appearance (livehuddle docs/specs/002-project-scope/not-in-livehuddle.md
+  // "Element looks, layers, opacity and rotation"): turning a piece and the menu that is left have their own articles.
+  { from: 'canvas/rotation', to: 'palette/virtual-office/turning-furniture', apps: ['livehuddle'] },
+  {
+    from: 'canvas/colours-borders-opacity',
+    to: 'user-interface/context-menus',
+    apps: ['livehuddle'],
+  },
+  // livehuddle's Map is gone, and its corner docking with it (livehuddle docs/specs/002-project-scope/not-in-livehuddle.md
+  // "The Map"): the article's old address lands on Panel Layout.
+  { from: 'user-interface/minimap', to: 'user-interface/panel-layout', apps: ['livehuddle'] },
 ];
 
 /** The redirect `path` (no slashes at either end) takes on `scope`'s address, or undefined. Exact paths win over

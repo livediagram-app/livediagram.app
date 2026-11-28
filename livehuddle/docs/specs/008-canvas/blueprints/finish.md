@@ -1,5 +1,8 @@
 # Finish: blueprint
 
+> **livehuddle (owner, 2026-11-27):** the element menu's Finish section left with its Appearance flyout
+> ([Element looks, layers, opacity and rotation](../../002-project-scope/not-in-livehuddle.md#element-looks-layers-opacity-and-rotation)); the tab's Finish stays.
+
 Derived from [Finish](../finish.md). Defaults in [DEFAULTS.md](DEFAULTS.md) (D-finish rows).
 
 ## Domain and naming
@@ -374,25 +377,18 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
 
 ### Menus and dialog
 
-- `components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
+- `FinishSection` (deleted from livehuddle): a `MenuAccordionSection` titled **Finish** holding `OptionRows`
   (`kind="single"`, label "Drawn As") with rows `follow-tab`, `flexible`, `professional`, `sketch`, `marker`: a glyph, the
   `FINISH_LABELS` name and the `FINISH_DETAILS` line. Hover previews through `OptionRows`' `onPreview` /
-  `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Appearance flyout, arrows
+  `onPreviewEnd` (mouse only); click commits. Mounted (before livehuddle's menus lost Appearance, 2026-11-27) by `ElementColourBorderSections` (the Appearance flyout, arrows
   included) when `supportsFinish(target)`, and by `MultiStyleSections` for the first finish-taking member;
   `resolveOwnFinish(el)` picks the checked row.
 - `../packages/workbench/src/components/primitives/OptionRows.tsx`: optional `onPreview(id)` / `onPreviewEnd()`.
 - `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key; other types unchanged).
 - `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type), plumbed through `useEditorState`,
   `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.
-- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; the shared `FinishPanel` (`packages/workbench/src/components/dialogs/tab-style/FinishPanel.tsx`: four tiles, two columns, four from `sm`) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
+- Not in livehuddle (its Tab Style dialog is gone, [Tab style](../../002-project-scope/not-in-livehuddle.md#tab-style)); in the shared dialog the shared `FinishPanel` (`packages/workbench/src/components/dialogs/tab-style/FinishPanel.tsx`: four tiles, two columns, four from `sm`) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
   `withTabFinish` (`lib/tab-style-transforms.ts`): the tab's finish, every element's own cleared, one `commit`.
-- Preview: `lib/room-preview.ts` `roomPreviewSvg(finish, { background, theme, font, textSize, floor, floorOpacity,
-patternColor })` renders the look cards' scene (`lookPreviewScene`, `lib/look-preview.ts`: a room with its door, a
-  desk, a plant and a sticky, fixed ids `look-preview-*`) on the active tab's floor through `renderTabToSvg`, its
-  pattern id `lvd-room-preview-bg`.
-  `TabStylePreview` (`components/dialogs/TabStylePreview.tsx`) memoises it on finish, background, theme, font, text size and floor and inlines it
-  (`role="img"`, `aria-label` naming the finish). The background is the tab's own, else the surface default
-  (`DARK_CANVAS_BACKGROUND_COLOR` / `DEFAULT_BACKGROUND_COLOR`), passed as `canvasBackground` from `EditorModals`.
 
 ### Agents
 
@@ -506,33 +502,33 @@ per command letter.
 
 ## Testing
 
-| Rule                                                         | Test                                                                                                         |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| resolve order, unknown values, Professional fallbacks, font  | `packages/document/src/finish.test.ts`                                                                       |
-| determinism, seeds differ, outlines, hatching bounds/caps    | `packages/document/src/sketch.test.ts`                                                                       |
-| budgets                                                      | `packages/document/src/sketch.perf.test.ts`                                                                  |
-| export draws sketch strokes / hatching / Professional radius | `packages/document/src/svg-render-finish.test.ts`                                                            |
-| variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
-| menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
-| backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                              |
-| Professional new arrows angled; avoidance per finish         | `packages/workbench/src/hooks/canvas/arrow-avoidance-apply.test.ts`                                          |
-| which palette tiles take the finish                          | `packages/workbench/src/components/palette/palette-tile-finish.test.ts`                                      |
-| applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
-| preview draws each finish, stable, in the tab's font         | `apps/editor/lib/room-preview.test.ts`                                                                       |
-| dialog tab sets, previews, Apply to All clears               | `apps/editor/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/editor/hooks/canvas/useTabCanvas.test.ts` |
-| Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                     |
-| which elements split their face                              | `packages/document/src/finish.test.ts`                                                                       |
-| Marker: finish rules, font, widths, icon weight, sticky      | `packages/document/src/finish.test.ts`                                                                       |
-| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `packages/document/src/marker.test.ts`                                                                       |
-| Marker: budgets                                              | `packages/document/src/marker.perf.test.ts`                                                                  |
-| one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                                                                   |
-| export split, body placement, defs, fonts                    | `packages/document/src/svg-render-sketch.test.ts`                                                            |
-| ink copy, settle and longest wait, single render             | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`                                            |
-| a board's takes: one read pass per batch, stages, cancel     | `../packages/workbench/src/components/canvas/face-take-batch.test.ts`                                        |
-| face split per finish, element font on the wrapper           | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
-| WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
-| WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |
-| pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/editor/components/canvas/SketchArtPicture.test.tsx`                                                    |
+| Rule                                                         | Test                                                                    |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| resolve order, unknown values, Professional fallbacks, font  | `packages/document/src/finish.test.ts`                                  |
+| determinism, seeds differ, outlines, hatching bounds/caps    | `packages/document/src/sketch.test.ts`                                  |
+| budgets                                                      | `packages/document/src/sketch.perf.test.ts`                             |
+| export draws sketch strokes / hatching / Professional radius | `packages/document/src/svg-render-finish.test.ts`                       |
+| variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                 |
+| menu rows commit, preview, Follow Tab clears                 | deleted with `FinishSection`                                            |
+| backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                         |
+| Professional new arrows angled; avoidance per finish         | `packages/workbench/src/hooks/canvas/arrow-avoidance-apply.test.ts`     |
+| which palette tiles take the finish                          | `packages/workbench/src/components/palette/palette-tile-finish.test.ts` |
+| applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                 |
+| preview draws each finish, stable, in the tab's font         | `apps/editor/lib/room-preview.test.ts`                                  |
+| dialog tab sets, previews, Apply to All clears               | `apps/editor/hooks/canvas/useTabCanvas.test.ts`                         |
+| Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                |
+| which elements split their face                              | `packages/document/src/finish.test.ts`                                  |
+| Marker: finish rules, font, widths, icon weight, sticky      | `packages/document/src/finish.test.ts`                                  |
+| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `packages/document/src/marker.test.ts`                                  |
+| Marker: budgets                                              | `packages/document/src/marker.perf.test.ts`                             |
+| one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                              |
+| export split, body placement, defs, fonts                    | `packages/document/src/svg-render-sketch.test.ts`                       |
+| ink copy, settle and longest wait, single render             | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`       |
+| a board's takes: one read pass per batch, stages, cancel     | `../packages/workbench/src/components/canvas/face-take-batch.test.ts`   |
+| face split per finish, element font on the wrapper           | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`   |
+| WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`   |
+| WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                |
+| pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/editor/components/canvas/SketchArtPicture.test.tsx`               |
 
 ## Constants and configuration
 

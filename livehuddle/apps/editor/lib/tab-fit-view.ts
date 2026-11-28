@@ -1,25 +1,14 @@
-// The view Fit to Screen lands on (docs/specs/008-canvas/canvas-and-palette.md "Zoom & pan"): every boxed element on
-// the tab in view, clear of the Palette strip over the canvas's top and clear of
-// the Map (docs/specs/008-canvas/minimap.md "Fit leaves the Map clear"). Shared by
+// The view Fit to Screen lands on (docs/specs/008-canvas/canvas-and-palette.md "Zoom & pan"; in 3D,
+// docs/specs/008-canvas/3d-view.md "Fit frames the Space as it stands"): every boxed element on the tab in view, clear of the Palette strip over the canvas's top, over the whole canvas (nothing sits in a corner:
+// docs/specs/002-project-scope/not-in-livehuddle.md "The Map"). Shared by
 // the Fit button (hooks/canvas/useEditorViewport) and a double-tap's fit back out to the whole tab
 // (hooks/canvas/useDoubleTapZoom), so both land on the same view.
 
 import { isBoxed, unionBoxedBounds, type Element } from '@livehuddle/document';
-import {
-  fitClearOfPanel,
-  MAP_PANEL_SELECTOR,
-  type FitInsets,
-} from '@liveworkspace/workbench/lib/fit-clear-of-panel';
-import {
-  besideSideInsets,
-  computeFitToScreen,
-  FIT_TO_SCREEN_PADDING,
-  topChromeInset,
-} from '@liveworkspace/workbench/lib/viewport';
+import { FIT_TO_SCREEN_PADDING, topChromeInset } from '@liveworkspace/workbench/lib/viewport';
 import type { ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
-
-// No chrome beside the content to fit clear of.
-const NO_INSETS: FitInsets = { left: 0, right: 0, top: 0, bottom: 0 };
+import { FIT_3D_NARROW_PAD, FIT_3D_NARROW_WIDTH, fit3DView } from '@/lib/space-3d/space-3d-fit';
+import { space3DTilt, space3DTurn } from '@/lib/space-3d/space-3d-turn';
 
 // A tab with nothing on it: back to the origin at 100%.
 const EMPTY_TAB_VIEW: ViewPose = { zoom: 1, offset: { x: 0, y: 0 } };
@@ -43,37 +32,15 @@ export function tabFitView(canvas: HTMLElement | null, elements: Element[]): Vie
   // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
   // strip was considered) and clears both the strip and the bottom chrome of the same depth.
   const padding = Math.max(FIT_TO_SCREEN_PADDING, inset);
-  const fitIn = (ins: FitInsets) =>
-    besideSideInsets(
-      computeFitToScreen(
-        {
-          width: rect.width - ins.left - ins.right,
-          height: rect.height - ins.top - ins.bottom,
-        },
-        bbox,
-        undefined,
-        padding,
-      ),
-      ins,
-    );
-  return fitClearOfPanel(
+  // On a phone the strip's depth on the sides too left the Space a postage stamp in a 390 px wide canvas: the sides
+  // keep only a narrow margin there (3d-view.md "Fit frames the Space as it stands").
+  const side = rect.width < FIT_3D_NARROW_WIDTH ? FIT_3D_NARROW_PAD : padding;
+  // The view is always 3D: framed as the tilted, turned camera shows the Space, walls and all.
+  return fit3DView(
     { width: rect.width, height: rect.height },
     bbox,
-    mapPanelBox(box),
-    NO_INSETS,
-    padding,
-    fitIn,
+    { x: side, y: padding },
+    space3DTilt.get(),
+    space3DTurn.get(),
   );
-}
-
-// The Map panel's box relative to the canvas, or null while it is not showing.
-function mapPanelBox(canvas: { left: number; top: number }) {
-  const panel = document.querySelector<HTMLElement>(MAP_PANEL_SELECTOR)?.getBoundingClientRect();
-  if (!panel || panel.width === 0) return null;
-  return {
-    left: panel.left - canvas.left,
-    right: panel.right - canvas.left,
-    top: panel.top - canvas.top,
-    bottom: panel.bottom - canvas.top,
-  };
 }

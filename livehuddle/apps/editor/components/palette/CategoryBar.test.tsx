@@ -162,11 +162,11 @@ describe('hover intent', () => {
 describe('the keyboard', () => {
   it('walks the bar with the arrows, and Down opens a category with its first tile focused', () => {
     show();
-    button('Write').focus();
-    fireEvent.keyDown(button('Write'), { key: 'ArrowRight' });
-    expect(document.activeElement).toBe(button('Rooms'));
+    button('Rooms').focus();
+    fireEvent.keyDown(button('Rooms'), { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(button('Seats'));
+    fireEvent.keyDown(button('Seats'), { key: 'ArrowLeft' });
     fireEvent.keyDown(button('Rooms'), { key: 'ArrowLeft' });
-    fireEvent.keyDown(button('Write'), { key: 'ArrowLeft' });
     // Wraps round to the last: Travel, Stickers being search-only.
     expect(document.activeElement).toBe(button('Travel'));
     fireEvent.keyDown(button('Travel'), { key: 'ArrowDown' });
@@ -191,7 +191,7 @@ describe('the keyboard', () => {
     expect(document.activeElement).toBe(portal);
     fireEvent.keyDown(portal, { key: 'ArrowRight' });
     expect(document.activeElement).toBe(
-      within(flyout()!).getByRole('button', { name: 'Add Bring Focus' }),
+      within(flyout()!).getByRole('button', { name: 'Add Avatar Pad' }),
     );
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Add Avatar Mode Button');

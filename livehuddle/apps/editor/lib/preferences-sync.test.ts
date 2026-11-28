@@ -187,21 +187,21 @@ describe('savePreferences', () => {
 
 describe('fetchUserPreferences after a save that did not land', () => {
   it('keeps the device copy over the server and sends it again', async () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false, uiScale: 1.2 }));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ homeBanner: false, uiScale: 1.2 }));
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
-    mockedGet.mockResolvedValue({ showMinimap: true, uiScale: 1, avatarTourSeen: true });
+    mockedGet.mockResolvedValue({ homeBanner: true, uiScale: 1, avatarTourSeen: true });
     mockedPut.mockResolvedValue(true);
     const merged = await fetchUserPreferences('owner-1');
-    expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, avatarTourSeen: true });
+    expect(merged).toEqual({ homeBanner: false, uiScale: 1.2, avatarTourSeen: true });
     // Only what differs from the server's copy goes.
-    expect(mockedPut).toHaveBeenCalledWith('owner-1', { showMinimap: false, uiScale: 1.2 });
+    expect(mockedPut).toHaveBeenCalledWith('owner-1', { homeBanner: false, uiScale: 1.2 });
   });
 
   it("lets the server win when the mark is another owner's", async () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false }));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ homeBanner: false }));
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'someone-else');
-    mockedGet.mockResolvedValue({ showMinimap: true });
-    expect(await fetchUserPreferences('owner-1')).toEqual({ showMinimap: true });
+    mockedGet.mockResolvedValue({ homeBanner: true });
+    expect(await fetchUserPreferences('owner-1')).toEqual({ homeBanner: true });
     expect(mockedPut).not.toHaveBeenCalled();
   });
 });
@@ -278,14 +278,14 @@ describe('a deployment that keeps no preferences (guest-only deployment)', () =>
 
 describe('rebaseUserPreferences', () => {
   it("applies only this render's change, keeping another tab's write since", () => {
-    const snapshot: UserPreferences = { showMinimap: true, uiScale: 1 };
+    const snapshot: UserPreferences = { homeBanner: true, uiScale: 1 };
     // Another tab turned reduce motion on after this render.
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ showMinimap: true, uiScale: 1, reduceMotion: true }),
+      JSON.stringify({ homeBanner: true, uiScale: 1, reduceMotion: true }),
     );
-    const next = rebaseUserPreferences(snapshot, { ...snapshot, showMinimap: false });
-    expect(next).toEqual({ showMinimap: false, uiScale: 1, reduceMotion: true });
+    const next = rebaseUserPreferences(snapshot, { ...snapshot, homeBanner: false });
+    expect(next).toEqual({ homeBanner: false, uiScale: 1, reduceMotion: true });
   });
 
   it('removes a key the change removed', () => {

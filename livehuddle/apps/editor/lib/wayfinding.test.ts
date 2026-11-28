@@ -25,7 +25,7 @@ import {
   type WayPoint,
 } from './wayfinding';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { DEFAULT_AVATAR_CONFIG, type AvatarConfig } from '@livehuddle/avatar/config';
+import { DEFAULT_AVATAR_CONFIG, avatarScale, type AvatarConfig } from '@livehuddle/avatar/config';
 
 const at = (kind: Parameters<typeof createShape>[0], x: number, y: number, over = {}) =>
   ({ ...createShape(kind, x, y), id: `${kind}-${x}-${y}`, ...over }) as Element;
@@ -220,9 +220,10 @@ describe('spaceFloors', () => {
     expect(exit.x).toBe(96);
     // The name's line runs 16px under the box (ElevatorFace); the Regular figure's head stands below it, not over it.
     const nameBottom = lift.y + lift.height + 16;
-    expect(exit.y - avatarFigureHeight(1.5)).toBeGreaterThan(nameBottom);
+    const regular = avatarFigureHeight(avatarScale('regular'));
+    expect(exit.y - regular).toBeGreaterThan(nameBottom);
     // A nudge, not a trip: still within a figure and a half of the doors.
-    expect(exit.y - (lift.y + lift.height)).toBeLessThan(1.5 * avatarFigureHeight(1.5));
+    expect(exit.y - (lift.y + lift.height)).toBeLessThan(1.5 * regular);
   });
 
   it('groups places per tab in tab order', () => {

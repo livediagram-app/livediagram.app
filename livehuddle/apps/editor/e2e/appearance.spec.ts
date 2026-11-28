@@ -41,9 +41,9 @@ async function setting(page: import('@playwright/test').Page): Promise<string> {
 
 /** The seeded text element, by the name its view carries. */
 const inkText = (page: import('@playwright/test').Page) =>
-  page.getByRole('img', { name: 'Text "Ink"', exact: true });
+  page.getByRole('img', { name: 'Desk "Ink"', exact: true });
 
-/** The colour the seeded text is actually DRAWN in, computed on the node that holds its words. */
+/** The colour the seeded desk's label is actually DRAWN in, computed on the node that holds its words. */
 async function textInk(page: import('@playwright/test').Page): Promise<string> {
   return inkText(page).evaluate((el) => {
     const nodes = [el, ...el.querySelectorAll('*')];
@@ -77,11 +77,21 @@ test.describe('Appearance', () => {
     // stored colours to contradict the viewer.
     await expect.poll(() => canvasColour(page)).toBe(rgb(DARK_CANVAS));
 
-    // A text element with NO colours of its own: it is written in Ink, the appearance's own pen, so what it
+    // A desk with NO colours of its own: its label is written in Ink, the appearance's own pen, so what it
     // is drawn in is entirely the viewer's appearance, the thing the merge depends on, and the thing a unit
-    // test can't see reach a memoised view. (A sticky note keeps its paper on any canvas, so it can't show it.)
+    // test can't see reach a memoised view. (livehuddle has no text element,
+    // docs/specs/002-project-scope/not-in-livehuddle.md "The Write category".)
     await seedTab(page, [
-      { id: 'ink', type: 'text', x: 300, y: 200, width: 200, height: 60, label: 'Ink' },
+      {
+        id: 'ink',
+        type: 'shape',
+        shape: 'desk',
+        x: 300,
+        y: 200,
+        width: 200,
+        height: 60,
+        label: 'Ink',
+      },
     ]);
     await expect(inkText(page)).toHaveCount(1);
     await expect

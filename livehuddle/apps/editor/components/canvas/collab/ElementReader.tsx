@@ -12,7 +12,6 @@ import { lucideImage, lucideMusic } from '@liveworkspace/icons/lucide';
 import { loadRoomSignReader } from '@/lib/editor-deferred-code';
 import { ReaderShell } from './ReaderShell';
 import { ScreenReaderBody } from './ScreenReaderBody';
-import { useReaderSendToPlan } from './ReaderSendToPlan';
 
 // The Room Sign's door panel loads the first time one is read (docs/specs/016-platform/web-performance.md "A piece's
 // panel"), fetched as soon as someone walks, the only way to read one.
@@ -51,8 +50,6 @@ export function useElementReader(
 }
 
 export function ElementReader({ element, onClose }: { element: Element; onClose: () => void }) {
-  // Send to Plan (docs/specs/013-workspace/send-to-plan.md): a read sticky's way in while walking.
-  const send = useReaderSendToPlan(element, onClose);
   // The Room Sign is a door panel of its own: its room's name, status, who is inside, Knock and Walk In.
   if (element.type === 'shape' && element.shape === 'room-sign')
     return <RoomSignReader elementId={element.id} onClose={onClose} />;
@@ -60,7 +57,7 @@ export function ElementReader({ element, onClose }: { element: Element; onClose:
   const title =
     label && element.type !== 'text' && element.type !== 'sticky' ? label : kindLabel(element);
   return (
-    <ReaderShell title={title} onClose={onClose} footer={send} data-element-reader={element.id}>
+    <ReaderShell title={title} onClose={onClose} data-element-reader={element.id}>
       <div className="p-4 sm:p-6">
         <ReaderBody element={element} onClose={onClose} />
       </div>

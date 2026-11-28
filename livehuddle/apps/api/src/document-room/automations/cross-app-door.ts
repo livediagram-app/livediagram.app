@@ -1,10 +1,19 @@
 // A rule's step from another app on this Space (docs/specs/013-workspace/automations.md "Steps in other apps";
-// liveworkspace blueprint cross-app.md "The door"): Post in a Space, a sticky note on the chosen tab, its text the
-// rule's and signed "Automation · <rule>", written as the author through the one changeset write an agent's edit
-// takes (changesets/write.ts), so everyone with the Space open sees it land. livehuddle has no chat: a note on a tab
-// is the post. The internal door has checked the author's grant; the room runs the step in its chain
+// liveworkspace blueprint cross-app.md "The door"): Post in a Space, a note pinned on the chosen tab's first Notice
+// Board, titled "Automation · <rule>" and its text the rule's, written as the author through the one changeset write
+// an agent's edit takes (changesets/write.ts), so everyone with the Space open sees it land. livehuddle has no chat
+// and no sticky notes (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category"): a note on the board is
+// the post, and a tab with no board refuses the step. The internal door has checked the author's grant; the room runs the step in its chain
 // (@liveworkspace/automations/room takeCrossAppStep). The pickers' read is the Space's tabs.
-import { createSticky, type Element, type Tab } from '@livehuddle/document';
+import {
+  NOTE_AUTHOR_MAX,
+  NOTE_TEXT_MAX,
+  NOTE_TITLE_MAX,
+  NOTES_MAX,
+  type Element,
+  type NoticeNote,
+  type Tab,
+} from '@livehuddle/document';
 import type {
   AutomationStepAnswer,
   AutomationStepDoorCall,
@@ -21,31 +30,34 @@ import { readDocumentOutline } from '../document-content';
 import type { DocumentRoom } from '../document-room';
 import { documentTabUrl } from './kit-outline';
 
-// The gap a posted note keeps from what the tab already holds.
-const POST_GAP = 40;
-// The longest rule name a note's signature carries.
-const SIGNATURE_RULE_MAX = 60;
+// Who pinned it: no person's adder key, so no Participant can unpin it (an Editor may unpin any note), as a
+// template's notes (packages/templates/src/template-notes.ts).
+export const POST_SIGNER = 'automation';
+// The note's title, before the rule's name.
+const POST_TITLE = 'Automation · ';
 
-const boxed = (
-  e: Element,
-): e is Element & { x: number; y: number; width: number; height: number } => {
-  const b = e as { x?: unknown; y?: unknown; width?: unknown; height?: unknown };
-  return [b.x, b.y, b.width, b.height].every((n) => typeof n === 'number' && Number.isFinite(n));
-};
-
-/** Where a new note goes: right of everything on the tab, level with its top; the origin on an empty tab. */
-export function postPlace(elements: readonly Element[]): { x: number; y: number } {
-  const boxes = elements.filter(boxed);
-  if (boxes.length === 0) return { x: 0, y: 0 };
-  return {
-    x: Math.max(...boxes.map((b) => b.x + b.width)) + POST_GAP,
-    y: Math.min(...boxes.map((b) => b.y)),
-  };
+/** The Notice Board a post is pinned on: the tab's first, in element order; null when it has none. */
+export function postBoard(elements: readonly Element[]): number {
+  return elements.findIndex((e) => e.type === 'shape' && e.shape === 'notice-board');
 }
 
-/** The note's words: the rule's text, then its signature. */
-export const postLabel = (text: string, rule: string): string =>
-  `${text.trim()}\n\nAutomation · ${rule.trim().slice(0, SIGNATURE_RULE_MAX) || 'Untitled'}`;
+/** The note a rule's step pins: titled by the rule, the rule's text cut to the note's length, signed by its author. */
+export function postNote(
+  text: string,
+  rule: string,
+  author: string,
+  now: number,
+  id: string,
+): NoticeNote {
+  return {
+    id,
+    title: `${POST_TITLE}${rule.trim() || 'Untitled'}`.slice(0, NOTE_TITLE_MAX),
+    text: text.trim().slice(0, NOTE_TEXT_MAX) || 'Untitled',
+    author: author.slice(0, NOTE_AUTHOR_MAX),
+    by: POST_SIGNER,
+    at: now,
+  };
+}
 
 async function postInSpace(
   env: DocumentEnv,
@@ -56,12 +68,23 @@ async function postInSpace(
 ): Promise<AutomationStepAnswer> {
   const stored = await readStoredTab(env, documentId, step.spaceTab);
   if (!stored) return { ok: false, code: 'target_gone', reason: 'The tab is gone' };
-  const note = {
-    ...createSticky(0, 0),
-    ...postPlace(stored.tab.elements),
-    label: postLabel(step.text, rule),
-  };
-  const next: Tab = { ...stored.tab, elements: [...stored.tab.elements, note] };
+  const at = postBoard(stored.tab.elements);
+  if (at === -1)
+    return { ok: false, code: 'target_gone', reason: 'The tab has no Notice Board to post on' };
+  const board = stored.tab.elements[at] as Extract<Element, { type: 'shape' }>;
+  const notes = board.noticeNotes ?? [];
+  if (notes.length >= NOTES_MAX)
+    return { ok: false, code: 'failed', reason: 'The Notice Board is full' };
+  const note = postNote(
+    step.text,
+    rule,
+    author.name,
+    Date.now(),
+    `automation-${crypto.randomUUID()}`,
+  );
+  const elements = [...stored.tab.elements];
+  elements[at] = { ...board, noticeNotes: [...notes, note] };
+  const next: Tab = { ...stored.tab, elements };
   const outcome = await writeChangeset(env, {
     documentId,
     tabId: step.spaceTab,
@@ -84,7 +107,7 @@ async function postInSpace(
     return { ok: false, code: 'failed', reason: 'The tab was busy; the run may be tried again' };
   return {
     ok: true,
-    text: `Posted a note in “${step.target.title || 'Untitled'}”`,
+    text: `Pinned a note on the Notice Board in “${step.target.title || 'Untitled'}”`,
     link: documentTabUrl(env, documentId, step.spaceTab),
   };
 }

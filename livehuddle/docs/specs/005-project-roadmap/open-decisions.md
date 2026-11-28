@@ -41,10 +41,10 @@ Focus and the Spaces, plus the Session strip's Timer and Vote; Poll and every ot
 [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-vote)).
 
 - (a) All of Workshop: the Session strip, every Collaborate element, facilitation, the session templates.
-- (b) Only Avatar mode, the Navigate elements, Bring Focus and the Spaces.
+- (b) Only Avatar mode, the Navigate elements and the Spaces.
 - (c) (b) plus the Session strip (Timer, Vote, Poll), without the rest of the Collaborate elements.
 
-**Recommendation: (a).** The card names workshops and meetings, the All-Hands Hall needs Bring Focus, a stand-up
+**Recommendation: (a).** The card names workshops and meetings, a stand-up
 wants a timer, and a retrospective needs the whole kit. livediagram keeps its copy too, which is why the drift rules
 in the [Build plan](build-plan.md#keeping-the-two-products-from-drifting) matter.
 

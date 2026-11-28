@@ -48,9 +48,8 @@ async function openAs(
   return page;
 }
 
-// The seeded sticky note and the ones each peer adds.
-const notes = (page: Page) =>
-  page.locator(CANVAS).getByRole('img', { name: 'Sticky note', exact: true });
+// The seeded chair and the ones each peer adds.
+const notes = (page: Page) => page.locator(CANVAS).getByRole('img', { name: 'Chair', exact: true });
 
 test('two peers see each other, edit live, and every edit is kept', async ({
   page,
@@ -69,7 +68,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         name: 'Board',
         opensIn: 'workshop',
         elements: [
-          { id: 'a', type: 'sticky', x: 100, y: 100, width: 200, height: 100 },
+          { id: 'a', type: 'shape', shape: 'chair', x: 100, y: 100, width: 200, height: 100 },
           // Avatar mode's one way in (docs/specs/008-canvas/avatar-mode.md "Where it lives").
           {
             id: 'walk',
@@ -114,14 +113,14 @@ test('two peers see each other, edit live, and every edit is kept', async ({
 
   // A peer's edit reaches the owner live.
   await (
-    await paletteTile(peerPage, 'Add Sticky Note')
+    await paletteTile(peerPage, 'Add Chair')
   ).dragTo(peerPage.locator(CANVAS), { targetPosition: { x: 700, y: 500 } });
   await peerPage.keyboard.press('Escape');
   await expect(notes(ownerPage)).toHaveCount(2);
 
   // The owner edits too; the autosave keeps both, and a reload shows both.
   await (
-    await paletteTile(ownerPage, 'Add Sticky Note')
+    await paletteTile(ownerPage, 'Add Chair')
   ).dragTo(ownerPage.locator(CANVAS), {
     targetPosition: { x: 300, y: 600 },
   });

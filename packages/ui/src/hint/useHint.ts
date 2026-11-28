@@ -60,6 +60,52 @@ const OPEN_DELAY_MS: Record<HintKind, number> = {
   preview: PREVIEW_OPEN_DELAY_MS,
 };
 
+// Where a mouse or pen last pressed a trigger, until the pointer itself moves on (more than the long-press slop; a
+// control sliding out from under a still pointer does not count): a hint arriving under that still pointer stays shut. A press that remounts its control (the Edit | Walk toggle handing
+// itself to the other strip) lost its own `dismissed` with the old instance, and the new one's `pointerenter` opened the
+// hint again over the very button just pressed (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md
+// "Pressing closes it").
+let pressedAt: { x: number; y: number; name: string } | null = null;
+
+/** A trigger's name, the same across a remount: its accessible label, else its text. */
+const triggerName = (el: EventTarget | null): string =>
+  el instanceof Element ? (el.getAttribute('aria-label') ?? el.textContent ?? '').trim() : '';
+let pressWatch: ((e: PointerEvent) => void) | null = null;
+
+function notePress(e: React.PointerEvent) {
+  pressedAt = { x: e.clientX, y: e.clientY, name: triggerName(e.currentTarget) };
+  const doc = (e.target as Node | null)?.ownerDocument ?? document;
+  if (pressWatch) doc.removeEventListener('pointermove', pressWatch, true);
+  pressWatch = (m: PointerEvent) => {
+    if (!pressedAt) return;
+    if (Math.hypot(m.clientX - pressedAt.x, m.clientY - pressedAt.y) <= HINT_LONG_PRESS_SLOP_PX)
+      return;
+    pressedAt = null;
+    doc.removeEventListener('pointermove', pressWatch!, true);
+    pressWatch = null;
+  };
+  doc.addEventListener('pointermove', pressWatch, true);
+}
+
+/** Forgets the last press (tests start from no press). */
+export function forgetHintPress(): void {
+  pressedAt = null;
+  if (pressWatch) document.removeEventListener('pointermove', pressWatch, true);
+  pressWatch = null;
+}
+
+/**
+ * Whether a pointer at (x, y) over `trigger` is still where it pressed that same trigger shut (by name, so its remount
+ * counts and a different control arriving under the pointer does not).
+ */
+export function pressedShutAt(x: number, y: number, trigger: EventTarget | null = null): boolean {
+  return (
+    pressedAt !== null &&
+    pressedAt.name === triggerName(trigger) &&
+    Math.hypot(x - pressedAt.x, y - pressedAt.y) <= HINT_LONG_PRESS_SLOP_PX
+  );
+}
+
 type Timer = ReturnType<typeof setTimeout> | null;
 type TimerName = 'openTimer' | 'closeTimer' | 'pressTimer' | 'lingerTimer';
 
@@ -212,6 +258,8 @@ export function useHint(
     const m = machine.current;
     m.overTrigger = true;
     clearTimers(m, 'closeTimer');
+    // Still where a press shut a hint (this trigger's, before a remount): dismissed, as the press would have left it.
+    if (!m.open && pressedShutAt(e.clientX, e.clientY, e.currentTarget)) m.dismissed = true;
     if (m.open || m.dismissed || m.openTimer !== null) return;
     const delay = OPEN_DELAY_MS[kind];
     if (delay === 0 || isHintWarm(kind, Date.now())) show('pointer');
@@ -237,6 +285,7 @@ export function useHint(
       const m = machine.current;
       if (e.pointerType !== 'touch') {
         m.dismissed = true;
+        notePress(e);
         close();
         return;
       }

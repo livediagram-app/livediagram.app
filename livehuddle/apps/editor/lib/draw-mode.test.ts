@@ -1,19 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import {
-  drawBannerMessage,
-  drawIntentCursor,
-  dropsOnTap,
-  opensForTyping,
-  type PendingDraw,
-} from './draw-mode';
+import { drawBannerMessage, drawIntentCursor, dropsOnTap, type PendingDraw } from './draw-mode';
 
 // One sample per discriminant. Typing it as a Record over PendingDraw['type']
 // means a NEW intent type also fails to compile until it's represented, so
 // neither axis of the union can drift out of the sweeps again.
 const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   shape: [{ type: 'shape', kind: 'chair' }],
-  text: [{ type: 'text' }],
-  sticky: [{ type: 'sticky' }],
   image: [{ type: 'image' }],
   'link-card': [{ type: 'link-card' }],
   'room-walls': [{ type: 'room-walls' }],
@@ -27,10 +19,6 @@ const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
 
 describe('drawBannerMessage', () => {
   it('renders the combined tap/drag copy per box intent', () => {
-    expect(drawBannerMessage({ type: 'text' }, false)).toBe('Click to drop or drag to place text');
-    expect(drawBannerMessage({ type: 'sticky' }, false)).toBe(
-      'Click to drop or drag to draw a sticky note',
-    );
     expect(drawBannerMessage({ type: 'image' }, false)).toBe(
       'Click to drop or drag to draw image bounds',
     );
@@ -88,8 +76,6 @@ describe('drawIntentCursor', () => {
 
   it('returns an inline-SVG cursor (4,4 hotspot) for every non-shape intent', () => {
     for (const intent of [
-      { type: 'text' },
-      { type: 'sticky' },
       { type: 'image' },
       { type: 'link-card' },
       { type: 'room-walls' },
@@ -121,25 +107,12 @@ describe('drawIntentCursor', () => {
   });
 });
 
-describe('opensForTyping', () => {
-  it('opens a drawn text box for typing', () => {
-    expect(opensForTyping({ type: 'text' })).toBe(true);
-  });
-
-  it('leaves stickies and shapes selected, not typing', () => {
-    expect(opensForTyping({ type: 'sticky' })).toBe(false);
-    expect(opensForTyping({ type: 'shape', kind: 'chair' })).toBe(false);
-  });
-});
-
 // Enter drops an armed tile at the middle of the view, as a tap would (docs/specs/008-canvas/canvas-and-palette.md
 // "Adding elements"); a gesture with no tap leaves Enter alone.
 describe('dropsOnTap', () => {
   it('holds for every box and component', () => {
     const taps: PendingDraw[] = [
       { type: 'shape', kind: 'chair' },
-      { type: 'text' },
-      { type: 'sticky' },
       { type: 'image' },
       { type: 'link-card' },
       { type: 'component', kind: 'avatar' },

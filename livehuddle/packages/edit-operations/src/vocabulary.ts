@@ -38,7 +38,16 @@ export type FlagWord = keyof typeof FLAG_MEMBERS;
 
 // What `add`, `set`, a raw element and a replace are told when they make a shape livehuddle does not have
 // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5, D30).
-export const SHAPES_RETIRED = 'shapes are no longer supported in livehuddle: add a sticky';
+export const SHAPES_RETIRED =
+  'shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board';
+
+// What `add`, a raw element and a replace are told when they make a text or a sticky note
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category").
+export const NOTES_RETIRED =
+  'text and sticky notes are no longer supported in livehuddle: pin a note on a notice-board';
+
+/** Whether an element type is a retired text or sticky note. */
+export const isRetiredNoteType = (type: unknown): boolean => type === 'text' || type === 'sticky';
 
 // Words that always read as keywords, never as refs (EO10).
 export const RESERVED_WORDS: ReadonlySet<string> = new Set(['selected', 'all', 'front', 'back']);

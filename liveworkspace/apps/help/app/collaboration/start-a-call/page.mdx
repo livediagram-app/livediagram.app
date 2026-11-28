@@ -5,13 +5,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Start a Call Here',
   description:
-    'Start a livehuddle video call about what you have open, in a new tab, then send its summary to a knowledgebase and its actions to a plan.',
+    'Start a livehuddle video call about what you have open, in a new tab, then send its summary to a knowledgebase.',
   path: '/help/collaboration/start-a-call/',
 });
 
 <ArticleLayout path="collaboration/start-a-call" title="Start a Call Here" description="Talk it through on a video call about what you have open, then keep the summary and the actions." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("start-a-call")}>
 
-Some things are quicker said than written. **Start a Call Here** opens a livehuddle video call about the item you have open, in a new browser tab, so the item stays where it is in its own tab. Everyone who opens the item sees the call is on and can join it. When you are done, the call's summary goes to a knowledgebase and its actions to a plan, and the item lists the call under **Meetings**.
+Some things are quicker said than written. **Start a Call Here** opens a livehuddle video call about the item you have open, in a new browser tab, so the item stays where it is in its own tab. Everyone who opens the item sees the call is on and can join it. When you are done, the call's summary goes to a knowledgebase, and the item lists the call under **Meetings**.
 
 <AppNote app="livehuddle">
   A Space is already a place to meet, so it has no Call button of its own. A call started from a
@@ -27,9 +27,9 @@ Some things are quicker said than written. **Start a Call Here** opens a livehud
 </Step>
 
 <Step n={2}>
-  Under **Where to Meet**, your usual choice is already picked: **A New Space**, or your Calls
-  Space if you chose one in Settings. Pick another of your Spaces to meet there this time; it
-  changes only this call, never your setting. With many Spaces, **Find a Space** narrows the list.
+  Under **Where to Meet**, your usual choice is already picked: **A New Space**, or your Calls Space
+  if you chose one in Settings. Pick another of your Spaces to meet there this time; it changes only
+  this call, never your setting. With many Spaces, **Find a Space** narrows the list.
 </Step>
 
 <Step n={3}>
@@ -70,25 +70,20 @@ Calls are never recorded. A notice says so when you first open the call.
 Whoever started the call has **Wrap Up** in the same card.
 
 <Step n={1}>
-  Check the **Summary**. It is drafted from the Space's notes: its stickies and text, floor by floor,
-  with headings for **Decisions** and **Actions**. **Write With AI** rewrites it from the notes when
-  AI is on for you; your draft stays if AI can't help.
+  Check the **Summary**. It is drafted from the notes pinned on the Space's Notice Boards, floor by
+  floor, with headings for **Decisions** and **Actions**. **Write With AI** rewrites it from the
+  notes when AI is on for you; your draft stays if AI can't help.
 </Step>
 
 <Step n={2}>
   Pick where it goes under **Send To**: a knowledgebase you can edit. The one connected to the item
-  is suggested, else your team's newest. Press **Send Summary**: it becomes a page there, with **Open
-  Page**.
-</Step>
-
-<Step n={3}>
-  Press **Send Actions to Plan** to make a liveplanner card from each sticky on the floor, each linked
-  back (see [Send to Plan](/help/collaboration/send-to-plan/)).
+  is suggested, else your team's newest. Press **Send Summary**: it becomes a page there, with
+  **Open Page**.
 </Step>
 
 ## When the call ends
 
-A Space made for a call is there for that call alone. Once everyone has left and nobody has come back for two minutes, the call has ended and the Space goes to your **Trash**, usually within a quarter of an hour. Anything drawn on it goes with it, so wrap up before you leave: the summary and the actions live in their knowledgebase and plan, and the item keeps the call under **Meetings**. Rejoin within the two minutes and the call and its Space carry on. The next **Call** makes a new Space.
+A Space made for a call is there for that call alone. Once everyone has left and nobody has come back for two minutes, the call has ended and the Space goes to your **Trash**, usually within a quarter of an hour. Anything drawn on it goes with it, so wrap up before you leave: the summary lives in its knowledgebase, and the item keeps the call under **Meetings**. Rejoin within the two minutes and the call and its Space carry on. The next **Call** makes a new Space.
 
 To keep a Space made for a call, rename it, move it to a folder or a team, archive it, or choose it as your Calls Space; you can also restore it from the Trash for 30 days. Your Calls Space and every Space you made yourself are never deleted this way.
 

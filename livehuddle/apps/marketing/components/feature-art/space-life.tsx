@@ -54,21 +54,10 @@ function podStill(name: string, key: StillKey = 'stand') {
   return stillId(member, key);
 }
 
-/** The 3D View switch's glyph (the editor's Space3DGlyph): a floor in perspective with two walls standing on it. */
-function Space3DGlyph() {
-  return (
-    <g fill="none" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2.5 16.5h15l-3-7.5h-9z" />
-      <path d="M5.5 9V4.5h9V9" />
-      <path d="M10 4.5V9" />
-    </g>
-  );
-}
-
 /**
  * See the Space in 3D: a meeting room tilted back like a map, its walls standing with a framed doorway and a
- * window, the room's name over the door, the team standing upright round the table, and the 3D View switch lit in the
- * bottom-right cluster, as Space3DButton draws it (white strip, the brand's wash while on, the glyph and "3D").
+ * window, the room's name over the door, and the team standing upright round the table. The Space is always 3D, so
+ * there is no switch to show.
  */
 export function Space3DArt() {
   return (
@@ -157,44 +146,7 @@ export function Space3DArt() {
         { name: 'Priya', x: 70, y: 22 },
         { name: 'Leo', x: 170, y: 12 },
       ]}
-    >
-      {/* The bottom-right cluster's 3D View switch, on. */}
-      <g transform="translate(216 12)">
-        <g className="fa-a-pop" style={at(0.7)}>
-          <rect
-            width={74}
-            height={38}
-            rx={8}
-            strokeWidth={1.5}
-            className="fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700"
-          />
-          <rect
-            x={1.5}
-            y={1.5}
-            width={71}
-            height={35}
-            rx={6.5}
-            className="fill-emerald-100 dark:fill-emerald-500/20"
-          />
-          <g
-            transform="translate(10 8) scale(1.1)"
-            className="stroke-emerald-700 dark:stroke-emerald-100"
-          >
-            <Space3DGlyph />
-          </g>
-          <text
-            x={39}
-            y={24.5}
-            fontFamily={FONT}
-            fontSize={15}
-            fontWeight={600}
-            className="fill-emerald-700 dark:fill-emerald-100"
-          >
-            3D
-          </text>
-        </g>
-      </g>
-    </SpaceShot>
+    />
   );
 }
 

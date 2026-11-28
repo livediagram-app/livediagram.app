@@ -3,7 +3,6 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { Rotation } from '@liveworkspace/help-site/art/illustrations/element-properties';
 import { RotationCategory } from '@liveworkspace/help-site/art/illustrations/style-panels';
-import { RotatedSofa } from '@/editions/livehuddle/components/illustrations/floor-edits';
 
 export const metadata = helpMetadata({
   title: 'Rotating Elements',
@@ -20,21 +19,18 @@ Most elements sit upright, but sometimes a shape, label, or image reads better a
   Another is a label following a sloped arrow.
 </AppNote>
 
-<AppNote app="livehuddle">Another is a sign hung at a jaunty angle.</AppNote>
-
-<Figure app="livediagram,livedesign,livedocuments,liveplanner,all" caption="An element rotated 45° over its upright outline.">
+<Figure
+  app="livediagram,livedesign,livedocuments,liveplanner,all"
+  caption="An element rotated 45° over its upright outline."
+>
   <Rotation />
-</Figure>
-
-<Figure app="livehuddle" caption="A sofa turned 45 degrees over its upright outline.">
-  <RotatedSofa />
 </Figure>
 
 ## Snap to a Preset Angle
 
 Right-click an element and open the **Rotation** category. It offers eight preset angles, every 45° around the circle: **0°, 45°, 90°, 135°, 180°, 225°, 270°,** and **315°**. Each tile shows the orientation, and with a mouse, hovering a tile previews it on the element before you click. Choosing one snaps the element to that exact angle, which keeps a row of tilted elements perfectly consistent. Picking **0°** sets it back upright. Angles are measured clockwise.
 
-<AppNote app="livediagram,livedesign,livehuddle">
+<AppNote app="livediagram,livedesign">
   You can also press the **⋯** button on the element's selection toolbar.
 </AppNote>
 
@@ -65,19 +61,11 @@ With a single element selected, open the search palette (**Cmd+K** or **Cmd+.**,
     their ends instead, and arrows attached to a rotated element stay on its outline as it turns.
   </AppNote>
 
-<AppNote app="livediagram,livedesign,livedocuments">Videos and link cards can be rotated as well.</AppNote>
+<AppNote app="livediagram,livedesign,livedocuments">
+  Videos and link cards can be rotated as well.
+</AppNote>
 
 <AppNote app="livediagram">So can paths.</AppNote>
-
-<AppNote app="livehuddle">
-  Rooms and the Space's other pieces can be rotated, apart from furniture. **Furniture turns a
-  quarter at a time, if at all.** Chairs, desks, sofas, tables and the other pieces drawn from the
-  room's camera always stand upright, so they have no Rotation category. A piece with a front to
-  face (a chair, a desk, a sofa, a bookshelf, a coffee machine and the like) turns instead: select
-  one and press **Rotate Left** or **Rotate Right** on its selection toolbar (the search palette has
-  the same two actions) to turn it to face another way. Select several and the same buttons turn
-  each piece about its own centre. A piece with no front, such as a plant, has no turn at all.
-</AppNote>
 
 <AppNote app="livediagram,livedesign">
   [Annotation](/help/canvas/annotations/) markers don't rotate: they are round note markers of a

@@ -79,7 +79,7 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   `RETIRED_ARROW_MAX_HOPS` (4) deep. An end that does not resolve (its element missing, not boxed, a cycle, a
   non-finite number) takes the other end's point; with neither, both sit at `{ x: 0, y: 0 }` (D22).
   `retiredArrowCard(arrow, elements)` is the 160 by 96 box centred on the two ends' midpoint; `elementBounds` returns
-  the union of that card and the line's box, so a marquee, fit-to-content, the selection toolbar and the minimap
+  the union of that card and the line's box, so a marquee, fit-to-content and the selection toolbar
   read a retired arrow through it. `RetiredArrowView` (editor) draws the line (`pointer-events: none`) and, over it,
   `RetiredElementFace` in a wrapper at the card's box that selects on press, opens the context menu and shows the
   selection ring; it takes no drag. The card carries the arrow's id, so the comment, note and action popovers anchor

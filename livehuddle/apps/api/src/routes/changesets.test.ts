@@ -399,7 +399,7 @@ describe('submitting a changeset', () => {
 // an agent cannot add one (D30) or send a new one in a replace (D31), and one the tab already holds rides through
 // a replace exactly as stored. Every result's `lint` is null (D32).
 describe('the diagram shapes', () => {
-  const RETIRED = 'shapes are no longer supported in livehuddle: add a sticky';
+  const RETIRED = 'shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board';
   const storedSquare = { ...box('sq', 'Old'), shape: 'square' } as unknown as Element;
 
   it('refuses add square, add shape and add banana, writing nothing', async () => {

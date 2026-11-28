@@ -132,8 +132,34 @@ describe('a Room placed beside a room', () => {
     );
   });
 
-  it('keeps the edge snap when no wall line is near', () => {
-    const at = { x: 480 + 2 + width / 2, y: height / 2 };
-    expect(armedRoomSnap(at, [left]).dx).toBe(-2);
+  // The owner (2026-11-27): a room added beside another left a double wall, the 6px edge snap pulling it box edge to
+  // box edge. The shared wall reaches further and wins its axis.
+  it('shares the wall when dropped box edge to box edge, or roughly beside, never a double wall', () => {
+    for (const off of [2, 0, 25, -20]) {
+      const at = { x: 480 + off + width / 2, y: height / 2 + 7 };
+      expect(armedRoomSnap(at, [left]).dx).toBe(-ROOM_WALL - off);
+    }
+    const dragged = paletteDragSnapAt({
+      canvasX: 480 + 30 + width / 2,
+      canvasY: height / 2,
+      width,
+      height,
+      elements: [left],
+      room: true,
+    });
+    expect(dragged.dx).toBe(-ROOM_WALL - 30);
+  });
+
+  it('leaves a room well apart, or not beside it, to its edge snap', () => {
+    expect(armedRoomSnap({ x: 480 + 90 + width / 2, y: height / 2 }, [left]).dx).toBe(0);
+    // Far below, its left edge near the other's right wall line: lined up by edges, not pulled onto that wall.
+    expect(armedRoomSnap({ x: 480 + 2 + width / 2, y: 900 }, [left]).dx).toBe(-2);
+  });
+
+  it("snaps a Room preset at the preset's size, and a shaped preset by its edges only", () => {
+    // The 640 by 440 Room preset, its box 12px right of the shared wall line.
+    expect(armedRoomSnap({ x: 480 + 2 + 320, y: 220 }, [left], 'medium').dx).toBe(-ROOM_WALL - 2);
+    // A hexagon's walls are not on its box: its box edge meets the other's (dx -2), no wall overlap.
+    expect(armedRoomSnap({ x: 480 + 2 + 340, y: 280 }, [left], 'hexagon').dx).toBe(-2);
   });
 });

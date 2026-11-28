@@ -97,16 +97,7 @@ describe('ToolbarPalette', () => {
     expect(screen.queryByRole('button', { name: 'Selection mode' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Search elements' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
-    expect(barNames()).toEqual([
-      'Write',
-      'Rooms',
-      'Seats',
-      'Perks',
-      'Play',
-      'Garden',
-      'Meet',
-      'Travel',
-    ]);
+    expect(barNames()).toEqual(['Rooms', 'Seats', 'Perks', 'Play', 'Garden', 'Meet', 'Travel']);
     // Stickers is search-only (docs/specs/010-palette/palette-top-level-categories.md "Stickers in search only").
     expect(screen.queryByRole('button', { name: 'Stickers' })).toBeNull();
     // No tiles of their own on the strip: they are in the flyouts.

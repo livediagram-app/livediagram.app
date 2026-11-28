@@ -1,15 +1,14 @@
-// Scenes for the palette's Popular, Write and Stickers articles: the palette body
+// Scenes for the palette's Popular and Stickers articles: the palette body
 // (as More opens it) showing each category. Tile captions are the real ones (palette-tile-defs `caption`, or
 // the label less "Add"), Popular's twelve come from palette-layouts and the sticker badges from
 // packages/icons/src/sticker-catalog.ts.
 
 import type { ReactNode } from 'react';
-import { Label, Scene, Tile } from '@liveworkspace/help-site/art/primitives';
-import { Card, Icon, ICONS } from './editor-chrome';
+import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
+import { Card, Icon } from './editor-chrome';
 
 // Each flyout's line under its name.
 const TAGLINES: Record<string, string> = {
-  Write: 'Text and sticky notes.',
   Stickers: 'Emoji for reacting and marking status.',
 };
 
@@ -27,13 +26,7 @@ function PaletteFrame({
   return (
     <Card x={60} y={10} w={300} h={h} r={7}>
       <rect x={68} y={18} width={22} height={22} rx={5} className="fill-brand-100" />
-      <Icon
-        prims={category === 'Write' ? ICONS.write : SMILE}
-        x={79}
-        y={29}
-        size={11}
-        className="stroke-brand-700"
-      />
+      <Icon prims={SMILE} x={79} y={29} size={11} className="stroke-brand-700" />
       <Label x={98} y={24} size={10.5} weight={650} tone="strong">
         {category}
       </Label>
@@ -50,74 +43,6 @@ const SMILE = [
   { t: 'circle', cx: 12, cy: 12, r: 10 },
   { t: 'path', d: 'M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01' },
 ] as const;
-
-const g = {
-  className: 'fill-none stroke-slate-500',
-  strokeWidth: 1.6,
-  strokeLinecap: 'round',
-  strokeLinejoin: 'round',
-} as const;
-
-/** Write: rows, not tiles, each with the one-line blurb that tells them apart. */
-export function WriteRows() {
-  const rows: { name: string; blurb: string; key?: string; glyph: ReactNode }[] = [
-    {
-      name: 'Text',
-      blurb: 'A free-standing text label',
-      key: 'T',
-      glyph: <path d="M-5 -5h10M0 -5v11" {...g} />,
-    },
-    {
-      name: 'Note',
-      blurb: 'A coloured note card',
-      key: 'N',
-      glyph: <path d="M-6 -6 h12 v7 l-5 5 h-7 Z M1 6 v-5 h5" {...g} />,
-    },
-    {
-      name: 'Image',
-      blurb: 'Place an uploaded picture',
-      glyph: <path d="M-6 -5 h12 v10 h-12 Z M-6 3 l4 -4 l4 4 l2 -2 l2 2 M2.5 -2 h0.01" {...g} />,
-    },
-  ];
-  return (
-    <Scene w={420} h={190} bg="plain">
-      <PaletteFrame category="Write" h={176}>
-        {rows.map((r, i) => {
-          const ry = 62 + i * 40;
-          return (
-            <g key={r.name}>
-              <Tile x={76} y={ry} size={30}>
-                {r.glyph}
-              </Tile>
-              <Label x={118} y={ry + 10} size={11} weight={600} tone="strong">
-                {r.name}
-              </Label>
-              <Label x={118} y={ry + 24} size={10} tone="muted">
-                {r.blurb}
-              </Label>
-              {r.key && (
-                <g>
-                  <rect
-                    x={322}
-                    y={ry + 6}
-                    width={18}
-                    height={18}
-                    rx={4}
-                    className="fill-slate-50 stroke-slate-200"
-                    strokeWidth={1}
-                  />
-                  <Label x={331} y={ry + 16} size={10} anchor="middle" weight={600} tone="muted">
-                    {r.key}
-                  </Label>
-                </g>
-              )}
-            </g>
-          );
-        })}
-      </PaletteFrame>
-    </Scene>
-  );
-}
 
 /** A search field inside the palette body. */
 function SearchField({ y, text }: { y: number; text: string }) {

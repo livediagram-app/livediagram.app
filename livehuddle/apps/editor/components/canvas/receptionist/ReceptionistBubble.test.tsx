@@ -65,10 +65,11 @@ describe('ReceptionistBubble', () => {
   });
 
   it('answers a topic, rings its control, and goes back to the list', () => {
-    const map = document.createElement('div');
-    map.setAttribute('data-tour-id', 'minimap');
-    map.getBoundingClientRect = () => ({ left: 10, top: 20, width: 100, height: 50 }) as DOMRect;
-    document.body.appendChild(map);
+    const cluster = document.createElement('div');
+    cluster.setAttribute('data-zoom-cluster', '');
+    cluster.getBoundingClientRect = () =>
+      ({ left: 10, top: 20, width: 100, height: 50 }) as DOMRect;
+    document.body.appendChild(cluster);
     openReceptionist('welcome');
     bubble();
     fireEvent.pointerDown(screen.getByRole('button', { name: 'Getting Around' }));

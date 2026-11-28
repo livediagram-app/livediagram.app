@@ -4,9 +4,9 @@ import type { PaletteTint } from '@/components/palette/palette-controls';
 
 // The canvas tool (docs/specs/008-canvas/canvas-and-palette.md "Canvas tools"). Only two are picked, from the
 // Edit | Walk toggle: 'select' (Edit) and 'avatar' (Walk, docs/specs/008-canvas/avatar-mode.md). 'pan' is Edit on a
-// touch screen and in an embed (a drag on empty canvas pans), never picked; 'format' is held while the Format
-// painter, started from the selection toolbar, is on.
-export type CanvasTool = 'pan' | 'select' | 'avatar' | 'format';
+// touch screen and in an embed (a drag on empty canvas pans), never picked. The Format painter's held 'format' tool
+// left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and Clear Styles").
+export type CanvasTool = 'pan' | 'select' | 'avatar';
 
 // The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
 // handlers every tile calls, and the tab's state the tiles read.
@@ -30,8 +30,6 @@ export type PaletteProps = {
   // Sticker (docs/specs/010-palette/stickers.md): its own element kind, so its own handler; it never folds into the
   // selected shape. No icon handlers: livehuddle adds no icon (docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
   onAddSticker: (stickerId: string) => void;
-  onAddText: () => void;
-  onAddSticky: () => void;
   // Drop a link-card / bookmark at the viewport centre. See docs/specs/009-elements/link-cards.md.
   onAddLinkCard: () => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md): each arms the tap-or-drag draw gesture.

@@ -65,10 +65,10 @@ connect n2 -> db label=writes
 <AppNote app="livehuddle">
 
 ```text
-# Rename the actions note, add a risks note under it and a plant beside it
-set n2 label="Next Steps"
-add sticky id=risks label="Risks" below:n2
-add plant right-of:risks
+# Rename the studio, add a desk under it and a plant beside it
+set n2 label="Workshop"
+add desk id=ada label="Ada" below:n2
+add plant right-of:ada
 ```
 
 </AppNote>
@@ -97,18 +97,18 @@ The **JSON form** is one object an operation, which is what a script produces. A
 
 ```json
 [
-  { "op": "set", "target": "n2", "fields": { "label": "Next Steps" } },
+  { "op": "set", "target": "n2", "fields": { "label": "Workshop" } },
   {
     "op": "add",
-    "kind": "sticky",
-    "id": "risks",
-    "fields": { "label": "Risks" },
+    "kind": "desk",
+    "id": "ada",
+    "fields": { "label": "Ada" },
     "place": { "rel": "below", "ref": "n2" }
   },
   {
     "op": "add",
     "kind": "plant",
-    "place": { "rel": "right-of", "ref": "risks" }
+    "place": { "rel": "right-of", "ref": "ada" }
   }
 ]
 ```
@@ -195,9 +195,9 @@ A few rules hold for every operation:
 
 <AppNote app="livehuddle">
 
-- **Kinds.** `add` takes `text`, `sticky` or `link-card`, or a Space piece by its kind (`chair`, `desk`, `plant`, `room`, `door` and the rest). A kind livehuddle does not have is refused as `invalid_value`, naming the kinds `add` takes; so are `shape` and the diagram shapes (`square`, `circle`, `diamond` and the rest), which livehuddle no longer supports: add a sticky instead. Images are not made by name; `video`, `table`, `arrow`, `line`, `freehand`, `path` and `annotation` are refused (livehuddle no longer supports them, and a space saved with one keeps it as a placeholder), but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
-- **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `sticky`, `sticky-2`).
-- **Fields.** `label`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`) and `font` work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
+- **Kinds.** `add` takes `link-card`, or a Space piece by its kind (`chair`, `desk`, `plant`, `room`, `door` and the rest). A kind livehuddle does not have is refused as `invalid_value`, naming the kinds `add` takes; so are `shape` and the diagram shapes (`square`, `circle`, `diamond` and the rest), which livehuddle no longer supports: add a Space piece instead. So are `text` and `sticky`: a Space has no text or sticky notes, so pin a note on a `notice-board`. Images are not made by name; `video`, `table`, `arrow`, `line`, `freehand`, `path` and `annotation` are refused (livehuddle no longer supports them, and a space saved with one keeps it as a placeholder), but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
+- **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `desk`, `desk-2`).
+- **Fields.** `label`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`) and `font` work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
 - **No notes.** livehuddle shows no element notes, so `note=` or `noteRich=` with a value is refused (an `add` with a whole element that carries one too), and a long label is never moved into one. `note=` on its own removes a note an element saved from before. A replace keeps each kept element's saved note as it was and gives a new one none.
 - **Placeholders stay as saved.** An element livehuddle no longer has (a chart, a table, an arrow, a lane and the rest, drawn as a placeholder) keeps its kind and every saved field: `set` on one is refused, naming `move` and `rm`, which work on it as on any element. A `set … all` that matches live elements too passes it by. A replace that sends one back keeps it exactly as saved.
 - **Nothing holds.** No element holds others. A lane, stack or boundary saved before livehuddle dropped them is a kind livehuddle does not know: it moves on its own, takes no space when something new is placed, and can be removed.
@@ -268,11 +268,11 @@ Terms combine: `type:sticky in:s2` is the stickies inside stack `s2`, and `from:
 | `n3`, `146b`, `orders` | The element with that ref, id or unique start of an id                   |
 | `"Orders service"`     | The element whose label is exactly that, ignoring case                   |
 | `label~orders`         | Elements whose label contains `orders`                                   |
-| `type:sticky`          | Elements of that kind, as the outline prints it, or of that element type |
+| `type:room`            | Elements of that kind, as the outline prints it, or of that element type |
 | `shape:chair`          | Space pieces of that kind                                                |
 | `selected`             | What the token's owner has selected in an editor open on that tab        |
 
-Terms combine: `type:sticky label~orders` is the stickies whose label mentions orders.
+Terms combine: `type:room label~focus` is the rooms whose label mentions focus.
 
 - A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found` with the nearest labels; several is refused as `target_ambiguous`, listing them.
 - `layout` acts on many by nature. Each ref or quoted label you give names one element, and the other terms together add whatever they match.
@@ -433,8 +433,8 @@ rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livedocuments changeset re
 <AppNote app="livehuddle">
 
 ```text
-~ n3  label "Actions"→"Next Steps"
-+ risks  sticky "Risks" @240,240 200×200
+~ n3  label "Studio"→"Workshop"
++ ada  desk "Ada" @240,240 120×80
 » n4 n5 n6  +0,+160 (layout)
 rev 41→42 · cs_8k2m4q7d1x · revert: livehuddle changeset revert 3f9c2a71-… cs_8k2m4q7d1x
 ```
@@ -505,7 +505,7 @@ The last line carries the tab's new revision, the changeset's id and the command
 
 <AppNote app="livehuddle">
 
-**Warnings** do not stop a changeset: `value_coerced`, `label_capped` (a Space piece's label over 40 characters kept its heading and the rest was cut: put longer text in a text element or a sticky), `colour_overrides_theme`, and `no_base` (sent without a `base` revision).
+**Warnings** do not stop a changeset: `value_coerced`, `label_capped` (a Space piece's label over 40 characters kept its heading and the rest was cut: put longer text in a note on a Notice Board), `colour_overrides_theme`, and `no_base` (sent without a `base` revision).
 
 </AppNote>
 
@@ -546,10 +546,10 @@ nothing was applied
 ```text
 error target_ambiguous · op 2 · set "Pay" fill=green
   "Pay" matches 3 elements:
-    n7  sticky "Pay"
-    n9  text "Pay"
+    n7  desk "Pay"
+    n9  chair "Pay"
     n12 room "Pay"
-  hint: use a ref, narrow with type:sticky, or add all
+  hint: use a ref, narrow with type:desk, or add all
 nothing was applied
 ```
 

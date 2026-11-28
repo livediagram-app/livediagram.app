@@ -1,4 +1,4 @@
-import type { Element } from '@livehuddle/document';
+import { isPoster, posterPicture, type Element } from '@livehuddle/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   ImageGlyph,
@@ -66,6 +66,48 @@ export function ElementContentSections({
                 label="Select Image"
                 onClick={() => {
                   props.onOpenImagePicker(target.id);
+                  onClose();
+                }}
+              />
+            </div>
+          )}
+          {target.credit ? (
+            <>
+              <ContextMenuDivider />
+              <ImageCreditRow credit={target.credit} />
+            </>
+          ) : null}
+        </MenuAccordionSection>
+      ) : null}
+      {/* Picture: a Poster's, chosen with the Image element's picker (docs/specs/009-elements/poster.md). */}
+      {isPoster(target) && props.onChoosePosterPicture ? (
+        <MenuAccordionSection title="Picture" icon={<ImageGlyph />} {...sectionProps('picture')}>
+          {posterPicture(target) ? (
+            <MenuTileGrid cols={2}>
+              <MenuTile
+                icon={<ImageGlyph />}
+                label="Change Picture"
+                onClick={() => {
+                  props.onChoosePosterPicture!(target.id);
+                  onClose();
+                }}
+              />
+              <MenuTile
+                icon={<RemoveIconGlyph />}
+                label="Remove Picture"
+                onClick={() => {
+                  props.onRemoveImage(target.id);
+                  onClose();
+                }}
+              />
+            </MenuTileGrid>
+          ) : (
+            <div className="px-2 py-1.5">
+              <MenuTile
+                icon={<ImageGlyph />}
+                label="Choose Picture"
+                onClick={() => {
+                  props.onChoosePosterPicture!(target.id);
                   onClose();
                 }}
               />

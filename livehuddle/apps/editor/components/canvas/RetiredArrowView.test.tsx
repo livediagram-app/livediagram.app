@@ -59,7 +59,6 @@ function viewProps(
     ends: retiredArrowEnds(arrow as RetiredArrowElement, board),
     onSelect,
     isEditing: false,
-    isPaintMode: false,
     readOnly,
     onBeginEdit: vi.fn(),
     onCommitLabel: vi.fn(),
@@ -204,7 +203,6 @@ describe('a stored arrow and the share roles', () => {
       setSelectedId: () => {},
       setEditingId: () => {},
       setMultiSelectedIds: () => {},
-      setFormatSourceId: () => {},
       lockedByOther: () => false,
     });
     actions.deleteElementById('ab');
@@ -258,7 +256,6 @@ describe('a stored arrow whose pinned element moves or goes', () => {
       setSelectedId: () => {},
       setEditingId: () => {},
       setMultiSelectedIds: () => {},
-      setFormatSourceId: () => {},
       lockedByOther: () => false,
     });
     actions.deleteElementById('b');

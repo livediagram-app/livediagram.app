@@ -23,8 +23,8 @@ flyout of its tiles:
   replaced the Selection Mode picker (owner, 2026-11-06: "change the selection mode dropdown so it just lets me
   toggle between Editor and ... whatever using the board is without too long a name"): Select, Hand, Eraser and
   Format are no longer modes to pick. Edit is plain selecting; panning is Space-drag, the trackpad or the middle
-  button (a drag on empty canvas on a touch screen); Delete removes what the Eraser did; the Format Painter is on the
-  selection toolbar ([Format panel](../008-canvas/format-panel.md)).
+  button (a drag on empty canvas on a touch screen); Delete removes what the Eraser did; the Format Painter left later
+  ([Format Painter and Clear Styles](../002-project-scope/not-in-livehuddle.md#format-painter-and-clear-styles)).
 - **Then the category bar** ("The category bar").
 - **Far right: Search** (a magnifier), on every strip (see "Search: every element type").
 
@@ -90,8 +90,8 @@ The numbers are `apps/editor/lib/strip-morph.ts` (pure, unit-tested); the measur
 ## The category bar
 
 > **In livehuddle** (Work Tracker #423, part 3): the bar is the meeting palette's
-> ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)): **Write | Rooms, Seats, Perks,
-> Play, Garden, Meet | Travel | Stickers** ([The strip's order](../010-palette/palette-top-level-categories.md#the-strips-order)).
+> ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)): **Rooms, Seats, Perks,
+> Play, Garden, Meet | Travel | Stickers** (no Write, [The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)) ([The strip's order](../010-palette/palette-top-level-categories.md#the-strips-order)).
 > There is no Icons button ([Icons](../002-project-scope/not-in-livehuddle.md#icons)), so the two-pane browse below
 > serves Stickers alone. There is no Shapes, Draw, Layout, Ask, Session or Data button and no Session browse; the
 > bar's mechanics below (hover intent, the keyboard, the flyouts, names fit or go) are livehuddle's as written, and
@@ -411,10 +411,9 @@ The Explorer's header has its own **⋯** menu: New Space and Open Explorer, the
 of a webhook is a connection, on the Connections tab inside [Automations](../013-workspace/automations.md).
 
 Collaborate opens as a **popover over its bottom-row
-button** ([Editor app](editor-app.md)): it is not a corner panel. Every
-other panel (AI, the minimap, Poll and the tool panels) docks in its corner
-([Panel docking](panel-docking.md)). Collaborate renders outside
-the corner layer, since a popover positions against the canvas and a corner stack would move it.
+button** ([Editor app](editor-app.md)): it is not a corner panel. livehuddle has no corner panels any more: the Map,
+the last, left ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-map)), and corner docking with it
+([Panel docking](panel-docking.md)).
 A popover opening up from a bottom-row button (the Timer, the Poll) grows no higher than 8 px under a
 toolbar across the canvas's top whose span meets its column, the strip (`usePopoverTopClearance`), and
 12 px from the canvas's top otherwise: on a phone the strip spans the width, and a tall panel ran up under it with its
@@ -486,7 +485,6 @@ its bottom-row button. What changes to fit the width:
   short for the Explorer to be any use. The strip starts at the left gutter in the menu card's
   place, still swiping. Turning the phone upright brings the button back ([A phone held
   sideways](editor-app.md#a-phone-held-sideways)).
-- The minimap stays off ([Minimap](../008-canvas/minimap.md)).
 
 ## Layout details
 
@@ -599,9 +597,8 @@ is its flyout's ("Opening a flyout").
   switch.
 - **The menu button opens the Explorer**, not a menu of its own (an earlier
   cut had New / Recent / Search / Settings entries).
-- **The other panels dock in their corners** ([Panel docking](panel-docking.md)). Collaborate
-  is the exception, a popover over its bottom-row
-  button.
+- **No panel docks in a corner** (the Map, the last corner panel, left livehuddle:
+  [Panel docking](panel-docking.md)). Collaborate is a popover over its bottom-row button.
 
 ## Help
 

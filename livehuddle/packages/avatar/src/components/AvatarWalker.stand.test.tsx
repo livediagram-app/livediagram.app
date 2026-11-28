@@ -9,7 +9,7 @@ afterEach(cleanup);
 
 // docs/specs/008-canvas/3d-view.md "What it shows": characters stand up about their feet.
 describe('a character in the 3D view', () => {
-  it('draws its figure and chip inside a box that stands up about its feet', () => {
+  it('draws its chip inside a box that stands up about its feet', () => {
     const { container } = render(
       <AvatarWalker
         pos={{ x: 100, y: 200 }}

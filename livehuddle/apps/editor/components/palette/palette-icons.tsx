@@ -32,15 +32,9 @@ export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
 
 // The bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): a paintbrush on the
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
-// the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
-// element-to-element format tool): this one styles the whole tab.
+// the CanvasThemeDialog: it styles the whole tab.
 export { ThemeLookIcon } from '@livehuddle/ui';
 
-// Format tool (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, the same glyph as the top-centre
-// "Copy formatting" chip (drawn once in @livehuddle/ui): picks one
-// element's style and paints it onto others. Two-phase persistent mode
-// (pick a base, then tap targets).
-export { FormatPainterIcon } from '@livehuddle/ui';
 
 // Avatar mode (docs/specs/008-canvas/avatar-mode.md): footprints, so the picker entry reads as "a
 // character that walks" rather than a person / profile photo (which is what the

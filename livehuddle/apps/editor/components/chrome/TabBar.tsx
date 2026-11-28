@@ -1,5 +1,4 @@
 import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
-import { sendAllStickies } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import dynamic from 'next/dynamic';
 import { MenuErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { useState, type ReactNode } from 'react';
@@ -233,8 +232,6 @@ export function TabBar({
     attendanceOnly: readOnly,
     canDelete: tabs.length > 1,
     canClearContent: activeTabHasContent,
-    // Send to Plan's Send All (docs/specs/013-workspace/send-to-plan.md), for every role that may send.
-    onSendStickies: sendAllStickies(tab.id, tab.elements),
     selfId,
     otherDocuments,
     folders,

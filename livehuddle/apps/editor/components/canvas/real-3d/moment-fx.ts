@@ -12,7 +12,9 @@ import type { Element } from '@livehuddle/document';
 import { MOMENT_MS, type MomentKind } from '@/lib/piece-moments';
 import { frameToCanvas, pieceFrame, type PieceBox } from '@/lib/real-3d/piece-frame';
 import { piecesMesh } from '@/lib/real-3d/scene-pieces';
-import { kindHeight } from '@/lib/real-3d/models/kit';
+import { kindHeight, RISE } from '@/lib/real-3d/models/kit';
+import { LAMP_SHADE_Z } from '@/lib/real-3d/models/lamps';
+import { pondWaterHeight } from '@/lib/real-3d/models/pond';
 
 type Particle = {
   obj: THREE.Object3D;
@@ -37,6 +39,7 @@ const ROCK = new Set([
   'tree',
   'garden-umbrella',
   'coat-rack',
+  'floor-lamp',
   'hammock',
   'stage-curtains',
   'umbrella-stand',
@@ -233,7 +236,8 @@ export class MomentFx {
         else thing.scale.setScalar(1.6);
         const sx = feet ? feet.x : cx - away.x * 40;
         const sy = feet ? feet.y : cy - away.y * 40;
-        const water = coin ? 9 : 1;
+        // The Pond's water lies below the floor (models/pond.ts).
+        const water = coin ? 9 : kind === 'pond' ? pondWaterHeight(box.width, box.height) : 1;
         add(thing, mat, (t, o) => {
           const u = Math.min(1, t / 0.5);
           o.position.set(
@@ -301,6 +305,31 @@ export class MomentFx {
             return 0.6 * (1 - u);
           });
         }
+        break;
+      }
+      case 'floor-lamp':
+      case 'table-lamp':
+      case 'desk-lamp': {
+        // The lamp flickers: a warm halo round its shade (its head's rim) goes off and on twice, then stays a beat.
+        const z = (LAMP_SHADE_Z[kind] ?? H) * RISE;
+        const r = kind === 'floor-lamp' ? 20 : 12;
+        const at = frameToCanvas(
+          f,
+          kind === 'desk-lamp' ? 9 : 0,
+          kind === 'floor-lamp' ? (f.foot.y0 + f.foot.y1) / 2 : 0,
+        );
+        const mat = glowMaterial(0xffe2a0);
+        const halo = new THREE.Mesh(BALL_GEO, mat);
+        add(halo, mat, (t, o) => {
+          o.position.set(at.x, at.y, z);
+          o.scale.setScalar(r);
+          const off = (t > 0.1 && t < 0.22) || (t > 0.34 && t < 0.44);
+          return off
+            ? 0
+            : 0.32 *
+                Math.sin(Math.min(1, t / 0.08) * (Math.PI / 2)) *
+                (t > 0.6 ? (1 - t) / 0.4 : 1);
+        });
         break;
       }
       case 'car-park': {

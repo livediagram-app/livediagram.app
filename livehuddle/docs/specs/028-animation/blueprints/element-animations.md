@@ -265,7 +265,7 @@ live only in pseudo-element `content`, so a label can never inject markup.
 ## Presentation and UX
 
 One Animation row with a flyout of sections named as in Domain and naming (a lone section inline, titled
-Animation). Tiles are `AnimationPreviewTile`s: a 46 × 30 stage holding the miniature, frozen with
+Animation). Tiles are `AnimationPreviewTile`s (deleted from livehuddle with the menus' Appearance): a 46 × 30 stage holding the miniature, frozen with
 `useFrozenAnimations` at `previewFrame(set, value)` (one `getAnimations({ subtree: true })` pass on mount: pause, set
 `currentTime` to frame × duration) and played on pointer enter; moving values (`MOVES`, `ICON_MOVES`) add a dashed
 ghost at rest. The miniatures set the variables the canvas would, scaled as for a 120 × 80 element. The kept tile

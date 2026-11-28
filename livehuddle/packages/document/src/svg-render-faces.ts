@@ -26,6 +26,8 @@ import {
 } from './office-garden';
 import { POND_FILL, pondParts } from './office-social';
 import { POOL_FILL, swimmingPoolParts } from './office-venue';
+import { ROAD_FILL } from './road-fill';
+import { roadParts } from './office-road';
 import { FOCUS_BUTTON_ART } from './focus-button-art';
 import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { roomSignSvg, screenSvg } from './svg-render-meeting';
@@ -96,6 +98,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'outdoor-plant',
   'tree',
   'garden-path',
+  'road',
   'grass',
   'garden-fence',
   // The social pieces (docs/specs/009-elements/social-pieces.md).
@@ -131,6 +134,9 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'toilet-cubicle',
   'washbasin',
   'hand-dryer',
+  'floor-lamp',
+  'table-lamp',
+  'desk-lamp',
   'pillar',
   'column',
   'car-park',
@@ -152,6 +158,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'suggestion-box',
   'signpost',
   'photo-wall',
+  'poster',
   'door',
   'window',
   'directory',
@@ -285,6 +292,9 @@ export function svgBehaviourFace(
     case 'toilet-cubicle':
     case 'washbasin':
     case 'hand-dryer':
+    case 'floor-lamp':
+    case 'table-lamp':
+    case 'desk-lamp':
     case 'pillar':
     case 'column':
     case 'car-park':
@@ -303,6 +313,7 @@ export function svgBehaviourFace(
     case 'suggestion-box':
     case 'signpost':
     case 'photo-wall':
+    case 'poster':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
     // A pond (docs/specs/009-elements/social-pieces.md "Pond"): its water in the fill, drawn to its size.
     case 'pond':
@@ -326,6 +337,14 @@ export function svgBehaviourFace(
         el,
         gardenPathParts(el.width, el.height),
         fill ?? el.fillColor ?? GARDEN_PATH_FILL,
+        stroke,
+      );
+    // A road (docs/specs/009-elements/road.md): asphalt, kerbs and its centre line, drawn to its size.
+    case 'road':
+      return sizedSvg(
+        el,
+        roadParts(el.width, el.height),
+        fill ?? el.fillColor ?? ROAD_FILL,
         stroke,
       );
     case 'grass':

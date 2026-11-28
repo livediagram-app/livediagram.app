@@ -53,10 +53,12 @@ describe('add <kind>', () => {
     });
   });
 
-  it('makes text, stickies and link cards from their factories', () => {
-    for (const kind of ['text', 'sticky', 'link-card']) {
-      expect(added(`add ${kind}`).type).toBe(kind);
-    }
+  it('makes link cards from their factory, and refuses text and stickies', () => {
+    expect(added('add link-card').type).toBe('link-card');
+    for (const kind of ['text', 'sticky'])
+      expect(refused(run(`add ${kind}`)).details).toEqual([
+        `kind="${kind}": text and sticky notes are no longer supported in livehuddle: pin a note on a notice-board`,
+      ]);
     expect(added('add plant')).toMatchObject({ type: 'shape', shape: 'plant' });
   });
 
@@ -67,16 +69,16 @@ describe('add <kind>', () => {
       expect(refused(run(`add ${kind} label=Box`))).toEqual({
         code: 'invalid_value',
         operation: 1,
-        details: [`kind="${kind}": shapes are no longer supported in livehuddle: add a sticky`],
+        details: [`kind="${kind}": shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board`],
       });
     const unknown = refused(run('add banana label=Box'));
     expect(unknown.code).toBe('invalid_value');
     expect(unknown.details[0]).toMatch(
-      /^kind="banana": not a kind livehuddle has; kinds: text sticky link-card /,
+      /^kind="banana": not a kind livehuddle has; kinds: link-card /,
     );
     expect(unknown.details[0]).toContain(' plant ');
     expect(unknown.hint).toBeUndefined();
-    expect(refused(run('add stcky')).hint).toBe('did you mean sticky?');
+    expect(refused(run('add plnt')).hint).toBe('did you mean plant?');
     // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: arrows, lines, drawings, paths
     // and annotations are retired.
     expect(refused(run('add arrow')).details).toEqual([

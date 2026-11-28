@@ -35,6 +35,10 @@ export const MOMENT_KINDS = [
   'toilet-cubicle',
   'washbasin',
   'hand-dryer',
+  // The lamps (office-amenities.md "Lamps"): each flickers.
+  'floor-lamp',
+  'table-lamp',
+  'desk-lamp',
   'car-park',
   'bike-rack',
   'swimming-pool',
@@ -104,6 +108,9 @@ export const MOMENT_TOP: Record<MomentKind, number> = {
   'toilet-cubicle': 0.6,
   washbasin: 0.7,
   'hand-dryer': 0.5,
+  'floor-lamp': 0.85,
+  'table-lamp': 0.5,
+  'desk-lamp': 0.5,
   'car-park': 0.3,
   'bike-rack': 0.5,
   'swimming-pool': 0,
@@ -133,6 +140,9 @@ const BELOW_WALL_OR_COUNTER: Partial<Record<MomentKind, number>> = {
   window: WALL_REACH,
   microwave: COUNTER_REACH,
   kettle: COUNTER_REACH,
+  // Standing on a desk, as the kettle on a counter.
+  'table-lamp': COUNTER_REACH,
+  'desk-lamp': COUNTER_REACH,
 };
 // Every kind filled in, so the check on every step never misses a key.
 export const MOMENT_BELOW = Object.fromEntries(
@@ -168,6 +178,9 @@ export const MOMENT_MS: Record<MomentKind, number> = {
   'toilet-cubicle': 1500,
   washbasin: 2400,
   'hand-dryer': 1300,
+  'floor-lamp': 1000,
+  'table-lamp': 1000,
+  'desk-lamp': 1000,
   'car-park': 1300,
   'bike-rack': 1700,
   'swimming-pool': 2500,

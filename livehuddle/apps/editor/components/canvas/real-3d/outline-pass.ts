@@ -23,6 +23,8 @@ uniform float persp;
 uniform float threshold;
 uniform vec3 ink;
 uniform float inkAlpha;
+uniform float aoRadius;
+uniform float aoStrength;
 varying vec2 vUv;
 
 // 1 / w, the perspective's divisor, from the depth buffer (projection.ts's depth row): it changes linearly across any
@@ -33,8 +35,51 @@ float q(vec2 uv) {
   return 1.0 / (1.0 - near / persp);
 }
 
+// How far toward the viewer a pixel stands (canvas px, larger is nearer): q's own depth, before its divisor.
+float toward(vec2 uv) {
+  float z = texture2D(tDepth, uv).x * 2.0 - 1.0;
+  return z / (z / persp - k);
+}
+
+// Screen-space ambient occlusion: the share of a ring of neighbours standing nearer the viewer than the surface here
+// would put them (its slope taken from the pixels either side), within a reach, so a crease (a seat against its back, a
+// chair under a desk) darkens while a flat wall or top seen at a slant, and a far step, never do.
+float occlusion(vec2 uv) {
+  float here = toward(uv);
+  vec2 slope = vec2(
+    toward(uv + vec2(texel.x, 0.0)) - toward(uv - vec2(texel.x, 0.0)),
+    toward(uv + vec2(0.0, texel.y)) - toward(uv - vec2(0.0, texel.y))
+  ) * 0.5;
+  float hidden = 0.0;
+  for (int i = 0; i < 12; i++) {
+    float a = float(i) * 2.39996;
+    float r = aoRadius * (0.35 + 0.65 * fract(float(i) * 0.618));
+    vec2 px = vec2(cos(a), sin(a)) * r;
+    vec2 o = px * texel;
+    if (texture2D(tColor, uv + o).a < 0.5) continue;
+    float d = toward(uv + o) - (here + dot(slope, px));
+    hidden += smoothstep(0.6, 2.4, d) * (1.0 - smoothstep(10.0, 22.0, d));
+  }
+  return 1.0 - aoStrength * hidden / 12.0;
+}
+
+// A gentle filmic grade: a little more saturation and contrast, highlights rolled off rather than clipped.
+vec3 grade(vec3 c) {
+  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  c = mix(vec3(l), c, 1.14);
+  c = (c - 0.5) * 1.07 + 0.5;
+  vec3 over = max(c - 0.82, 0.0);
+  c = c - over + over / (1.0 + over * 2.6);
+  return clamp(c, 0.0, 1.0);
+}
+
 void main() {
   vec4 c = texture2D(tColor, vUv);
+  if (c.a > 0.01) c.rgb = grade(c.rgb);
+  // A character's pixels carry alpha 0.95 (game-figure.ts FIGURE_ALPHA): no occlusion speckle and no ink across its
+  // facets inside its outline; its outline against the scene is kept.
+  bool figure = c.a > 0.9 && c.a < 0.97;
+  if (c.a >= 0.97) c.rgb *= occlusion(vUv);
   bool edge = false;
   if (c.a > 0.9) {
     float l = texture2D(tColor, vUv - vec2(texel.x, 0.0)).a;
@@ -42,7 +87,7 @@ void main() {
     float d = texture2D(tColor, vUv - vec2(0.0, texel.y)).a;
     float u = texture2D(tColor, vUv + vec2(0.0, texel.y)).a;
     if (min(min(l, r), min(d, u)) < 0.5) edge = true;
-    else {
+    else if (!figure) {
       float qc = q(vUv);
       float bx = 2.0 * qc - q(vUv - vec2(texel.x, 0.0)) - q(vUv + vec2(texel.x, 0.0));
       float by = 2.0 * qc - q(vUv - vec2(0.0, texel.y)) - q(vUv + vec2(0.0, texel.y));
@@ -53,13 +98,15 @@ void main() {
   if (edge) {
     gl_FragColor = vec4(mix(c.rgb, ink, inkAlpha), 1.0);
   } else {
-    gl_FragColor = c;
+    gl_FragColor = vec4(c.rgb, figure ? 1.0 : c.a);
   }
 }`;
 
 export type OutlinePass = {
   setSize: (width: number, height: number) => void;
   render: (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) => void;
+  /** The pass's own screen quad, compiled with the scene before the first frame (shader-warmup.ts). */
+  quad: { scene: THREE.Scene; camera: THREE.Camera };
   dispose: () => void;
 };
 
@@ -88,6 +135,8 @@ export function createOutlinePass(opts: {
       threshold: { value: 0.004 },
       ink: { value: new THREE.Vector3(ink.r, ink.g, ink.b) },
       inkAlpha: { value: 0.55 },
+      aoRadius: { value: 9 },
+      aoStrength: { value: 0.55 },
     },
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT,
@@ -101,11 +150,14 @@ export function createOutlinePass(opts: {
   quadScene.add(quad);
   const quadCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
   return {
+    quad: { scene: quadScene, camera: quadCamera },
     setSize(width, height) {
       const w = Math.max(1, Math.round(width));
       const h = Math.max(1, Math.round(height));
       target.setSize(w, h);
       texel.set(1 / w, 1 / h);
+      // The occlusion's reach in screen pixels, at the page's pixel ratio.
+      material.uniforms.aoRadius!.value = 9 * Math.min(2, window.devicePixelRatio || 1);
     },
     render(renderer, scene, camera) {
       renderer.setRenderTarget(target);

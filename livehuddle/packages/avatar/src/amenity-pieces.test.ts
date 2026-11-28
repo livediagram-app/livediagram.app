@@ -25,6 +25,7 @@ describe('the office amenities', () => {
     ['fridge', 72, 136],
     ['toilet-cubicle', 96, 152],
     ['washbasin', 72, 112],
+    ['floor-lamp', 48, 136],
   ] as const;
 
   it('blocks with a footprint in the bottom of each standing piece, never its top', () => {
@@ -47,13 +48,23 @@ describe('the office amenities', () => {
   });
 
   it('walks past the hand dryer, and the microwave and kettle on a counter: nothing to block or stand on', () => {
-    for (const shape of ['hand-dryer', 'microwave', 'kettle']) {
+    for (const shape of ['hand-dryer', 'microwave', 'kettle', 'table-lamp', 'desk-lamp']) {
       expect(isWallPieceShape(shape), shape).toBe(true);
       expect(isSceneryShape(shape), shape).toBe(false);
       expect(officeFootprint({ x: 0, y: 0, width: 60, height: 40, shape }), shape).toBeNull();
       const piece = { id: shape, type: 'shape', x: 0, y: 0, width: 60, height: 40, shape };
       expect(elementUnderFeet([piece], { x: 30, y: 20 }), shape).toBeNull();
     }
+  });
+
+  // The Floor Lamp blocks with its round base alone: the pole and the shade above never do (office-amenities.md "Lamps").
+  it("blocks a floor lamp's base and never its pole or shade", () => {
+    const box = { x: 0, y: 0, width: 48, height: 136 };
+    const foot = officeFootprint({ ...box, shape: 'floor-lamp' })!;
+    expect(foot.y).toBeGreaterThanOrEqual(120);
+    expect(foot.width).toBeLessThan(box.width / 2);
+    const lamp = { id: 'l', type: 'shape', ...box, shape: 'floor-lamp' };
+    expect(elementUnderFeet([lamp], { x: 24, y: 20 })).toBeNull();
   });
 
   // The drink machines block (walked round, never through) yet are still walked up to for a drink: standing in the strip
@@ -70,7 +81,14 @@ describe('the office amenities', () => {
   });
 
   it('seats nobody', () => {
-    for (const shape of [...SCENERY.map(([s]) => s), 'hand-dryer', 'microwave', 'kettle']) {
+    for (const shape of [
+      ...SCENERY.map(([s]) => s),
+      'hand-dryer',
+      'microwave',
+      'kettle',
+      'table-lamp',
+      'desk-lamp',
+    ]) {
       expect(isFixedSeatShape(shape), shape).toBe(false);
       expect(seatsACharacter(shape), shape).toBe(false);
     }

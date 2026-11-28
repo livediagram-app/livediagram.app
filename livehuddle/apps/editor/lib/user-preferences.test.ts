@@ -221,8 +221,8 @@ describe('writeUserPreferences (server sync)', () => {
 
   it('still writes to localStorage when the PUT path runs (cache first, sync second)', () => {
     const { storage } = mockBrowser();
-    writeUserPreferences({ showMinimap: false }, 'owner-1');
-    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ showMinimap: false });
+    writeUserPreferences({ homeBanner: false }, 'owner-1');
+    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ homeBanner: false });
   });
 });
 

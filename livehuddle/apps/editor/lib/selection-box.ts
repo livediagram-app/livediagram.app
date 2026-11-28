@@ -1,10 +1,9 @@
 import type { CanvasSurface } from '@livehuddle/document';
 import { BRAND_RAMP } from '@livehuddle/ui';
 
-// The colours of the two "selection box" rectangles the editor draws: the
-// drag-select marquee on the canvas and the Map's current-view window
-// (docs/specs/008-canvas/canvas-and-palette.md "Marquee select", docs/specs/008-canvas/minimap.md).
-// One helper so the two boxes always look alike.
+// The colours of the editor's "selection box" rectangle: the drag-select marquee on the canvas
+// (docs/specs/008-canvas/canvas-and-palette.md "Marquee select"). The Map's current-view window shared it until the Map
+// left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "The Map").
 //
 // Both take the tab theme's accent (its element stroke). The paper decides how
 // loud that accent is: on light paper it is drawn at full strength, but the

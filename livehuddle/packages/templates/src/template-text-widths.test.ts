@@ -4,7 +4,7 @@ import { buildTemplate } from './build-template';
 import { TEMPLATES } from './templates';
 
 // A template's titles, captions and hints are as wide as their words (docs/specs/008-canvas/canvas-and-palette.md
-// "Text sized to its words"): Zoom to Fit, the minimap and the selection outline frame the content, not empty width.
+// "Text sized to its words"): Zoom to Fit and the selection outline frame the content, not empty width.
 // Text that wraps is no wider than the content it heads.
 const isText = (el: Element): el is Extract<Element, { type: 'text' }> => el.type === 'text';
 

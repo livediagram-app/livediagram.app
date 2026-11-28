@@ -1,5 +1,7 @@
 # Panel corner docking
 
+> **Corner docking is gone from livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-map)): the Map was its last corner panel, and it left on 2026-11-27. livehuddle renders no corner stacks, no snap slot and keeps no panel layout; a stored `livehuddle:panel-layout:v1` stays unread. livediagram keeps docking, and [its spec there](../../../../livediagram/docs/specs/007-editor/panel-docking.md) is the one to read and change. Two rules below still hold in livehuddle: the popovers off buttons (focus, Escape, phone drawers, in **Scope**) and the shared drag tolerance (in **Dragging, snapping, and free placement**). The rest of this page records what livehuddle had.
+
 The editor's corner panels (Minimap, Poll and the tool panels) each
 ship pinned to a fixed corner (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). This spec lets
 the user **choose which corner each panel sits in**, drag a panel between corners with a

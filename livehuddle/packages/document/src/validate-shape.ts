@@ -20,6 +20,8 @@ import {
   NOTES_MAX,
 } from './office-social';
 import { isScreenUrl, SCREEN_URL_MAX } from './meeting-pieces';
+import { isImageCredit } from '@liveworkspace/model-core/image-credit';
+import { isPosterImageId, POSTER_IMAGE_ID_MAX } from './poster';
 import { isPieceTimer, TIMER_MINUTES_MAX } from './timer-pieces';
 import { ARCADE_NAME_MAX, ARCADE_SCORES_MAX, isArcadeScores } from './arcade-scores';
 import { isRoomOutline, ROOM_OUTLINE_MAX, ROOM_OUTLINE_MIN } from './room-outline-field';
@@ -57,7 +59,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: 'who may speak from a stage (edit or take-part)',
   },
   flag('stageCameras'),
-  flag('doorClosed'),
   flag('receptionistLeft'),
   {
     field: 'variant',
@@ -88,6 +89,13 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: isArcadeScores,
     rule: `at most ${ARCADE_SCORES_MAX} scores { id, name (${ARCADE_NAME_MAX} characters), score (1 to the run's ceiling), ms, by, at }`,
   },
+  // A Poster's picture (docs/specs/009-elements/poster.md "Choosing its picture"): a gallery id, and a search pick's credit.
+  {
+    field: 'imageId',
+    valid: isPosterImageId,
+    rule: `a gallery image id of at most ${POSTER_IMAGE_ID_MAX} characters, or a data:image/ URI`,
+  },
+  { field: 'credit', valid: isImageCredit, rule: 'an image credit' },
   // A Screen's Video Link (docs/specs/009-elements/screen-and-room-sign.md "Screen").
   {
     field: 'screenUrl',

@@ -1,5 +1,3 @@
-export type MapSize = 'short' | 'medium' | 'tall';
-
 // Per-user editor preference flags. See docs/specs/007-editor/user-preferences.md.
 //
 // Storage:
@@ -40,16 +38,9 @@ export type UserPreferences = {
   // existing users, and removing it would make a stored preference fail to
   // parse rather than simply be ignored.
   recogniseShapes?: boolean;
-  // Map panel options (docs/specs/008-canvas/minimap.md). Both default ON / medium via `!== false`
-  // and `?? 'medium'`, so an existing user's map is unchanged.
-  //
-  // `mapDimOutside` shades everything outside the current view. It reads as
-  // "you are here" at a glance, but on a dense canvas some people want the
-  // whole map bright, so it is a toggle rather than a rule.
-  mapDimOutside?: boolean;
-  // How tall the map is. A big canvas is unreadable in a 144px strip; a
-  // small one doesn't need more.
-  mapSize?: MapSize;
+  // `showMinimap`, `mapDimOutside` and `mapSize` are not read: the Map left livehuddle
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "The Map"). They are common settings the other apps still
+  // read, so a stored value is kept, unread, like any key this version does not know.
   // `collaboratePanelEnabled` is not read: the Collaborate Panel left livehuddle with comments and actions
   // (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes"). A stored value is kept,
   // unread, like any key this version does not know.
@@ -57,7 +48,7 @@ export type UserPreferences = {
   // (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style). A stored
   // value is kept, unread, like any key this version does not know.
   // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
-  // rest (floating, popover, the Map, the Toolbar strip), so the
+  // rest (floating, popover, the Toolbar strip), so the
   // canvas shows through; they snap back to fully opaque while hovered /
   // focused. Applied via the `--lvd-panel-opacity` custom property (see
   // usePanelOpacity) on every `data-panel-translucent` surface. Buttons are
@@ -84,11 +75,6 @@ export type UserPreferences = {
   // unaffected; only the visual hint is suppressed). Missing /
   // undefined === guides on, the default.
   alignmentGuides?: boolean;
-  // Rotate in 3D View (docs/specs/008-canvas/3d-view.md "Turning the camera"): when true the 3D view offers Turn Left
-  // and Turn Right (and [ and ]). Missing / false === off, the default.
-  rotateIn3D?: boolean;
-  // Real 3D (docs/specs/008-canvas/3d-engine.md): when true the 3D view draws a real WebGL scene. Missing / false === off.
-  real3D?: boolean;
   // Reduce motion (accessibility, docs/specs/007-editor/user-preferences.md). When `true`, the editor adds
   // `.reduce-motion` to <html> so the CSS in globals.css collapses every
   // decorative animation + transition to ~instant. Independent of the OS
@@ -112,10 +98,6 @@ export type UserPreferences = {
   // it mirrors Figma, and the pan works from anywhere on the canvas
   // regardless of the active tool. Lives in the Controls group.
   middleMousePan?: boolean;
-  // Minimap (docs/specs/008-canvas/minimap.md). When `false`, the bottom-left canvas minimap is hidden.
-  // Missing / undefined / true === shown, the default (and even then only once
-  // the tab has a few elements, and on desktop). The minimap's own close button writes an explicit `false`.
-  showMinimap?: boolean;
   // Explorer Home's banner, the hero (docs/specs/013-workspace/explorer-home.md "Hiding the banner"). When `false`,
   // Home opens on its ordinary page header and the header's search field instead. Missing / undefined / true ===
   // shown, the default. The banner's own close button writes an explicit `false`; Settings turns it back on.

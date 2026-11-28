@@ -110,7 +110,6 @@ Piece fields a Participant may change, on anyone's element:
 
 | Element                 | Fields                                                                                                |
 | ----------------------- | ----------------------------------------------------------------------------------------------------- |
-| `shape` `door`          | `doorClosed`                                                                                          |
 | `shape` `notice-board`  | `noticeNotes`, through `mergeNoticeNotes`: notes signed with its adder key added or removed, no other |
 | `shape` `calendar-wall` | `noticeNotes`, as a `notice-board` (`holdsNotes`)                                                     |
 
@@ -164,7 +163,6 @@ Editor state:
 | `resize(el)`    | false       | false |
 | `recolour(el)`  | false       | false |
 | `remove(el)`    | false       | false |
-| `swingDoor(el)` | true        | false |
 | `alwaysWalks`   | true        | false |
 
 `roleGates(can, runBlocked)` answers the canvas's role gates from `can`, never from `isReadOnly`: `run` is
@@ -195,7 +193,7 @@ Hooks that write a tab's structure, or write without passing `commit`, take `str
 A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_MS`.
 
 Gestures opened for a Participant, each beside `isReadOnly`: answering session tools (`takePart`), the pieces
-(`swingDoor`, a Notice Board's pin and unpin, a Timer's controls) and the walk. It has no palette strip (the
+(a Notice Board's pin and unpin, a Timer's controls) and the walk. It has no palette strip (the
 `participate` category and `participantPaletteCategories` are gone), no tile keys, and the keyboard treats it as a
 Viewer (`useEditorKeyboardShortcuts` takes no `participant` flag). `can.alwaysWalks` (a Participant's and a
 Viewer's, `resolveEditorCapabilities`; [Always walking](../share-roles.md#always-walking)) holds it in Avatar mode:
@@ -312,8 +310,8 @@ lands in a new document, where no adder key matches it.
   the sender gets `remove`.
 - **E4** A Participant deletes any element, its own earlier sticky included: refused `not-own`; the sender gets it
   back at its index.
-- **E5** A Participant's update that moves a Door as it swings it: applied as the swing alone (`doorClosed`); the
-  sender gets the merged element. One that rewrites a label or moves a sticky: applied with nothing changed.
+- **E5** A Participant's update that moves a Door, rewrites a label or moves a sticky: applied with nothing changed
+  (doors store no open state, so a Participant changes nothing about one).
 - **E6** A Participant edits an element an Editor deleted meanwhile: refused `missing`, no correction (the Editor's
   remove reaches the sender too).
 - **E8** The write loses the compare-and-swap `TAB_CAS_MAX_ATTEMPTS` times, the tab is gone, or the tab is over its

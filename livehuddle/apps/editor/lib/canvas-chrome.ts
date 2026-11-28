@@ -52,20 +52,15 @@ export function canvasCursorClass(input: {
   marquee: boolean;
   canvasTool: string;
   spaceHeld: boolean;
-  isPaintMode: boolean;
 }): string {
-  const { pendingDraw, pan, marquee, canvasTool, spaceHeld, isPaintMode } = input;
+  const { pendingDraw, pan, marquee, canvasTool, spaceHeld } = input;
   if (pendingDraw) return 'cursor-crosshair';
   if (pan) return 'cursor-grabbing';
   if (marquee) return 'cursor-crosshair';
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): every click is "walk over there", so the pointer
   // cursor is the honest affordance. Space still pans, so defer to grab.
   if (canvasTool === 'avatar' && !spaceHeld) return 'cursor-pointer';
-  // Format tool (docs/specs/008-canvas/canvas-and-palette.md): the copy cursor in both phases (picking a base
-  // and painting onto targets) signals "this click acts on the element".
-  if (canvasTool === 'format' && !spaceHeld) return 'cursor-copy';
   if (canvasTool === 'pan' && !spaceHeld) return 'cursor-grab';
   if (canvasTool === 'select') return 'cursor-crosshair';
-  if (isPaintMode) return 'cursor-copy';
   return 'cursor-grab';
 }

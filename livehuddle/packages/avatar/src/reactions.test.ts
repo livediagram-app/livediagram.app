@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  AVATAR_HAND_UP_MS,
   AVATAR_REACTIONS,
+  parseAvatarReactionKind,
   reactionDuration,
   reactionPose,
   type AvatarReactionKind,
@@ -99,5 +101,53 @@ describe('reactionDuration', () => {
       expect(reactionDuration(kind)).toBeGreaterThan(500);
       expect(reactionDuration(kind)).toBeLessThanOrEqual(2500);
     }
+  });
+});
+
+// docs/specs/008-canvas/avatar-mode.md "The avatar palette": the four meeting Behaviours.
+describe('the meeting Behaviours', () => {
+  it('raises the right hand, alone, for a card and the preview', () => {
+    expect(play('raise-hand').every((f) => f.handUp && !f.armsUp && !f.waveArm)).toBe(true);
+  });
+
+  it('claps six times, the hands meeting at the middle of each beat and apart between', () => {
+    const frames = play('clap');
+    const beats = frames.map((f) => f.clap ?? -1);
+    expect(beats.every((b) => b >= 0 && b <= 1)).toBe(true);
+    let meets = 0;
+    for (let i = 1; i < beats.length - 1; i++)
+      if (beats[i]! > 0.95 && beats[i]! >= beats[i - 1]! && beats[i]! >= beats[i + 1]!) meets++;
+    expect(meets).toBe(6);
+    expect(reactionPose('clap', 0).clap).toBe(0);
+  });
+
+  it('holds a thumbs up and a point the whole way, on the spot', () => {
+    expect(play('thumbs-up').every((f) => f.thumbsUp && f.lift === 0 && !f.facing)).toBe(true);
+    expect(play('point').every((f) => f.point && f.lift === 0 && !f.facing)).toBe(true);
+  });
+
+  it("leaves the first five's poses exactly as they were (no new fields on them)", () => {
+    for (const kind of ['jumping-jacks', 'wave', 'spin', 'cheer', 'dance'] as const)
+      for (const f of play(kind))
+        expect(Object.keys(f).sort()).toEqual(
+          ['armsOut', 'armsUp', 'done', 'legsApart', 'leanX', 'lift', 'waveArm', 'facing']
+            .filter((k) => k !== 'facing' || f.facing !== undefined)
+            .sort(),
+        );
+  });
+
+  it('keeps a raised hand up two minutes unless lowered', () => {
+    expect(AVATAR_HAND_UP_MS).toBe(120_000);
+  });
+});
+
+describe('an unknown kind (a newer client)', () => {
+  it('parses as null and poses as standing, never throwing', () => {
+    expect(parseAvatarReactionKind('moonwalk')).toBeNull();
+    expect(parseAvatarReactionKind(42)).toBeNull();
+    expect(parseAvatarReactionKind('clap')).toBe('clap');
+    const unknown = 'moonwalk' as AvatarReactionKind;
+    expect(reactionDuration(unknown)).toBe(0);
+    expect(reactionPose(unknown, 100).done).toBe(true);
   });
 });

@@ -6,7 +6,7 @@
 //
 // Pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
-import { createShape, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
 import {
   campusPlan,
@@ -109,8 +109,8 @@ const ROOMS: CampusRoom[] = [
       ...[40, 170, 300].map((x) => ({ kind: 'bookshelf' as const, x, y: 40 })),
       ...deskRow([150, 280], 292),
       // A reading corner below the way in: two Bean Bags side by side.
-      { kind: 'bean-bag', x: 20, y: 452 },
-      { kind: 'bean-bag', x: 84, y: 452 },
+      { kind: 'bean-bag', x: 20, y: 452, facing: 's' },
+      { kind: 'bean-bag', x: 84, y: 452, facing: 's' },
       { kind: 'plant', x: 380, y: 440 },
     ],
   },
@@ -126,12 +126,12 @@ const ROOMS: CampusRoom[] = [
       { side: 'e', at: 440 },
     ],
     pieces: [
-      // The counter with its stools, coffee beside it, and a table an aisle in front of the stools.
+      // The counter with its stools, coffee on the side wall, and a table an aisle in front of the stools.
       // Along the back wall away from the door's side, so no stool stands in its way in.
       { kind: 'drinks-fridge', x: 40, y: 36 },
       { kind: 'bar', x: 180, y: 40 },
       ...[200, 260, 320, 380].map((x) => ({ kind: 'bar-stool' as const, x, y: 170 })),
-      { kind: 'coffee-machine', x: 30, y: 190 },
+      { kind: 'coffee-machine', x: 400, y: 250, facing: 'e' },
       { kind: 'meeting-table', x: 150, y: 354 },
     ],
   },
@@ -153,8 +153,8 @@ const GROUNDS: OfficePiece[] = [
   { kind: 'tree', x: 760, y: 820 },
   { kind: 'tree', x: 1420, y: 820 },
   { kind: 'picnic-table', x: MID - 100, y: 810 },
-  { kind: 'bench', x: 850, y: 1010 },
-  { kind: 'bench', x: 1314, y: 1010 },
+  { kind: 'bench', x: 870, y: 950, facing: 'w' },
+  { kind: 'bench', x: 1314, y: 950, facing: 'e' },
   // Outside the walks: trees, a pond, a garden umbrella and a hammock.
   { kind: 'tree', x: 540, y: 70, w: 64 },
   { kind: 'tree', x: 1696, y: 70, w: 64 },
@@ -172,20 +172,10 @@ export function buildSchoolQuad(cx: number, cy: number): Element[] {
     height: H,
     rooms: ROOMS,
     open: GROUNDS,
-    title: {
-      text: 'School Quad',
-      width: 280,
-      sticker: 'emoji-books',
-      subtitle:
-        'Learn together: the lecture in the hall, groups in the classrooms, quiet in the library and lunch in the canteen.',
-    },
     // In the Lecture Hall, in the aisle between its first two rows, facing the stage.
     arrival: {
       dx: 0,
       dy: -318,
-      hintW: 360,
-      hint: 'You arrive on the Avatar Pad in the Lecture Hall. The Directory by the gate walks you to any room.',
     },
-    extra: (left, top) => [createShape('focus-button', left + HALL.x + 580, top + HALL.y + 60)],
   });
 }

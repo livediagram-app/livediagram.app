@@ -50,10 +50,10 @@ const faces = (c: HTMLElement) => [
       .map((r) => r.getAttribute('x')),
   ),
 ];
-const doorSvg = (c: HTMLElement) => c.querySelector('svg[aria-label$="door"]')!;
+const doorSvg = (c: HTMLElement) => c.querySelector('svg[aria-label="Door"]')!;
 
 describe('a Door on a back wall, on the canvas', () => {
-  it('breaks the room’s band at an open Door, the Door drawing no gap or jambs', () => {
+  it('breaks the room’s band at a Door, the Door drawing no gap or jambs', () => {
     const { container } = render(board([ROOM, back()]));
     expect(faces(container)).toHaveLength(2);
     // The leaf and its arc only.
@@ -61,29 +61,11 @@ describe('a Door on a back wall, on the canvas', () => {
     expect(doorSvg(container).querySelector('.lh-door-swing')).not.toBeNull();
   });
 
-  it('keeps the band whole with the shut leaf in it, the Door drawing nothing', () => {
-    const { container } = render(board([ROOM, back({ doorClosed: true })]));
+  it('leaves a Door on a side wall cutting its wall itself', () => {
+    const { container } = render(board([ROOM, doorAt(ROOM_WALL / 2, 150)]));
     expect(faces(container)).toHaveLength(1);
-    expect(doorSvg(container).getAttribute('aria-label')).toBe('Closed door');
-    expect(doorSvg(container).children).toHaveLength(0);
-    expect(container.querySelector('svg[aria-label^="Room"] ellipse')).not.toBeNull();
-  });
-
-  it('leaves a Door on a side wall cutting its wall itself, open and shut', () => {
-    for (const doorClosed of [false, true]) {
-      const side = doorAt(ROOM_WALL / 2, 150, { doorClosed });
-      const { container, unmount } = render(board([ROOM, side]));
-      expect(faces(container)).toHaveLength(1);
-      // Its gap and two jambs, then what moves.
-      expect(doorSvg(container).querySelectorAll('rect').length).toBeGreaterThanOrEqual(4);
-      unmount();
-    }
-  });
-
-  it('hands a glass room its back-wall doors: a shut one stands as a frosted leaf in the face', () => {
-    const glass = { ...ROOM, variant: 'glass' };
-    const { container } = render(board([glass, back({ doorClosed: true })], glass));
-    expect(container.querySelectorAll('[data-back-wall-door]')).toHaveLength(1);
+    // Its gap and two jambs, then its leaf.
+    expect(doorSvg(container).querySelectorAll('rect').length).toBeGreaterThanOrEqual(4);
   });
 
   it('draws the room plainly outside a canvas, with no board to read', () => {
@@ -91,7 +73,7 @@ describe('a Door on a back wall, on the canvas', () => {
     expect(faces(container)).toHaveLength(1);
   });
 
-  it('follows the board: the same doors keep the doorway, a door shutting closes it', () => {
+  it('follows the board: the same doors keep the doorway, a door taken away closes it', () => {
     const tree = (els: Element[]) => (
       <BackWallDoorsProvider elements={els}>
         <RoomView element={ROOM} stroke="#334155" floor="#f5f0e6" />
@@ -102,8 +84,8 @@ describe('a Door on a back wall, on the canvas', () => {
     // A new board whose back-wall doors are the same.
     act(() => rerender(tree([ROOM, { ...door }])));
     expect(faces(container)).toHaveLength(2);
-    // The door shuts: the room draws whole, the leaf in it.
-    act(() => rerender(tree([ROOM, { ...door, doorClosed: true }])));
+    // The door goes: the room draws whole.
+    act(() => rerender(tree([ROOM])));
     expect(faces(container)).toHaveLength(1);
   });
 });

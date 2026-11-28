@@ -21,9 +21,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `../packages/element-model/src/svg-render-arrows.ts`                   | The export builds one grid per render and queries it                                                                                                                                                                                                                                               |
 | `packages/workbench/src/hooks/canvas/useArrowLabelLayouts.ts`          | `draftLayout` identity-stable across passes                                                                                                                                                                                                                                                        |
 | `apps/editor/lib/stock-colour-projector.ts`                            | Same board in, same array out (`lastIn` / `lastOut`)                                                                                                                                                                                                                                               |
-| `../packages/workbench/src/hooks/canvas/useSettledElements.ts`         | What the Map draws: frozen during element gestures, throttled otherwise                                                                                                                                                                                                                            |
 | `apps/editor/hooks/canvas/useDocumentHistory.ts`                       | `historyTick` through `withPresent`: an unchanged tab hands back the same history                                                                                                                                                                                                                  |
-| `apps/editor/components/canvas/Minimap.tsx`                            | Draws `useSettledElements(elements)`, from parts carried over (`minimapParts`, `minimapBuild`)                                                                                                                                                                                                     |
 | `../packages/workbench/src/hooks/canvas/useEdgeAwarePlacement.ts`      | Takes `suspended`; never measures while suspended                                                                                                                                                                                                                                                  |
 | `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`            | `toolbarsStale` includes `selectionMoving`                                                                                                                                                                                                                                                         |
 | `../packages/workbench/src/hooks/canvas/useCanvasLongTaskLog.ts`       | The `[canvas-perf] long task` debug log                                                                                                                                                                                                                                                            |
@@ -58,7 +56,6 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | Element grid     | `ElementGrid`                   | The spatial index of boxed element bounds                                                     |
 | Arrow frame      | `ArrowViewFrame`                | An arrow's resolved `from`, `to`, `pathD`, `curveAnchors`, `curveControl`, `elbowPoint`       |
 | Holes            | `holes: Rect[]`                 | The route-behind rects punched from an arrow                                                  |
-| Settled elements | `useSettledElements`            | The elements the Map draws                                                                    |
 | Reference board  | `buildReferenceBoard`           | The seeded synthetic board                                                                    |
 | Budget row       | `BudgetRow`                     | One line of the spec's budget table, with its measured value and verdict                      |
 
@@ -190,7 +187,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   arrow's `arrowViewGeometry` (frame and holes).
 - `routeBehindQueryRect(from, to)` is the rect to ask: the arrow's bounds padded by twice
   `ROUTE_BEHIND_MARGIN`, so every box whose inflated hole could meet the padded bounds is a candidate.
-- Exports, thumbnails and the Map pass a list to `svgArrow`, which asks `elementGridFor(list)` (one
+- Exports and thumbnails pass a list to `svgArrow`, which asks `elementGridFor(list)` (one
   grid per list, cached in a `WeakMap`). `DrawnArrowPreview` does the same for its occluders.
 
 ### Selection chrome while a selection moves
@@ -208,28 +205,6 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   `viewKey` changes, never after every commit. `useCanvasViewKey` derives `viewKey` from the pan
   offset, the zoom and `<main>`'s size, and `CanvasGuideOverlay` and `CanvasDrawPreview` read it; a move's frames keep it, so alignment guides read no layout.
 - The Quick Style panel's placement re-runs on `transitionend` only from the panel or an obstacle.
-
-### The Map draws settled elements
-
-- `useSettledElements(elements)`:
-  - during an element gesture it returns the elements it last returned;
-  - when that gesture ends it returns the current elements on the next render;
-  - otherwise a change shows at once if `MAP_REDRAW_MIN_MS` has passed since the last change it
-    showed, else when that much time has passed (one trailing timer, replaced, never stacked).
-- `Minimap` reads the settled elements through `useDeferredValue`, so the change that settles them (a
-  drag's release) commits first and the Map's rebuild and image parse follow as their own render
-  (measured on the reference board: the worst task after a release fell from 171-219 ms to at most
-  128 ms). `Minimap` memoises its markup on the deferred elements. Its `elements` input is memoised in
-  `useCanvasChromePanels` on `elements`, so a render that changes no element does not yield a new
-  array.
-- Pan and zoom never redraw the markup; they move only the viewport rectangle.
-- On mount the deferral has an initial value: `useDeferredValue(settled, NO_ELEMENTS)`. The first
-  render draws no picture (a server render shows it: `Minimap.test.tsx`), so opening a board mounts
-  the board in its first task and the Map's picture is built in a background render after it.
-- `Canvas` keeps the chair sitters by value (`useByValue(sittersByChair(...), sameSitters)`,
-  `packages/avatar/src/chair-sitters.ts`): presence rebuilds the peers' list after opening, and a new map handed every
-  element view a new `chairSitters` and rendered all of them again. Since Work Tracker 1185 the map only feeds the
-  sitters source, so even a real change renders the chairs it concerns.
 
 ### Opening animates nothing across the board
 
@@ -249,6 +224,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   mode.
 
 ### A Tab Style change on a busy Space
+
+livehuddle has no way to change a tab's style any more ([Tab style](../../002-project-scope/not-in-livehuddle.md#tab-style)); this is kept for the shared code and a style that arrives some other way (a stored or remote change).
 
 - `Canvas` sets `data-canvas-busy=""` on the `data-canvas-root` surface when `canvasIsBusy(elements.length)`
   (`elements.length > BUSY_CANVAS_ELEMENTS`), and no attribute otherwise.
@@ -270,7 +247,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   after; at 1,000, 436-485 ms before, 255-259 ms after. liveplanner at 400, 111-118 ms before, 72-83 ms after. The
   task was one click: every element view re-rendering in its new colours (the colours really change, so each renders
   once), a forced style recalc inside the commit, and a whole-page restyle as the ease class went on and off `:root`.
-- `easedStyleChange(fn)` (`../packages/workbench/src/lib/tab-style-ease.ts`): each `CanvasThemeDialog` pick calls
+- `easedStyleChange(fn)` (`../packages/workbench/src/lib/tab-style-ease.ts`): each pick in the shared Tab Style dialog calls
   `easeNextStyleChange()` then runs `fn` inside `startTransition`, so the elements re-render between frames and
   commit once.
 - A pick renders only the element views whose colours change. `withThemeApplied` hands back each element the pick
@@ -299,25 +276,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - Tests: `tab-style-ease.test.ts` (busy surface attribute, root class otherwise, `easedStyleChange`), `SnapWidth.test.tsx` (no read on a re-render; the observer measures; grown content widens the box at once), `useEdgeAwarePlacement.test.tsx` (nothing read in a commit; one frame places), `app/canvas-motion.test.ts`
   (the surface attribute in the ease rule).
 
-### The Map is one image
-
-- `Minimap`'s memo builds the board's markup (`svgBoxed` / `svgArrow`, frames first, arrows on
-  top) and wraps it in a standalone document over the padded content box (`minimapPicture`, `MinimapMap` in
-  `@liveworkspace/workbench`): `<svg xmlns viewBox width height>` + `svgShadowDefs(elements)` + the markup. Arrowheads
-  are inline polygons and masks travel with their arrows, so nothing references the page's defs.
-- It is shown as one SVG `<image>` at that box in the map's world-space `viewBox`, from a
-  `data:image/svg+xml;charset=utf-8,` URL (pure: no object URL to create or revoke), on the paper
-  colour. The window and the dim are a second `<svg>` over it (`data-minimap-view`, same box and
-  `viewBox`, `pointer-events-none`, `will-change: transform`), so a pan repaints that layer alone;
-  presses land on the picture's `<svg>`, whose `getScreenCTM` maps them to the board. Each app's
-  `Minimap` builds the picture and puts `MinimapMap` in its own panel.
-- No labels: the memo draws `elements.map(withoutLabel)` (each element without `label` / `richText`),
-  so the picture carries no `<text>` and the arrow label pass has nothing to lay out. Measured on the
-  reference board: the picture drops from 417 KB to 305 KB (550 texts, 642 lines gone), and Chrome's
-  parse-and-paint at 4x from about 210 ms to about 100 ms. `svgFontDefs` stays left out.
-- Tests: `Minimap.test.tsx` (one `<image>`, no board nodes in the page; a standalone picture).
-
-### Carried-over rows and Map parts
+### Carried-over rows
 
 - `CanvasElementList` hands each `PreviewedElement` an `ElementRow` (its layer's opacity and, for a
   stored arrow, its resolved ends as four numbers, `retiredArrowEnds` against the drawn board) and one
@@ -330,10 +289,6 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - There is no carried-over arrow geometry cache (`createArrowGeometryCache`) and no label render reuse
   here: livehuddle draws no live arrows, and a stored arrow's ends are a lookup per arrow, not a
   whole-board pass.
-- `Minimap.tsx`'s `minimapParts()` holds each element as drawn (its label left out) and each box's
-  markup by the element, keyed by the render inputs (font, finish, icons, surface, sketch backdrop),
-  and each stored arrow's markup by the element, keyed by the render inputs and its resolved ends.
-  `minimapBuild(parts, elements, ctx)` draws afresh only the parts whose element, key or ends changed.
 
 ### What comes and goes beside the board
 
@@ -537,11 +492,9 @@ export function budgetTable(rows: readonly BudgetRow<string>[]): string;
 | `pointercancel`, window blur during a drag        | The sources' existing cancel paths call `end()`                                           |
 | Two gestures overlap (a wheel zoom during a drag) | The later is the snapshot; ending it restores the earlier                                 |
 | `end()` called twice                              | No-op                                                                                     |
-| A gesture never ends (a lost pointerup)           | `useEditorDrag`'s existing `pointerup` on window ends it; the Map unfreezes with it       |
 | An element with `NaN` or infinite bounds          | Not bucketed; `[element-grid] skipped element` logged once per id                         |
 | A giant element (a frame over the whole board)    | Oversize list, returned by every query                                                    |
 | Arrow-to-arrow and group-anchored ends            | Resolved by `deriveArrowViewFrame` as today; the frame compares by value                  |
-| A remote edit during a local drag                 | The Map stays frozen until the drag ends, then shows the latest elements                  |
 | The selection is deleted mid-drag by a peer       | The drag ends through its existing path, ending the gesture                               |
 | Reduced motion                                    | The toolbar fade is the existing micro transition, which reduced motion already flattens  |
 | Probe: seeding or the stack fails                 | The test fails as an error, not as a budget miss                                          |
@@ -560,7 +513,6 @@ export function budgetTable(rows: readonly BudgetRow<string>[]): string;
 - Frames per frame of a one-element move: 300 `deriveArrowViewFrame` calls, constant each.
 - Element view renders per frame of a one-element move: 1 + its pinned arrows + arrows with
   changed holes, versus every view today.
-- The Map: one full rebuild per gesture instead of one per frame.
 - Selection chrome: zero `getBoundingClientRect` calls per gesture frame.
 - A busy office walking (50 peers and you, every frame): the characters layer renders once a frame; what reads
   positions as facts reads the coarse copy ([Peer-motion store](peer-motion-store.md) "The coarse copy"), at most
@@ -574,8 +526,6 @@ export function budgetTable(rows: readonly BudgetRow<string>[]): string;
 - With the selection kept, a zoom change alone (a pinch, a zoom shortcut) re-places them as a
   move or pan does: at the new zoom they still clear the selection and stay inside the canvas
   area (`useEdgeAwarePlacement` depends on the zoom, one measure per zoom step, Work Tracker 898).
-- The Map keeps its last drawing through an element gesture, with the viewport rectangle live;
-  on release the drawing catches up in one step.
 - No new copy, empty, loading or error states: nothing a user reads changes.
 
 ## Accessibility
@@ -610,14 +560,12 @@ export function budgetTable(rows: readonly BudgetRow<string>[]): string;
 | A pan or zoom moves the canvas, not its elements                   | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only                                                                                                                                                                                                  |
 | No layout read in a gesture frame                                  | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                                                                                                                                                                                                 |
 | Selection chrome hidden while moving                               | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                                                                                                                                                                                                 |
-| The Map redraws when a gesture ends                                | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                                                                                                                                                                                                                     |
 | An update that changes nothing renders nothing                     | `useDocumentHistory.test.ts`: a tick that maps to the same tabs returns the same history                                                                                                                                                                                                                                    |
 | Questions about neighbours ask the index                           | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                                                                                                                                                                                                                         |
 | Whole-board passes linear and once                                 | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                                                                                                                                                                                                           |
 | The canvas's cursor stays off the elements                         | `CanvasElementsLayer.renders.test.tsx`: every element (boxed and arrow) sits in the one element plane; `app/canvas-motion.test.ts`: `globals.css` keeps the plane's `cursor: auto`                                                                                                                                          |
 | A move re-renders what moved                                       | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; a preview frame renders no layer; `useLayerDragPreview.test.ts`; `useSnapGuideState.test.ts`: a guide set tells its readers only on a change                                                                                                         |
 | A drop redraws what it reached                                     | `CanvasElementList.rows.test.tsx`: rows carried over draw what rows drawn afresh do after seeded edits; `CanvasElementsLayer.renders.test.tsx`: a moved box walks its slot and its stored arrow's only                                                                                                                      |
-| The Map draws what changed                                         | `Minimap.build.test.ts`: the carried-over picture equals a fresh one after seeded edits; another surface draws every part again                                                                                                                                                                                             |
 | Gesture store semantics                                            | `canvas-gesture.test.ts`                                                                                                                                                                                                                                                                                                    |
 | Reference board deterministic, mix as specced                      | `reference-board.test.ts`                                                                                                                                                                                                                                                                                                   |
 | Budget evaluation and table                                        | `budget.test.ts` (e2e-kit)                                                                                                                                                                                                                                                                                                  |

@@ -195,10 +195,10 @@ Constants: `UML_AS_RETIRED`, canvas `#ffffff`, pattern `blank` in `#e2e8f0`, fil
 
 Testing:
 
-| Rule                                                         | Test                                                                        |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| Role-by-role rewrite, halves, arrowheads, kept colours, deps | `packages/element-model/src/retired-themes.test.ts`                         |
-| The catalogue less UML, every retired id migrated            | `packages/element-model/src/retired-uml.test.ts`                            |
-| UML gone here, a stored tab moves to Mono on read            | `packages/document/src/retired-themes.test.ts`                              |
-| No look wears UML; Textbook and Schematic draw in Mono       | `apps/editor/lib/tab-looks.test.ts`, `apps/editor/lib/look-preview.test.ts` |
-| The editor resolves no theme from `uml`                      | `apps/editor/lib/themes.test.ts`                                            |
+| Rule                                                         | Test                                                |
+| ------------------------------------------------------------ | --------------------------------------------------- |
+| Role-by-role rewrite, halves, arrowheads, kept colours, deps | `packages/element-model/src/retired-themes.test.ts` |
+| The catalogue less UML, every retired id migrated            | `packages/element-model/src/retired-uml.test.ts`    |
+| UML gone here, a stored tab moves to Mono on read            | `packages/document/src/retired-themes.test.ts`      |
+| No look wears UML; Textbook and Schematic draw in Mono       | `apps/editor/lib/tab-looks.test.ts`                 |
+| The editor resolves no theme from `uml`                      | `apps/editor/lib/themes.test.ts`                    |

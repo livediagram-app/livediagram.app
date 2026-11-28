@@ -17,10 +17,8 @@ import { lastCarryDrop, subscribeCarryDrop } from '@/lib/palette-carry';
 import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 
 type PaletteDropDeps = {
-  // 'sticky' rides beside the shape kinds: a sticky is its own
-  // element type, and the drop needs to build one rather than a shape.
   onDropPalette?: (
-    kind: ShapeKind | 'sticky',
+    kind: ShapeKind,
     canvasX: number,
     canvasY: number,
     art?: { iconId?: string; stickerId?: string; choice?: string },

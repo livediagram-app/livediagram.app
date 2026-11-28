@@ -80,8 +80,11 @@ describe('the second set of social pieces', () => {
       const pill = [...container.querySelectorAll('span')].find((s) => s.textContent === 'Ada')!;
       const grid = kind === 'bean-bag' ? BEAN_BAG_SEATS : READING_NOOK_SEATS;
       const feet = grid.seats[0]!.v * grid.height;
-      expect(pill.style.top, kind).toBe(`${seatPillBottom(shape(kind), grid, [{ seat: 0 }])}px`);
-      expect(parseFloat(pill.style.top), kind).toBeLessThan(feet - AVATAR_HEIGHT * 1.5);
+      expect(parseFloat(pill.style.top), kind).toBeCloseTo(
+        seatPillBottom(shape(kind), grid, [{ seat: 0 }]),
+        3,
+      );
+      expect(parseFloat(pill.style.top), kind).toBeLessThan(feet - AVATAR_HEIGHT * 1.9);
       unmount();
     }
   });

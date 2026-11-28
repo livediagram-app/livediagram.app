@@ -13,7 +13,7 @@ delete, undo, label edit via Space) that already work on a selection.
   `aria-label` ("Canvas") and a keyboard focus ring
   (`focus-visible` only, so pointer users see nothing new). It keeps its
   main-landmark role rather than `role="application"`: the floating
-  panels (Palette or Toolbar strip, Explorer, Map) render inside it, and an
+  panels (Palette or Toolbar strip, Explorer) render inside it, and an
   application role would strip them of normal screen-reader navigation.
 - **While focus is on / inside the canvas, Tab selects the next element and
   Shift+Tab the previous**, in render (z) order. The selection scrolls into
@@ -32,7 +32,7 @@ delete, undo, label edit via Space) that already work on a selection.
   text field, where F6 still moves on: typing never uses it. Each region is marked `data-region` with its name, and
   the tab order inside a region is unchanged. (`../packages/workbench/src/hooks/ui/useRegionCycle.ts`.)
 - **Panels are named regions.** Every floating panel and the popovers hung from the bottom controls (Timer,
-  Poll, the Explorer, the Map) is a `region` named by its title, so a screen reader moving into one hears
+  Poll, the Explorer) is a `region` named by its title, so a screen reader moving into one hears
   which panel it is in rather than a nameless group of controls.
 - Traversal is **selection**: the existing selection ring is the focus
   indicator (one concept, not two). Works in read-only views (it's

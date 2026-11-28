@@ -18,7 +18,6 @@ function draw(element: BoxedElement, remoteSelectors: RemoteSelector[]) {
       element={element}
       isSelected={false}
       isEditing={false}
-      isPaintMode={false}
       showHandles={false}
       showAnchors={false}
       onBeginDrag={vi.fn()}

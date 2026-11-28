@@ -9,7 +9,6 @@ import {
   SPACE_WALL_HEIGHT,
   sidesToCorners,
   spaceWalls,
-  wallFrame,
   type SpaceWall,
 } from './space-3d-walls';
 
@@ -57,25 +56,26 @@ describe('the 3D view walls (docs/specs/008-canvas/3d-view.md "What it shows")',
 
   it('leaves a gap where each door stands, so you walk through it', () => {
     const walls = spaceWalls(office);
-    const doors = shapes.filter((el) => el.shape === 'door' && !el.doorClosed);
+    const doors = shapes.filter((el) => el.shape === 'door');
     expect(doors.length).toBeGreaterThan(0);
     for (const door of doors) {
       const middle = { x: door.x + door.width / 2, y: door.y + door.height / 2 };
       expect(walls.some((w) => w.kind !== 'doorway' && near(w, middle, 2))).toBe(false);
-      // Its frame stands in the gap, open.
-      expect(walls.some((w) => w.kind === 'doorway' && !w.shut && near(w, middle, 2))).toBe(true);
+      // Its frame stands in the gap.
+      expect(walls.some((w) => w.kind === 'doorway' && near(w, middle, 2))).toBe(true);
     }
   });
 
-  it('frames every door on a wall, a lintel of wall over it, its leaf in it when shut', () => {
-    const shutOffice = office.map((el) =>
-      el.type === 'shape' && el.shape === 'door' ? { ...el, doorClosed: true } : el,
+  it('frames every door on a wall, a lintel of wall over it, carrying its type and hinge', () => {
+    const typed = office.map((el) =>
+      el.type === 'shape' && el.shape === 'door' ? { ...el, variant: 'sliding' } : el,
     );
-    const frames = spaceWalls(shutOffice).filter((w) => w.kind === 'doorway');
+    const frames = spaceWalls(typed).filter((w) => w.kind === 'doorway');
     expect(frames.length).toBe(shapes.filter((el) => el.shape === 'door').length);
     for (const f of frames) {
       expect(f.height).toBe(SPACE_WALL_HEIGHT);
-      expect(f.shut).toBe(true);
+      expect(f.variant).toBe('sliding');
+      expect(['start', 'end']).toContain(f.hinge);
     }
     expect(SPACE_DOOR_HEIGHT).toBeLessThan(SPACE_WALL_HEIGHT);
   });
@@ -183,7 +183,7 @@ describe('the 3D view walls (docs/specs/008-canvas/3d-view.md "What it shows")',
     expect(spaceWalls([lawn, pond]).filter((w) => w.kind === 'grass')).toEqual([]);
   });
 
-  it('stands up corridors and office pods as full walls, and a shut door only where it closes a wall', () => {
+  it('stands up corridors as full walls and office pods in glass, and a door only where it stands on a wall', () => {
     const [room] = shapes.filter((el) => el.shape === 'room');
     const corridor = spaceWalls([
       { ...room!, id: 'c', shape: 'corridor', label: '', width: 400, height: 80 },
@@ -194,28 +194,17 @@ describe('the 3D view walls (docs/specs/008-canvas/3d-view.md "What it shows")',
     );
     const pod = spaceWalls([{ ...room!, id: 'p', shape: 'office-pod', width: 160, height: 160 }]);
     expect(pod.length).toBeGreaterThan(0);
-    expect(pod.every((w) => w.kind === 'wall')).toBe(true);
-    // A shut door in the open, on no wall, draws nothing.
+    // A pod's walls are glass, so you see who meets inside (3d-view.md "Heights").
+    expect(pod.every((w) => w.kind === 'glass')).toBe(true);
+    // A door in the open, on no wall, draws nothing.
     const [door] = shapes.filter((el) => el.shape === 'door');
-    const lone = spaceWalls([{ ...door!, x: 90000, y: 90000, doorClosed: true }]);
+    const lone = spaceWalls([{ ...door!, x: 90000, y: 90000 }]);
     expect(lone).toEqual([]);
   });
 
   it('draws nothing for a board with no walls', () => {
     expect(spaceWalls([])).toEqual([]);
     expect(spaceWalls(office.filter((el) => el.type !== 'shape'))).toEqual([]);
-  });
-
-  it('places a wall by its start, length and angle', () => {
-    const wall: SpaceWall = {
-      id: 'w',
-      a: { x: 10, y: 20 },
-      b: { x: 10, y: 120 },
-      kind: 'wall',
-      height: 60,
-      shade: 1,
-    };
-    expect(wallFrame(wall)).toEqual({ x: 10, y: 20, length: 100, angle: 90 });
   });
 
   it("puts a room's name over its door, and on its back wall only when no door leads in", () => {

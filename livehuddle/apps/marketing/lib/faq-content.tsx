@@ -166,7 +166,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I walk the room through something?',
-        a: 'Yes. Walk your character up to the thing you are talking about, and everyone sees it get there. A Bring Focus element offers everyone a jump to the thing you mean, and anyone can press Follow beside you to see what you see.',
+        a: 'Yes. Walk your character up to the thing you are talking about, and everyone sees it get there. Anyone can press Follow beside you to see what you see.',
       },
       {
         q: 'Can I undo a mistake?',

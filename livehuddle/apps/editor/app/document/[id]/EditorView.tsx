@@ -1,8 +1,6 @@
 'use client';
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
-import { maySuggestTo } from '@liveworkspace/workbench/components/suggest/suggest-gate';
-import { SendToPlanSuggestion } from '@/components/calls/SendToPlanSuggestion';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import dynamic from 'next/dynamic';
@@ -61,7 +59,6 @@ import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockName
 import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUiScales';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
-import { ClearStylesHost } from '@/components/canvas/ClearStylesHost';
 import { SpaceQuickStylePanel } from '@/components/canvas/SpaceQuickStylePanel';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 import { SnapshotsDoorProvider, useEditorSnapshotsDoor } from '@liveworkspace/snapshots/ui';
@@ -123,7 +120,6 @@ export function EditorView() {
     embedMode,
     // The app's surroundings.
     appChrome,
-    quickStyleDeps,
     focusInvite,
     livePresence,
     canvasTool,
@@ -139,7 +135,6 @@ export function EditorView() {
     documentShareable,
     documentTeamId,
     duplicateTab,
-    formatSourceId,
     hydrated,
     setImportOpen,
     canShareDocument,
@@ -300,7 +295,6 @@ export function EditorView() {
               accountId={accountUserId ?? null}
               mayInvite={ctx.can.level !== 'view'}
               tabs={tabs}
-              activeTabId={activeId}
               onSent={rereadSpaceCall}
             />
           ) : undefined
@@ -416,21 +410,6 @@ export function EditorView() {
               community: sessionCommunity !== null,
             })}
           />
-          {/* Send to a Plan (liveworkspace/docs/specs/016-notifications/suggestions.md): a call that ended with
-              stickies on the wall, offered to a plan in the notice slot. */}
-          <SendToPlanSuggestion
-            itemId={ctx.authLoaded && hydrated ? documentId : null}
-            allowed={maySuggestTo({
-              level: ctx.can.level,
-              readOnly: ctx.isStructureReadOnly,
-              signedIn: !!accountUserId,
-              offline: isOffline,
-              embed: !appChrome,
-              community: sessionCommunity !== null,
-            })}
-            activeId={activeId}
-            tabs={tabs}
-          />
           <ViewportStoreProvider store={ctx.viewport}>
             <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
               {/* The active tab's finish (docs/specs/008-canvas/finish.md), for the menus and panels; each
@@ -499,10 +478,8 @@ export function EditorView() {
                             />
                           ) : null}
                           {footerInColumn}
-                          {/* What the element menu's Clear Styles resets (docs/specs/008-canvas/element-menu-quick-bar.md),
-            and the Quick Style panel: a room's walls and floor, a piece's type (docs/specs/008-canvas/space-quick-style.md). */}
+                          {/* The Quick Style panel: a room's walls and floor, a piece's type (docs/specs/008-canvas/space-quick-style.md). */}
                           <AreaErrorBoundary area="QuickStyle">
-                            <ClearStylesHost deps={quickStyleDeps} />
                             <SpaceQuickStylePanel editing={canvasTool !== 'avatar' && !drag} />
                           </AreaErrorBoundary>
                           {ctx.searchOpen ? (
@@ -545,11 +522,7 @@ export function EditorView() {
                             drag={drag}
                             hasElements={activeTab.elements.length > 0}
                             shiftMessage={canvasTool === 'avatar' ? 'Running' : null}
-                            suppressed={
-                              canvasTool === 'format' ||
-                              formatSourceId !== null ||
-                              pendingDraw !== null
-                            }
+                            suppressed={pendingDraw !== null}
                           />
 
                           {/* An editor older than the server's document format offers a reload, once its edits

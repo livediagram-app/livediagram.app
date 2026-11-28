@@ -29,7 +29,7 @@ export const metadata = helpMetadata({
   Text is what turns a box into a note, a sign or a name on a door.
 </AppNote>
 
-Almost every element in <AppName /> can carry a label, and you can shape how that text reads by choosing its typeface from a curated set of eleven fonts, ranging from crisp sans-serifs to relaxed handwriting faces. Fonts can be set on a single element or as a default for an entire tab.
+Almost every element in <AppName /> can carry a label, and you can shape how that text reads by choosing its typeface from a curated set of eleven fonts, ranging from crisp sans-serifs to relaxed handwriting faces. Fonts can be set on a single element, and in some apps as a default for an entire tab.
 
 ## Editing Labels
 
@@ -43,7 +43,7 @@ Shapes, text elements and sticky notes can all carry text, so you can annotate a
   to edit that cell.
 </AppNote>
 
-<AppNote app="livediagram,livehuddle">
+<AppNote app="livediagram">
   - **Double-click empty canvas** to drop a new text element right there and start typing in it. On
   a touch screen, a double-tap with your finger zooms in instead; use the palette's Text to add text
   there. - Press `T` (or pick Text from the palette) to add a text element, then tap or drag on the
@@ -93,13 +93,17 @@ Sans. Together they span crisp, friendly, formal, and hand-drawn looks. See [Cho
 Fonts](/help/canvas/text-and-fonts/choosing-fonts/) for where to set them and how the levels
 interact.
 
-<Figure app="livediagram,livedocuments"
+<Figure
+  app="livediagram,livedocuments"
   caption="Right-click a labelled element, open Appearance, then Text, and pick a typeface from the Font tiles."
 >
   <DiagramCanvasBasics.ElementFontMenu />
 </Figure>
 
-<Figure app="livehuddle" caption="A selected note's menu, with the Text flyout open on its Font tiles.">
+<Figure
+  app="livehuddle"
+  caption="A selected note's menu, with the Text flyout open on its Font tiles."
+>
   <HuddleElementFontMenu />
 </Figure>
 
@@ -112,7 +116,15 @@ interact.
 
 ## Per Element or Per Tab
 
-Fonts work at two levels. You can set a font on a single element so one label stands out (from the **Text** section of its right-click menu), or set a default for the whole tab so every label shares the same typeface unless it overrides it (from the **Text** panel of the **Tab Style** dialog). The tab default also covers a default text size for new elements, keeping a fresh canvas tidy. [Choosing Fonts](/help/canvas/text-and-fonts/choosing-fonts/) explains how an element falls back to the tab's font when it has none of its own.
+Fonts work at two levels. You can set a font on a single element so one label stands out (from the **Text** section of its right-click menu).
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  You can also set a default for the whole tab so every label shares the same typeface unless it
+  overrides it (from the **Text** panel of the **Tab Style** dialog). The tab default also covers a
+  default text size for new elements, keeping a fresh canvas tidy.
+</AppNote>
+
+[Choosing Fonts](/help/canvas/text-and-fonts/choosing-fonts/) explains how an element falls back to the tab's font when it has none of its own.
 
 <AppNote app="livediagram,livedocuments,livehuddle">
   The **Text** section sits under **Appearance**.

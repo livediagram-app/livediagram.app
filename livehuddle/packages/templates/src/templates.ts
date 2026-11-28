@@ -107,8 +107,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'all-hands-hall',
     title: 'All-Hands Hall',
-    description:
-      'A hall for town halls and demos: a stage, rows of seats facing it and Bring Focus.',
+    description: 'A hall for town halls and demos: a stage, rows of seats facing it.',
     extra: true,
   },
   {
@@ -121,8 +120,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'training-room',
     title: 'Training Room',
-    description:
-      'A room for training and group work: a small stage, four tables to work round and Bring Focus.',
+    description: 'A room for training and group work: a small stage, four tables to work round.',
     extra: true,
   },
   {
@@ -290,7 +288,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'classroom',
     title: 'Classroom',
     description:
-      'A class: a classroom of desks facing a Screen and Bring Focus, and three breakout rooms with a Timer each.',
+      'A class: a classroom of desks facing a Screen, and three breakout rooms with a Timer each.',
     extra: true,
   },
   {

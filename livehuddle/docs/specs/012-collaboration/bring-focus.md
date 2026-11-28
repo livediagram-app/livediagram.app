@@ -1,6 +1,6 @@
 # Bring Focus
 
-Status: shipped
+Status: shipped; **no longer offered in livehuddle** (owner, 2026-11-27, [Bring Focus](../002-project-scope/not-in-livehuddle.md#bring-focus)): no palette tile and no template places one, and a stored one still draws, deletes and works. livediagram keeps it in its palette.
 
 ## What
 
@@ -139,7 +139,7 @@ brass ring on a walnut base, over a cream nameplate carrying its label, the same
 2026-11-17). The dome is what is pressed. The label defaults to "Bring Focus" and is edited like any label, so a
 canvas can have "Start here" and "The problem" rather than four identical buttons.
 
-Surfaces that cannot ask anyone to look (the export, the minimap) render the
+Surfaces that cannot ask anyone to look (the export) render the
 face inert rather than hiding it; a Participant or Viewer session sees the face
 without its press, and a click on it does nothing (see Rules). In an export that means the base, the dome and its target, and the nameplate, drawn by
 `svgBehaviourFace` from the same 24-unit reticle the canvas uses, so a picture

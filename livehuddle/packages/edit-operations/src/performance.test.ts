@@ -70,7 +70,7 @@ function changesetOf(rounds: number): EditOperation[] {
     const frame = r % FRAMES;
     lines.push(
       `set n${frame}x${r} label="Renamed ${r}"`,
-      `add sticky id=s${r} label="Note ${r}" right-of:n${frame}x${r}`,
+      `add desk id=s${r} label="Note ${r}" right-of:n${frame}x${r}`,
       `order s${r} back`,
       `layout s${r} n${frame}x${r}`,
       `move s${r} by=10,0`,

@@ -22,13 +22,9 @@ afterEach(() => vi.useRealTimers());
 function harness({
   fits,
   isSelected = false,
-  isPaintMode = false,
-  armed = false,
 }: {
   fits: boolean;
   isSelected?: boolean;
-  isPaintMode?: boolean;
-  armed?: boolean;
 }) {
   const surface = document.createElement('main');
   surface.setAttribute('data-canvas-root', '');
@@ -40,7 +36,6 @@ function harness({
   const onBeginDrag = vi.fn();
   const onPlainClick = vi.fn();
   const onContextSelect = vi.fn();
-  const onPressArmedAction = vi.fn(() => armed);
   const { result } = renderHook(() =>
     useBoxedElementGestures({
       element: { ...createSticky(0, 0), id: 's' },
@@ -49,11 +44,9 @@ function harness({
       remotelyLocked: false,
       isMultiSelected: false,
       isSelected,
-      isPaintMode,
       onBeginDrag,
       onBeginEdit: vi.fn(),
       onPlainClick,
-      onPressArmedAction,
       onContextSelect,
     }),
   );
@@ -77,7 +70,7 @@ function harness({
     });
     return { e, stopPropagation };
   };
-  return { press, onBeginDrag, onPlainClick, onContextSelect, onPressArmedAction };
+  return { press, onBeginDrag, onPlainClick, onContextSelect };
 }
 
 describe('a finger on an element too big for the screen', () => {
@@ -94,14 +87,6 @@ describe('a finger on an element too big for the screen', () => {
     const { e } = h.press();
     panThroughTap(e)?.();
     expect(h.onPlainClick).toHaveBeenCalledWith('s');
-  });
-
-  it('lets an armed action (connect an arrow) take the tap instead of selecting', () => {
-    const h = harness({ fits: false, armed: true });
-    const { e } = h.press();
-    panThroughTap(e)?.();
-    expect(h.onPressArmedAction).toHaveBeenCalledWith('s');
-    expect(h.onPlainClick).not.toHaveBeenCalled();
   });
 
   it('opens the long-press menu, and its release is not also a tap', () => {
@@ -135,10 +120,4 @@ describe('an element that is not panned through', () => {
     }
   });
 
-  it('keeps every press for the format painter', () => {
-    const h = harness({ fits: false, isPaintMode: true });
-    const { e } = h.press();
-    expect(isPanThrough(e)).toBe(false);
-    expect(h.onBeginDrag).toHaveBeenCalled();
-  });
 });

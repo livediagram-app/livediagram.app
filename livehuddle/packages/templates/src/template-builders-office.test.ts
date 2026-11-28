@@ -3,6 +3,7 @@ import {
   doorOnRoom,
   isFloorShape,
   meetingPieceRoom,
+  mountsOnWall,
   notesNewestFirst,
   roomDoorSpan,
   roomWalls,
@@ -11,6 +12,7 @@ import {
 } from '@livehuddle/document';
 import { buildTemplate } from './build-template';
 import { furnishRooms } from './template-office-parts';
+import { modelFloorBox } from './template-model-box';
 
 // The wall a room's Door piece stands on (docs/specs/009-elements/office.md "The doorway is a Door"), or 'none'.
 function doorSide(
@@ -76,24 +78,36 @@ describe('the Virtual Office template', () => {
     const rooms = shapes('room');
     for (const e of els) {
       // A Door and a Window stand in the wall itself (docs/specs/009-elements/room-builder.md "Window"); a Room Sign
-      // stands beside its room's door (the test below).
+      // stands beside its room's door (the test below). A microwave or a kettle stands on its counter's worktop, which
+      // the counter's place in the room holds (docs/specs/009-elements/office-amenities.md).
       if (
         e.type !== 'shape' ||
-        ['room', 'door', 'window', 'avatar-pad', 'sticker', 'room-sign'].includes(e.shape)
+        [
+          'room',
+          'door',
+          'window',
+          'avatar-pad',
+          'sticker',
+          'room-sign',
+          'microwave',
+          'kettle',
+        ].includes(e.shape)
       )
         continue;
+      // Where it stands in 3D: its model's footprint, a wall piece's back on its wall's face (template-model-box.ts).
+      const m = mountsOnWall(e.shape) ? e : modelFloorBox(e);
       const room = rooms.find(
         (r) =>
-          e.x >= r.x &&
-          e.y >= r.y &&
-          e.x + e.width <= r.x + r.width &&
-          e.y + e.height <= r.y + r.height,
+          m.x >= r.x &&
+          m.y >= r.y &&
+          m.x + m.width <= r.x + r.width &&
+          m.y + m.height <= r.y + r.height,
       );
       expect(room, `${e.shape} at ${e.x},${e.y}`).toBeDefined();
       // Nothing straddles a wall line a character could not then reach past.
       for (const w of roomWalls(room!)) {
         const vertical = w.a.x === w.b.x;
-        if (vertical) expect(w.a.x <= e.x || w.a.x >= e.x + e.width).toBe(true);
+        if (vertical) expect(w.a.x <= m.x || w.a.x >= m.x + m.width).toBe(true);
       }
     }
   });
@@ -109,14 +123,16 @@ describe('the Virtual Office rooms', () => {
   const inRoom = (label: string) => {
     const r = room(label);
     return all
-      .filter(
-        (e) =>
+      .filter((e) => {
+        const m = mountsOnWall(e.shape) ? e : modelFloorBox(e);
+        return (
           e.shape !== 'room' &&
-          e.x >= r.x &&
-          e.y >= r.y &&
-          e.x + e.width <= r.x + r.width &&
-          e.y + e.height <= r.y + r.height,
-      )
+          m.x >= r.x &&
+          m.y >= r.y &&
+          m.x + m.width <= r.x + r.width &&
+          m.y + m.height <= r.y + r.height
+        );
+      })
       .map((e) => e.shape);
   };
 
@@ -265,7 +281,7 @@ describe('the space templates', () => {
     expect(count(els, 'notice-board')).toBe(1);
   });
 
-  it('gives the team pod four desks, a table and a board of four stickies', () => {
+  it('gives the team pod four desks, a table and a timer, and no stickies', () => {
     const els = build('team-pod');
     // Everyone arrives in the middle of the pod, between the desks and the table, never under the plan's bottom edge
     // where the canvas's bottom-right cluster floats in a view from a desk (Work Tracker #580, #601, #584).
@@ -278,19 +294,25 @@ describe('the space templates', () => {
     expect(walk.y + walk.height).toBeLessThan(pod.y + pod.height);
     expect(count(els, 'desk')).toBe(4);
     expect(count(els, 'meeting-table')).toBe(1);
-    expect(els.filter((e) => e.type === 'sticky')).toHaveLength(4);
+    expect(els.filter((e) => e.type === 'sticky' || e.type === 'text')).toEqual([]);
     // Work Tracker 1076: a booth for a call away from the team, the team's clock and the stand-up's timer.
     expect(count(els, 'phone-booth')).toBe(1);
     expect(count(els, 'world-clock')).toBe(1);
     expect(count(els, 'timer')).toBe(1);
+    // The Timer stands inside the pod, never outside its wall where the wall hid half of it in 3D (QA, 2026-11-27).
+    const timer = els.find((e) => e.type === 'shape' && e.shape === 'timer') as Box;
+    expect(timer.x).toBeGreaterThan(pod.x);
+    expect(timer.x + timer.width).toBeLessThan(pod.x + pod.width);
+    expect(timer.y).toBeGreaterThan(pod.y);
+    expect(timer.y + timer.height).toBeLessThan(pod.y + pod.height);
   });
 
-  it('seats thirty-two facing the stage in the all-hands hall, with Bring Focus', () => {
+  it('seats thirty-two facing the stage in the all-hands hall, with no Bring Focus', () => {
     const els = build('all-hands-hall');
     const chairs = els.filter((e) => e.type === 'shape' && e.shape === 'chair');
     expect(chairs).toHaveLength(32);
     expect(chairs.every((c) => c.type === 'shape' && c.chairFacing === 's')).toBe(true);
-    expect(count(els, 'focus-button')).toBe(1);
+    expect(count(els, 'focus-button')).toBe(0);
     // A real Stage up front, cameras on, inside the hall and clear of the first row; no rug and no "Stage" text
     // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in").
     const stages = els.filter((e) => e.type === 'shape' && e.shape === 'stage') as (Element & {
@@ -312,12 +334,9 @@ describe('the space templates', () => {
     expect(firstRow - (stage!.y + stage!.height)).toBeGreaterThanOrEqual(60);
     expect(count(els, 'rug')).toBe(0);
     expect(els.some((e) => e.type === 'text' && e.label === 'Stage')).toBe(false);
-    // A raised hand is the Call dock's Raise Hand, offered only while someone is on the stage, so the line says when
-    // (Work Tracker 511); a Reactions burst plays on its sender's screen only.
-    const hint = els.find((e) => e.type === 'text' && /take a seat/.test(e.label ?? ''));
-    expect(hint?.label).toMatch(/Raise Hand when someone is on the stage/);
-    expect(hint?.label).not.toMatch(/Wave/);
-    expect(hint?.label).not.toMatch(/reactions/i);
+    // No how-to line under the pad: a Space holds no text (docs/specs/002-project-scope/not-in-livehuddle.md "The
+    // Write category").
+    expect(els.some((e) => e.type === 'text')).toBe(false);
   });
 });
 

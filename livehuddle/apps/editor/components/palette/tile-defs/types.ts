@@ -25,11 +25,9 @@ type PaletteTileAction =
       // A creation-time variant of the kind (packages/document shape-variants.ts): a room preset.
       variant?: string;
     }
-  | { type: 'text' }
   | { type: 'sticker'; stickerId: string }
   // The Room Builder (docs/specs/009-elements/room-builder.md): walls placed corner by corner.
   | { type: 'room-walls' }
-  | { type: 'sticky' }
   | { type: 'image' }
   | { type: 'link-card' }
   | { type: 'component'; kind: ComponentKind };
@@ -38,7 +36,7 @@ type PaletteTileAction =
 // the Tools tab renders one labelled grid per group instead of a flat
 // sixteen-tile wall. Group membership is metadata on the tile — ids stay
 // stable, so palette layouts and search are untouched.
-export type ToolGroupId = 'write' | 'behaviour';
+export type ToolGroupId = 'behaviour';
 
 // Display order, headings, and a one-line "what's in here" for the Tools tab's
 // groups. The description is what the category tile's hover card says: a count
@@ -51,10 +49,6 @@ export type ToolGroupId = 'write' | 'behaviour';
 // `description` field here went unread for long enough to drift out of step
 // with the live one for `behaviour`, which is why it is gone.
 export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
-  {
-    id: 'write',
-    label: 'Write',
-  },
   // Behaviour (docs/specs/009-elements/mode-button.md): elements that DO something when someone interacts
   // with them, rather than elements that say something. Last, because a
   // diagram is drawn before it is wired up.

@@ -1,6 +1,6 @@
 // livehuddle's editor chrome as it stands on a computer (apps/editor/components/chrome and palette), measured off the
 // real editor at 1280 wide and drawn at 0.55 of its size: the logo card and the menu card top-left, the palette strip
-// (Edit | Walk, then the icon-only categories Write, Rooms, Seats, Perks, Play, Garden, Meet, Travel, then Search),
+// (Edit | Walk, then the icon-only categories Rooms, Seats, Perks, Play, Garden, Meet, Travel, then Search),
 // the corner card top-right (Share, Sign In), the corner cluster bottom-right (Undo | Redo, Theme & Canvas, zoom) and
 // the bottom bar (the tab card, +, Tools, Settings, notifications, appearance). Icons are the real lucide glyphs.
 // Every card is white with a 0.75 hairline and the kit's soft Lift, as the editor's `shadow-md` cards are.
@@ -16,7 +16,6 @@ import {
   lucideCoffee,
   lucideFootprints,
   lucidePanelsTopLeft,
-  lucidePencil,
   lucideSquareDashedMousePointer,
   lucideTreePine,
   lucideWine,
@@ -60,7 +59,6 @@ export const ICONS = {
   ...CHROME_ICONS,
   edit: lucideSquareDashedMousePointer,
   walk: lucideFootprints,
-  write: lucidePencil,
   rooms: lucidePanelsTopLeft,
   seats: lucideArmchair,
   perks: lucideCoffee,
@@ -146,24 +144,23 @@ export const TOP_LEFT_W = LOGO_W + 6 + MENU_W;
 // --- The palette strip -------------------------------------------------------
 
 export type StripItem =
-  'write' | 'rooms' | 'seats' | 'perks' | 'play' | 'garden' | 'meet' | 'travel' | 'search';
+  'rooms' | 'seats' | 'perks' | 'play' | 'garden' | 'meet' | 'travel' | 'search';
 
 /** The strip's width. */
-export const STRIP_W = 320;
+export const STRIP_W = 294;
 
 // Each category button's centre, from the strip's left edge (the real strip at 0.55).
 const SLOTS: Record<StripItem, number> = {
-  write: 110,
-  rooms: 136,
-  seats: 159,
-  perks: 182,
-  play: 204,
-  garden: 227,
-  meet: 250,
-  travel: 276,
-  search: 304,
+  rooms: 110,
+  seats: 133,
+  perks: 156,
+  play: 178,
+  garden: 201,
+  meet: 224,
+  travel: 250,
+  search: 278,
 };
-const DIVIDERS = [97, 123, 263, 289];
+const DIVIDERS = [97, 237, 263];
 
 /** The centre of a category's button on a strip drawn at x. */
 export function stripSlot(x: number, item: StripItem): number {

@@ -5,6 +5,8 @@ import {
   RUG_PRESET_TILES,
 } from './palette-floor-presets';
 import { ROOM_TILES } from './tile-defs/room-tiles';
+import { TREE_PRESET_TILES } from './palette-tree-presets';
+import { SCREEN_PRESET_TILES } from './palette-screen-presets';
 import type { PaletteTileDef } from './tile-defs/types';
 import { tileDisplayName } from './palette-tile-defs';
 
@@ -20,6 +22,8 @@ const TYPE_TILES: Readonly<Record<string, readonly PaletteTileDef[]>> = {
   rug: RUG_PRESET_TILES,
   corridor: CORRIDOR_PRESET_TILES,
   'meeting-table': TABLE_TILES,
+  tree: TREE_PRESET_TILES,
+  screen: SCREEN_PRESET_TILES,
 };
 
 /** One type a piece can take: its stored name, and the caption and glyph its palette card shows. */

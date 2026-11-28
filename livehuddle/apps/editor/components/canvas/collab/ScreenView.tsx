@@ -15,7 +15,7 @@ import {
   type ShapeElement,
 } from '@livehuddle/document';
 import { lucidePlay } from '@liveworkspace/icons/lucide';
-import { HoverCard, lucideGlyph } from '@livehuddle/ui';
+import { HoverCard, lucideGlyph, WorkspaceMark } from '@livehuddle/ui';
 import { setCallMaximised, useCallMedia } from '@/lib/calls/calls-store';
 import { useMeetingLive } from '@/lib/office/meeting-live';
 import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
@@ -161,13 +161,27 @@ export function ScreenView({ element, animClass }: { element: ShapeElement; anim
           </span>
         </>
       ) : (
+        // The idle face (screen-and-room-sign.md "The idle face"): liveworkspace's logo on the glass, still on the
+        // flat canvas, in a soft glow. Real 3D turns it (idle-screens.ts).
         <span
-          className="absolute inset-0 flex flex-col items-center justify-center gap-1"
-          style={{ color: A.tones.ink }}
+          data-screen-idle-logo=""
+          className="absolute inset-0 flex flex-col items-center justify-center"
+          style={{
+            gap: cq(6),
+            background:
+              'radial-gradient(ellipse 42% 52% at 50% 42%, rgba(148,163,184,0.26), transparent 70%)',
+          }}
         >
-          <ScreenGlyph size={20} className="opacity-60" />
-          <span className="font-medium tracking-wide opacity-80" style={{ fontSize: cq(10) }}>
-            {SCREEN_IDLE_TEXT}
+          {/* Its dark palette whatever the page's appearance: it sits on the screen's dark glass. */}
+          <span className="block" style={{ width: cq(44), height: cq(44) }}>
+            <WorkspaceMark className="dark block h-full w-full" />
+          </span>
+          <span
+            aria-hidden
+            className="font-semibold tracking-tight"
+            style={{ fontSize: cq(15), lineHeight: 1, color: '#f1f5f9' }}
+          >
+            <span style={{ color: '#94a3b8' }}>live</span>workspace
           </span>
         </span>
       )}

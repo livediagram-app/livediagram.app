@@ -470,7 +470,6 @@ describe('a retired element and the share roles', () => {
       setSelectedId: () => {},
       setEditingId: () => {},
       setMultiSelectedIds: () => {},
-      setFormatSourceId: () => {},
       lockedByOther: () => false,
     });
     actions.deleteSelected();
@@ -491,7 +490,6 @@ describe('a retired element and the share roles', () => {
       setSelectedId: () => {},
       setEditingId: () => {},
       setMultiSelectedIds: () => {},
-      setFormatSourceId: () => {},
       lockedByOther: () => false,
     });
     actions.deleteElementById('qa');
@@ -598,7 +596,6 @@ describe('a stored table', () => {
       setSelectedId: () => {},
       setEditingId: () => {},
       setMultiSelectedIds: () => {},
-      setFormatSourceId: () => {},
       lockedByOther: () => false,
     });
     actions.deleteElementById('tbl');
@@ -767,7 +764,6 @@ describe('a stored annotation', () => {
       setSelectedId: () => {},
       setEditingId: () => {},
       setMultiSelectedIds: () => {},
-      setFormatSourceId: () => {},
       lockedByOther: () => false,
     });
     actions.deleteSelected();

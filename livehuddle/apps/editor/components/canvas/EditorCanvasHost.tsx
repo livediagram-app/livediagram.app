@@ -19,7 +19,6 @@ import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useTimerPieceControls } from '@/lib/timer-piece-controls';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
-import { useCanvasFormatProps } from '@/components/canvas/useCanvasFormatProps';
 import { useCanvasMenuProps, type LockedMenuState } from '@/components/canvas/useCanvasMenuProps';
 import { useCanvasWalkProps } from '@/components/canvas/useCanvasWalkProps';
 
@@ -39,12 +38,9 @@ export function EditorCanvasHost() {
     addImage,
     addLinkCard,
     addShape,
-    addSticky,
     dropBoardFile,
-    addText,
     anyWelcomeOpen,
     beginDrag,
-    pressArmedAction,
     beginEdit,
     beginRoomWalls,
     broadcastCursor,
@@ -74,19 +70,12 @@ export function EditorCanvasHost() {
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
-    stackSelectedFront,
-    stackSelectedBack,
-    turnSelected,
     editCursorAtEnd,
     editingId,
     embedMode,
 
-    exitFormatTool,
-    startFormatPainter,
     fitToScreen,
     followLink,
-    formatSourceId,
-    handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
     identityTrayOpen,
@@ -102,7 +91,6 @@ export function EditorCanvasHost() {
     isReadOnly,
     can,
     livePresence,
-    mapPosition,
     narrowMultiSelection,
     newDocument,
     pendingDraw,
@@ -119,14 +107,11 @@ export function EditorCanvasHost() {
     followMe,
     tabs,
     setCanvasTool,
-    setCanvasThemeTab,
     setContextMenu,
     setEditingId,
     setExportOpen,
     setExportScope,
-    setFormatSourceId,
     setLinkPickerOpenForId,
-    setMapPosition,
     setMultiSelectedIds,
     setSelectedId,
     deleteElementById,
@@ -209,7 +194,6 @@ export function EditorCanvasHost() {
   // and the Format panel (useCanvas*Props).
   const walkProps = useCanvasWalkProps(gates);
   const menuProps = useCanvasMenuProps(setLockedMenu);
-  const formatProps = useCanvasFormatProps();
 
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
@@ -285,15 +269,12 @@ export function EditorCanvasHost() {
         }}
         editingId={editingId}
         editCursorAtEnd={editCursorAtEnd}
-        formatSourceId={formatSourceId}
         canUndo={canUndo}
         canRedo={canRedo}
         onAddShape={addShape}
         onAddSticker={addSticker}
         onAddLinkCard={addLinkCard}
         onAddAvatar={addAvatar}
-        onAddText={addText}
-        onAddSticky={addSticky}
         onDropFile={isReadOnly ? undefined : dropBoardFile}
         onAddImage={addImage}
         onBeginRoomWalls={beginRoomWalls}
@@ -304,25 +285,7 @@ export function EditorCanvasHost() {
         onCancelDraw={cancelDrawShape}
         onUndo={undo}
         onRedo={redo}
-        mapPosition={mapPosition}
-        onMoveMap={(x, y) =>
-          // Equality-guarded so a drag tick that resolves to the same spot
-          // doesn't spin the render loop (max update depth).
-          setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
-        }
-        onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
         userPreferences={userPreferences}
-        {...formatProps}
-        // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
-        // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
-        onOpenCanvasTheme={
-          isReadOnly || embedMode
-            ? undefined
-            : () => {
-                setCanvasThemeTab('looks');
-                track('UI', 'Opened', 'ThemePicker');
-              }
-        }
         // No Tidy Up button: Auto Layout is not in livehuddle (docs/specs/008-canvas/layout-cleanup.md).
         currentDocumentId={documentId}
         currentShareCode={sessionShareCode}
@@ -350,25 +313,18 @@ export function EditorCanvasHost() {
           },
         }}
         onDeselect={() => {
-          // Clicking empty canvas wraps up the Format tool (restoring the pre-Format tool) so a
-          // background click is the quick way out of paint mode (docs/specs/008-canvas/canvas-and-palette.md).
-          if (canvasTool === 'format') exitFormatTool();
           setSelectedId(null);
           setMultiSelectedIds(new Set());
           setEditingId(null);
-          setFormatSourceId(null);
           setContextMenu(null);
         }}
         onSelect={selectElement}
         onBeginDrag={beginDrag}
-        onPressArmedAction={pressArmedAction}
         onBeginEdit={beginEdit}
         onCommitLabel={commitLabel}
         onDeleteRetired={isReadOnly ? undefined : deleteRetired}
         onCancelEdit={cancelEdit}
         onShiftSelect={toggleInMultiSelect}
-        onExitFormatTool={exitFormatTool}
-        onStartFormatPainter={isReadOnly ? undefined : startFormatPainter}
         onSetTextAlign={setTextAlignSelected}
         onFollowLink={followLink}
         onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
@@ -397,10 +353,6 @@ export function EditorCanvasHost() {
         // selection popover stands down (see deriveCanvasSelection).
         elementMenuOpen={contextMenu?.mode === 'element'}
         onDuplicateSelected={duplicateSelected}
-        onBringSelectedToFront={stackSelectedFront}
-        onTurnSelected={turnSelected}
-        onSendSelectedToBack={stackSelectedBack}
-        onCanvasDoubleClick={handleCanvasDoubleClick}
         tabLoadState={tabLoadState}
         onRetryTabLoad={retryActiveTabLoad}
         // Embeds (docs/specs/013-workspace/embeds.md) hide every floating panel and badge.

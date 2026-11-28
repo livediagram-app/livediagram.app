@@ -14,9 +14,7 @@ import {
   standAttr,
   standsRaised,
 } from './space-3d-pieces';
-import { runsAway } from './space-3d-turn';
 import { spaceWalls } from './space-3d-walls';
-import { doorPointAt } from './standing-pieces-on-screen';
 
 const piece = (kind: string, extra: Record<string, unknown> = {}): Element =>
   ({
@@ -72,49 +70,12 @@ describe('a turned piece’s end', () => {
   });
 });
 
-describe('a room’s name over a door in a wall running away (runsAway)', () => {
-  const across = { a: { x: 0, y: 0 }, b: { x: 100, y: 0 } };
-  const down = { a: { x: 0, y: 0 }, b: { x: 0, y: 100 } };
-  it('is level across the screen unturned', () => {
-    expect(runsAway(across, 0)).toBe(0);
-    expect(runsAway(down, 0)).toBe(-1);
-    expect(runsAway({ a: down.b, b: down.a }, 0)).toBe(1);
-  });
-  it('runs away once the camera turns a quarter', () => {
-    expect(runsAway(across, 1)).not.toBe(0);
-    expect(runsAway(down, 1)).toBe(0);
-  });
-});
-
 describe('clicking a door in 3D', () => {
   const els = buildTemplate('virtual-office', 0, 0);
-  const door = els.find((el) => el.type === 'shape' && el.shape === 'door' && !el.doorClosed)!;
-  const room = els.find((el) => el.type === 'shape' && el.shape === 'room')!;
-  it('names the door on its doorway, open with a hinge, shut without', () => {
+  const door = els.find((el) => el.type === 'shape' && el.shape === 'door')!;
+  it('names the door on its doorway, with its hinge', () => {
     const open = spaceWalls(els).find((w) => w.kind === 'doorway' && w.doorId === door.id);
     expect(['start', 'end']).toContain(open!.hinge);
-    const closed = els.map((el) =>
-      el.id === door.id ? ({ ...el, doorClosed: true } as Element) : el,
-    );
-    const shut = spaceWalls(closed).find((w) => w.kind === 'doorway' && w.doorId === door.id);
-    expect(shut).toMatchObject({ shut: true });
-    expect(shut!.hinge).toBeUndefined();
-  });
-  it('reads a press on the doorway as a press at the door', () => {
-    const root = document.createElement('div');
-    const node = document.createElement('div');
-    node.setAttribute('data-space-door-id', door.id);
-    node.getBoundingClientRect = () => ({ left: 10, right: 60, top: 10, bottom: 90 }) as DOMRect;
-    const stray = document.createElement('div');
-    stray.setAttribute('data-space-door-id', 'gone');
-    stray.getBoundingClientRect = () => ({ left: 0, right: 100, top: 0, bottom: 100 }) as DOMRect;
-    root.append(stray, node);
-    const d = door as Extract<Element, { type: 'shape' }>;
-    expect(doorPointAt(root, [room, door], { x: 30, y: 50 })).toEqual({
-      x: d.x + d.width / 2,
-      y: d.y + d.height / 2,
-    });
-    expect(doorPointAt(root, [room, door], { x: 200, y: 50 })).toBeNull();
   });
 });
 

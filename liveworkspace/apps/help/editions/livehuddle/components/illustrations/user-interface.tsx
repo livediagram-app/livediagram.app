@@ -1,6 +1,6 @@
 // User-Interface-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): where the editor's
 // panels and fixed controls sit (the top corner cards, the bottom bar with its tabs and quick controls, the
-// bottom-right corner cluster), the selection toolbars, the element menu and the Map. Labels are the editor's own
+// bottom-right corner cluster), the selection toolbars and the element menu. Labels are the editor's own
 // (apps/editor: TabBar, ChromeControls, CanvasChrome, ZoomMenu, SelectionPopover, MultiSelectionToolbar,
 // EditorContextMenu); the chrome is ./editor-chrome and the floor ./space-furniture.
 
@@ -23,55 +23,14 @@ import { PixelCharacter } from './pixel-character';
 
 // --- Scenes ------------------------------------------------------------------
 
-/** The Map panel, top-left at (x, y), 120 by 84: its title with help and minimise, a miniature of the floor and
- *  the green box of what you see. */
-export function MapPanel({ x, y }: { x: number; y: number }) {
-  const room = (rx: number, ry: number, w: number, h: number) => (
-    <rect
-      x={x + rx}
-      y={y + ry}
-      width={w}
-      height={h}
-      className="fill-amber-50 stroke-stone-300 help-art-as-drawn"
-      strokeWidth={0.75}
-    />
-  );
-  return (
-    <g>
-      <Panel x={x} y={y} w={120} h={84} title="MAP" />
-      <Label x={x + 96} y={y + 11.5} size={8.5} tone="muted" anchor="middle">
-        ?
-      </Label>
-      <path d={`M${x + 106} ${y + 11} h6`} className="stroke-slate-400" strokeWidth={1} />
-      <rect x={x + 6} y={y + 27} width={108} height={51} rx={3} className="fill-slate-100" />
-      {room(14, 32, 26, 16)}
-      {room(44, 32, 30, 16)}
-      {room(78, 32, 26, 16)}
-      {room(14, 56, 26, 16)}
-      {room(44, 56, 30, 16)}
-      {room(78, 56, 26, 16)}
-      <rect
-        x={x + 36}
-        y={y + 44}
-        width={44}
-        height={22}
-        rx={2}
-        className="fill-brand-500/15 stroke-brand-500"
-        strokeWidth={1.2}
-      />
-    </g>
-  );
-}
-
 /** The whole frame at a glance: the logo and menu cards top-left, the strip across the top, Share and Sign In
- *  top-right, the Map bottom-left, the corner cluster bottom-right and the bottom bar under it all. */
+ *  top-right, the corner cluster bottom-right and the bottom bar under it all. */
 export function PanelLayout() {
   return (
     <Scene w={520} h={300}>
       <OfficeFloor x={150} y={52} />
       <PixelCharacter fx={330} fy={180} px={1.6} shirt="violet" />
       <TopRow w={520} />
-      <MapPanel x={8} y={184} />
       <CornerCluster x={350} y={244} />
       <BottomBar y={300 - BAR_H} w={520} tabs={['Virtual Office']} />
     </Scene>
@@ -213,8 +172,8 @@ export function ZoomControls() {
 }
 
 /** The selection toolbar an Editor sees over one selected element, its top-left corner at (x, y), 34 tall: More,
- *  Add text, Duplicate, Format Painter, Bring to front, Send to back and Delete (Add Comment is in the More
- *  menu). `formatOn` draws Format Painter pressed, as while its brush is loaded. */
+ *  Duplicate, Format Painter and Delete (no text, turn or stacking buttons, not-in-livehuddle.md "Element looks,
+ *  layers, opacity and rotation"). `formatOn` draws Format Painter pressed, as while its brush is loaded. */
 export function SelectionToolbar({
   x,
   y,
@@ -226,7 +185,6 @@ export function SelectionToolbar({
 }) {
   const buttons: { key: string; glyph: ReactNode }[] = [
     { key: 'more', glyph: <DotsGlyph x={0} y={0} /> },
-    { key: 'text', glyph: <path d="M-5 -5 h10 M0 -5 v10" {...GLYPH} /> },
     {
       key: 'dup',
       glyph: (
@@ -237,8 +195,6 @@ export function SelectionToolbar({
       ),
     },
     { key: 'format', glyph: <PainterGlyph on={formatOn} /> },
-    { key: 'front', glyph: <path d="M0 5 V-5 M-4 -1 L0 -5 L4 -1" {...GLYPH} /> },
-    { key: 'back', glyph: <path d="M0 -5 V5 M-4 1 L0 5 L4 1" {...GLYPH} /> },
     { key: 'delete', glyph: <path d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} /> },
   ];
   return (
@@ -257,15 +213,16 @@ export function SelectionToolbar({
   );
 }
 
-/** The width `SelectionToolbar` draws at: its seven buttons, 30 apart. */
+/** The width `SelectionToolbar` draws at: its four buttons, 30 apart. */
 function selectionToolbarWidth(): number {
-  return 8 + 7 * 30;
+  return 8 + 4 * 30;
 }
 
 /** One selected sofa with its toolbar above: the "Selected Sofa" caption, then the selection toolbar, Format
  *  Painter among its buttons. */
 export function ContextualToolbar() {
-  const tx = 92;
+  // Centred over the sofa (x 166 to 214).
+  const tx = 126;
   const ty = 30;
   return (
     <Scene w={420} h={190}>
@@ -318,14 +275,12 @@ export function MultiSelectToolbar() {
 }
 
 /** The element menu for a sofa, as EditorContextMenu draws it: the quick bar across the top with Clear Styles'
- *  eraser at its right, then the collapsible sections, Arrange first, then Size, Rotation and the Appearance
- *  flyout. */
+ *  eraser at its right, then Size and the row named for the sofa, which opens its settings. No Arrange, Rotation
+ *  or Appearance (livehuddle docs/specs/002-project-scope/not-in-livehuddle.md). */
 export function ElementContextMenu() {
   const sections: { label: string; flyout?: boolean }[] = [
-    { label: 'Arrange' },
     { label: 'Size' },
-    { label: 'Rotation' },
-    { label: 'Appearance', flyout: true },
+    { label: 'Sofa', flyout: true },
   ];
   const mx = 214;
   const my = 16;
@@ -350,7 +305,7 @@ export function ElementContextMenu() {
         />
         {sections.map((sec, i) => {
           const ry = my + bar + 5 + i * 25;
-          const on = sec.label === 'Appearance';
+          const on = sec.label === 'Sofa';
           return (
             <g key={sec.label}>
               {on && (
@@ -380,18 +335,6 @@ export function ElementContextMenu() {
           );
         })}
       </Panel>
-    </Scene>
-  );
-}
-
-/** The bottom-left Map: the floor in miniature with the green box of what you see, beside the floor itself. */
-export function Minimap() {
-  return (
-    <Scene w={420} h={200}>
-      <g transform="translate(150 20) scale(0.85)">
-        <OfficeFloor x={0} y={0} />
-      </g>
-      <MapPanel x={12} y={104} />
     </Scene>
   );
 }

@@ -8,7 +8,7 @@ import type { useToast } from '@/hooks/ui/useToast';
 // Persistence-facing state for the editor: the autosave status pill, the
 // document name (mirrored into the browser tab title) and the transient import-error toast. The Explorer's lists
 // are the index's, read by the shared Explorer itself. A cohesive slice lifted out of
-// useEditorState — same pattern as usePanelLayout / useEditorDialogs.
+// useEditorState, the same pattern as useEditorDialogs.
 //
 // The values render the header pill and the footer "Saved X ago"; the setters are written by the autosave,
 // hydration/bootstrap and room-op paths via the returned setters.

@@ -8,6 +8,7 @@ import {
   GRASS_TILES,
   gardenFenceParts,
   gardenPathParts,
+  roadParts,
   grassEdgePath,
   type FurniturePart,
   type ShapeElement,
@@ -171,6 +172,30 @@ export function GardenFenceView({
       stroke={stroke}
       seat={GARDEN_TONES.picket}
       label="Garden Fence"
+      animClass={animClass}
+    />
+  );
+}
+
+/** A Road (docs/specs/009-elements/road.md): asphalt in the element's fill, kerbs and a dashed centre line. */
+export function RoadView({
+  element,
+  stroke,
+  floor,
+  animClass,
+}: {
+  element: ShapeElement;
+  stroke: string;
+  floor: string;
+  animClass?: string;
+}) {
+  return (
+    <GardenSizedView
+      parts={roadParts(element.width, element.height)}
+      element={element}
+      stroke={stroke}
+      seat={floor}
+      label="Road"
       animClass={animClass}
     />
   );

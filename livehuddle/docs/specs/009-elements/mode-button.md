@@ -6,7 +6,7 @@ A canvas element that looks like a button and, when pressed, **switches whoever 
 
 A Space can be walked around, but that mode lives behind a picker in the palette, which means explaining it. A button ON the canvas turns that into an invitation: put "Walk with me" next to the title of a walkthrough document and a visitor who has never opened the mode picker can join in with one click. It is the same instinct as the Quick Start templates: put the affordance where the user already is.
 
-It is how people get into a Space, which is why its tile sits in the palette's **Travel** category beside the Portal, Bring Focus and the Avatar Pad.
+It is how people get into a Space, which is why its tile sits in the palette's **Travel** category beside the Portal and the Avatar Pad.
 
 **Nothing in livehuddle places one any more.** Every Spaces template's **Walk In** was one until the
 [Avatar Pad](avatar-pad.md#every-space-and-blank-tab-has-one) replaced it (owner, 2026-11-06): a Participant and a

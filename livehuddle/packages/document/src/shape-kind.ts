@@ -57,6 +57,8 @@ export type ShapeKind =
   | 'outdoor-plant'
   | 'tree'
   | 'garden-path'
+  // The Road (docs/specs/009-elements/road.md).
+  | 'road'
   | 'grass'
   | 'garden-fence'
   // The social pieces (docs/specs/009-elements/social-pieces.md).
@@ -94,6 +96,10 @@ export type ShapeKind =
   | 'toilet-cubicle'
   | 'washbasin'
   | 'hand-dryer'
+  // The lamps (docs/specs/009-elements/office-amenities.md "Lamps").
+  | 'floor-lamp'
+  | 'table-lamp'
+  | 'desk-lamp'
   // The venue pieces (docs/specs/009-elements/venue-pieces.md).
   | 'pillar'
   | 'column'
@@ -116,6 +122,7 @@ export type ShapeKind =
   | 'suggestion-box'
   | 'signpost'
   | 'photo-wall'
+  | 'poster'
   // A Door (docs/specs/009-elements/room-builder.md "Door"): a doorway that snaps onto any room wall and cuts it.
   | 'door'
   // A Window (docs/specs/009-elements/room-builder.md "Window"): snaps onto a wall like a Door, never cuts it.

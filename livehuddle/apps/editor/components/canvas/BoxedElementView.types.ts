@@ -21,12 +21,10 @@ export type BoxedElementViewProps = {
   // label was seeded with the first typed char and the editor should
   // place the caret at the end instead of selecting all.
   editCursorAtEnd?: boolean;
-  isPaintMode: boolean;
   showHandles: boolean;
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
   // The armed action a tap takes instead of selecting (Canvas.types.ts): true when it took it.
-  onPressArmedAction?: (id: string) => boolean;
   // Shift-click on an element fires this with the element id so the
   // page can toggle membership in the marquee multi-selection.
   onShiftSelect?: (id: string) => void;
@@ -93,6 +91,8 @@ export type BoxedElementViewProps = {
     documentId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
+    // Whether a Poster's picture opens the picker too: an Editor's alone (docs/specs/009-elements/poster.md).
+    posterPicker?: boolean;
   };
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.

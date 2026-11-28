@@ -1,13 +1,29 @@
 // Which walls the 3D view draws and which it cuts away (docs/specs/008-canvas/3d-view.md "Walls in front of you are
 // cut away", "Performance"; blueprint: 3d-view.md). Pure: no React, no DOM.
 
+import { ROOM_BACK_FACE, ROOM_WALL } from '@livehuddle/avatar/office-geometry';
+import { WALL_RISE } from '../real-3d/models/kit';
+// space-3d-turn before space-3d-camera: they import each other, and the turn's tilt store reads the camera's resting
+// tilt as it loads.
 import { boxToCamera, toCamera } from './space-3d-turn';
-import type { SpaceWall } from './space-3d-walls';
+import { SPACE_3D_TILT_DEG } from './space-3d-camera';
+import { SPACE_WALL_HEIGHT, type SpaceWall } from './space-3d-walls';
 
 /** How far to either side of your feet a wall in front of you is cut away, in canvas px (DEFAULTS.md D138). */
 export const SPACE_CUT_HALF_WIDTH = 72;
-/** How far in front of your feet (down the screen) a wall is cut away, in canvas px (DEFAULTS.md D138). */
-export const SPACE_CUT_DEPTH = 150;
+
+/**
+ * How much floor a wall `height` tall (as built, before `WALL_RISE`) hides behind it at a camera tilt of `tiltDeg` from
+ * straight down, in canvas px: the sight line from a floor point to the camera rises one unit for every tan(tilt) it
+ * runs, so a wall closer than its risen height times tan(tilt) stands in it (DEFAULTS.md D138). The 3D view cuts a
+ * wall that close in front of your feet.
+ */
+export function cutDepth(height: number, tiltDeg = SPACE_3D_TILT_DEG): number {
+  return height * WALL_RISE * Math.tan((Math.max(0, Math.min(89, tiltDeg)) * Math.PI) / 180);
+}
+
+/** How far in front of your feet a full-height Room wall is cut away at the resting tilt: about 233 canvas px. */
+export const SPACE_CUT_DEPTH = cutDepth(SPACE_WALL_HEIGHT);
 /** A cut-away wall's opacity. */
 export const SPACE_CUT_OPACITY = 0.18;
 
@@ -124,8 +140,22 @@ function inRoomWall(wall: SpaceWall, room: SpaceRoom): boolean {
     Math.abs(m.x - x) <= ROOM_EDGE ||
     Math.abs(m.x - x - width) <= ROOM_EDGE ||
     Math.abs(m.y - y) <= ROOM_EDGE ||
+    // A Room's back wall stands in from its box's top (ROOM_BACK_FACE), and its windows and doorways with it.
+    Math.abs(m.y - (y + ROOM_BACK_FACE - ROOM_WALL / 2)) <= ROOM_EDGE ||
     Math.abs(m.y - y - height) <= ROOM_EDGE
   );
+}
+
+/**
+ * Whether a wall runs across the view at the camera's quarter `turn` (level on screen), so it can stand between the
+ * camera and you. A side wall runs towards the camera and never hides you, so it is never cut, by the cut-away box or
+ * by the sight line from your head (the owner, 2026-11-27: a side wall "shouldn't have hidden because it covered
+ * nothing").
+ */
+export function acrossView(wall: { a: Point; b: Point }, turn = 0): boolean {
+  const dx = Math.abs(wall.b.x - wall.a.x);
+  const dy = Math.abs(wall.b.y - wall.a.y);
+  return turn % 2 === 0 ? dx >= dy : dy >= dx;
 }
 
 /**
@@ -139,26 +169,35 @@ export function cutAwayIds(
   // The camera's quarter turns (3d-view.md "Turning the camera"): in front is the camera's way.
   turn = 0,
   rooms: readonly SpaceRoom[] = [],
+  // The camera's tilt from straight down, in degrees: how much floor each wall hides (`cutDepth`).
+  tiltDeg = SPACE_3D_TILT_DEG,
 ): Set<string> {
   const out = new Set<string>();
   if (!feet) return out;
-  // The cut-away box sits in front of the feet as the camera sees them. A quarter turn keeps a box a box, so it is
-  // turned back onto the plan once, and every wall is tested where it stands (none is turned, nothing allocated).
+  // The cut-away box sits in front of the feet as the camera sees them, as deep as the floor the wall hides at this
+  // tilt (a Pod's lower walls hide less). A quarter turn keeps a box a box, so it is turned back onto the plan once per
+  // wall height (a board has a handful), and every wall is tested where it stands (none is turned).
   const f = toCamera(feet, turn);
-  const box = boxToCamera(
-    {
-      x: f.x - SPACE_CUT_HALF_WIDTH,
-      y: f.y,
-      width: SPACE_CUT_HALF_WIDTH * 2,
-      height: SPACE_CUT_DEPTH,
-    },
-    -turn,
-  );
-  const right = box.x + box.width;
-  const bottom = box.y + box.height;
+  const boxes = new Map<number, { x: number; y: number; right: number; bottom: number }>();
+  const boxFor = (height: number) => {
+    let b = boxes.get(height);
+    if (!b) {
+      const box = boxToCamera(
+        {
+          x: f.x - SPACE_CUT_HALF_WIDTH,
+          y: f.y,
+          width: SPACE_CUT_HALF_WIDTH * 2,
+          height: cutDepth(height, tiltDeg),
+        },
+        -turn,
+      );
+      b = { x: box.x, y: box.y, right: box.x + box.width, bottom: box.y + box.height };
+      boxes.set(height, b);
+    }
+    return b;
+  };
   // Towards the camera, on the plan: one axis, so a wall's side and run are read from its plan points as they stand.
   const toward = toCamera({ x: 0, y: 1 }, -turn);
-  const level = toward.x === 0;
   const near = roomsNear(rooms, feet).map((room) => ({
     room,
     middle: (room.x + room.width / 2) * toward.x + (room.y + room.height / 2) * toward.y,
@@ -167,20 +206,69 @@ export function cutAwayIds(
   // hairline, the owner 2026-11-25).
   for (const wall of walls) {
     if (wall.kind === 'grass' || wall.kind === 'fence' || wall.kind === 'picket') continue;
-    if (segmentMeetsBox(wall.a, wall.b, box.x, box.y, right, bottom)) {
+    // Only a wall across the view (level when the camera looks up or down the plan, upright when it looks across) can
+    // stand between the camera and you. A side wall running towards the camera never hides you, so it never fades:
+    // walking near a room's left or right wall used to drop it, and with it the whole side (the owner, 2026-11-27:
+    // "why does the left wall of a room drop so often for no reason?").
+    if (!acrossView(wall, turn)) continue;
+    const box = boxFor(wall.height);
+    if (segmentMeetsBox(wall.a, wall.b, box.x, box.y, box.right, box.bottom)) {
       out.add(wall.id);
       continue;
     }
     if (near.length === 0) continue;
-    // A wall across the view (level when the camera looks up or down the plan, upright when it looks across)...
-    const dx = Math.abs(wall.b.x - wall.a.x);
-    const dy = Math.abs(wall.b.y - wall.a.y);
-    if (level ? dx < dy : dy < dx) continue;
     // ...on the camera's side of a near room's middle, and that room's own.
     const at = ((wall.a.x + wall.b.x) / 2) * toward.x + ((wall.a.y + wall.b.y) / 2) * toward.y;
     if (near.some((n) => at > n.middle && inRoomWall(wall, n.room))) out.add(wall.id);
   }
+  // Each piece on its own: a door or a window splits a side into separate walls, and only those in your way fade
+  // (the owner, 2026-11-27: "doors and windows should cause walls to be split into separate objects").
   return out;
+}
+
+// The last front walls worked out: the walls only change with the board, the turn with the camera, so a frame that
+// changed neither asks again for free.
+let frontMemo: {
+  walls: readonly SpaceWall[];
+  rooms: readonly SpaceRoom[];
+  turn: number;
+  ids: ReadonlySet<string>;
+} | null = null;
+
+/**
+ * Every room's walls on the camera's side (its front wall as the camera is turned, with the doorways and windows in
+ * it): editing cuts them all down, so the whole floor plan is in reach, as every roof is off (3d-view.md "Editing in
+ * 3D"). Only walls across the view, as for the cut-away: a side wall never hides the floor.
+ */
+export function frontWallIds(
+  walls: readonly SpaceWall[],
+  rooms: readonly SpaceRoom[],
+  turn = 0,
+): ReadonlySet<string> {
+  if (
+    frontMemo &&
+    frontMemo.walls === walls &&
+    frontMemo.rooms === rooms &&
+    frontMemo.turn === turn
+  )
+    return frontMemo.ids;
+  const ids = new Set<string>();
+  const toward = toCamera({ x: 0, y: 1 }, -turn);
+  const middles = rooms.map(
+    (room) => (room.x + room.width / 2) * toward.x + (room.y + room.height / 2) * toward.y,
+  );
+  for (const wall of walls) {
+    if (wall.kind === 'grass' || wall.kind === 'fence' || wall.kind === 'picket') continue;
+    if (!acrossView(wall, turn)) continue;
+    const at = ((wall.a.x + wall.b.x) / 2) * toward.x + ((wall.a.y + wall.b.y) / 2) * toward.y;
+    for (let i = 0; i < rooms.length; i++)
+      if (at > middles[i]! && inRoomWall(wall, rooms[i]!)) {
+        ids.add(wall.id);
+        break;
+      }
+  }
+  frontMemo = { walls, rooms, turn, ids };
+  return ids;
 }
 
 /** The canvas area whose walls are drawn, for a view on a canvas of `size`. */
@@ -218,17 +306,6 @@ export function turnedArea(area: SpaceArea): SpaceArea {
     top: centre.y - reach,
     bottom: centre.y + reach,
   };
-}
-
-/** The walls whose bounding box meets the area. */
-export function wallsInArea(walls: readonly SpaceWall[], area: SpaceArea): SpaceWall[] {
-  return walls.filter(
-    (w) =>
-      Math.max(w.a.x, w.b.x) >= area.left &&
-      Math.min(w.a.x, w.b.x) <= area.right &&
-      Math.max(w.a.y, w.b.y) >= area.top &&
-      Math.min(w.a.y, w.b.y) <= area.bottom,
-  );
 }
 
 /**

@@ -289,7 +289,6 @@ export function CanvasCharactersLayer({
         const config = peerAvatarConfig(peer.avatar.config);
         return (
           <AvatarWalker
-            turn={turn}
             key={peer.id}
             pos={{ x: peer.avatar.x, y: peer.avatar.y }}
             facing={peer.avatar.facing}
@@ -301,6 +300,8 @@ export function CanvasCharactersLayer({
             seated={sitsDown(peer.avatar.seatedOn)}
             // Parsed, not trusted: anything but a known drink draws an empty hand.
             holding={isDrinkKind(peer.avatar.holding) ? peer.avatar.holding : null}
+            // Exactly `true` only: anything else is a hand down.
+            handUp={peer.avatar.handUp === true}
             status={parseAvatarStatus(peer.avatar.status)}
             // Replayed locally from the kind + elapsed time in their packet, by
             // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
@@ -354,11 +355,11 @@ export function CanvasCharactersLayer({
       ) : null}
       {/* Your character, subscribed to its whole pose: a hop or a wave in place renders it alone. */}
       <AvatarSelfWalker
-        turn={turn}
         poseStore={avatar.poseStore}
         config={avatarLook.config}
         seated={sitsDown(avatar.seatedOn)}
         holding={avatar.holding}
+        handUp={avatar.handUp}
         status={avatarStatus}
         shirt={props.selfParticipant.color}
         standingOn={avatarStandingOn}

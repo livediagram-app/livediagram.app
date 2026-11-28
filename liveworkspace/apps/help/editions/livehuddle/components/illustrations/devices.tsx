@@ -74,7 +74,7 @@ export function MobileEditor() {
             <Icon prims={ICONS.edit} x={60} y={49} size={11} className="stroke-white" />
           </g>
           <Icon prims={ICONS.walk} x={81} y={49} size={11} className="stroke-slate-500" />
-          {(['write', 'rooms', 'seats', 'perks'] as const).map((k, i) => (
+          {(['rooms', 'seats', 'perks'] as const).map((k, i) => (
             <Icon key={k} prims={ICONS[k]} x={106 + i * 20} y={49} size={11} />
           ))}
           <rect x={184} y={38} width={20} height={22} rx={5} className="fill-brand-50" />

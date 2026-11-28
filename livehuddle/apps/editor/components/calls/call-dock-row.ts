@@ -12,9 +12,7 @@ export function clusterRowLayout(
 ): { row: string; buttons: string } {
   return dockInRow
     ? {
-        // The left column is at least `--call-dock-clear` wide: what the bottom-left panels (the Map) take, so the
-        // dock never stands over them (Work Tracker 1041).
-        row: 'left-4 grid grid-cols-[minmax(var(--call-dock-clear,0px),1fr)_auto_1fr] items-end gap-1.5',
+        row: 'left-4 grid grid-cols-[1fr_auto_1fr] items-end gap-1.5',
         buttons: `col-start-3 ${lifted ? 'row-start-2' : 'row-start-1'} flex items-center justify-end gap-1.5`,
       }
     : {
@@ -25,29 +23,19 @@ export function clusterRowLayout(
       };
 }
 
-/** The row's gap between its columns (`gap-1.5`), and the room kept between the bottom-left panels and the dock. */
-export const CALL_DOCK_ROW_GAP = 6;
-export const CALL_DOCK_PANEL_GAP = 8;
+/** The row's gap between its columns (`gap-1.5`). */
+const CALL_DOCK_ROW_GAP = 6;
 
 /**
- * Where the dock goes beside the bottom-left panels (Work Tracker 1041): `clear` is the left column's least width, in
- * the row's own px, so the dock starts past the panels' right edge; `lifted` when the panels, the dock and the buttons
- * cannot share the bottom line, so the dock stands on a line of its own above the buttons, at the right. Every width is
- * on screen, in px; `scale` is the row's UI scale (its px per screen px).
+ * Whether the dock and the buttons cannot share the bottom line, so the dock stands on a line of its own above the
+ * buttons, at the right. Every width is on screen, in px; `scale` is the row's UI scale (its px per screen px).
  */
 export function callDockRowFit(m: {
-  rowLeft: number;
   rowWidth: number;
-  // The bottom-left panels' right edge, or null with none beside the row.
-  panelsRight: number | null;
   dockWidth: number;
   buttonsWidth: number;
   scale: number;
-}): { clear: number; lifted: boolean } {
-  const clear =
-    m.panelsRight === null
-      ? 0
-      : Math.max(0, Math.ceil((m.panelsRight + CALL_DOCK_PANEL_GAP - m.rowLeft) / m.scale));
-  const need = clear + (m.dockWidth + m.buttonsWidth) / m.scale + 2 * CALL_DOCK_ROW_GAP;
-  return { clear, lifted: need > m.rowWidth / m.scale + 0.5 };
+}): { lifted: boolean } {
+  const need = (m.dockWidth + m.buttonsWidth) / m.scale + 2 * CALL_DOCK_ROW_GAP;
+  return { lifted: need > m.rowWidth / m.scale + 0.5 };
 }

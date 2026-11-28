@@ -2,7 +2,7 @@
 // its first, each with its own name, floor pattern and builder. Only the buildings and the Homes have floors; the first
 // floor is buildTemplate's, named by templateFirstFloorName (template-floor-names.ts).
 
-import { roomier } from './template-roomy';
+import { roomierFor } from './template-roomy';
 import type { Element, FloorPattern } from '@livehuddle/document';
 import type { TemplateKind } from './templates';
 import { buildHotelRooftop, buildHotelSuites } from './template-builders-hotel';
@@ -44,7 +44,7 @@ const ROOMY: Partial<Record<TemplateKind, readonly TemplateFloor[]>> = Object.fr
     kind,
     floors.map((f) => ({
       ...f,
-      build: (cx: number, cy: number) => roomier(f.build(cx, cy), cx, cy),
+      build: (cx: number, cy: number) => roomierFor(kind, f.build(cx, cy), cx, cy),
     })),
   ]),
 );

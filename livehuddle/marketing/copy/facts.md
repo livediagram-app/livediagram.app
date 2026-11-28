@@ -48,7 +48,7 @@ The unit of value is the group in the room.
   sandwich and Angry's steaming ears), speech bubbles, five moves (jumping jacks,
   wave, spin, cheer, dance) and Follow to go wherever a teammate goes.
 - Light meeting tools: the Timer and Stopwatch pieces in the palette's Meeting
-  category, the facilitator baton, Bring Focus and Follow, and five bursts
+  category, the facilitator baton and Follow, and five bursts
   round your own character (Confetti, Sparkles, Hearts, Applause, Fireworks).
 - Light content on the walls: sticky notes, text and stickers.
 - Real-time presence: live cursors, characters, selection rings and presence on

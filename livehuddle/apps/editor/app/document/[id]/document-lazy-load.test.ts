@@ -22,11 +22,6 @@ describe('the document page’s first load', () => {
     expect(importsOf(file)).not.toContain(module);
   });
 
-  it('loads the tool panels on demand', () => {
-    const imports = importsOf('components/canvas/useCanvasToolPanels.tsx');
-    expect(imports.filter((m) => m.startsWith('@/components/panels/'))).toEqual([]);
-  });
-
   it('takes the template overrides from the builders loaded at the press', () => {
     const src = read('app/document/[id]/useTemplateFlow.ts');
     expect(src).not.toMatch(/^import\s+\{[^}]*\btemplateCanvasOverrides\b/m);

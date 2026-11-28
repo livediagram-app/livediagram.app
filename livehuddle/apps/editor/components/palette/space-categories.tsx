@@ -76,7 +76,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'amenities',
     label: 'Perks',
     description:
-      'What makes a Space feel like a place: plants and shelves, a printer, a copier, lockers and a coat rack, a kitchen, and a restroom.',
+      'What makes a Space feel like a place: plants and shelves, lamps, a printer, a copier, lockers and a coat rack, a kitchen, and a restroom.',
     tagline: 'The touches that make it feel like a place.',
     icon: lucide(lucideCoffee),
   },
@@ -97,7 +97,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'garden',
     label: 'Garden',
     description:
-      'The outdoors: plants, trees, paths, grass, low fences, benches, a picnic table, a hammock, a parasol, a fountain, a pond, a swimming pool, a campfire, a car park and a bike rack.',
+      'The outdoors: plants, trees, paths, a road, grass, low fences, benches, a picnic table, a hammock, a parasol, a fountain, a pond, a swimming pool, a campfire, a car park and a bike rack.',
     tagline: 'Take the meeting outside.',
     icon: lucide(lucideTreePine),
   },
@@ -107,7 +107,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'meeting',
     label: 'Meet',
     description:
-      'What a meeting room and a team need: a screen on the wall, a sign by its door, a notice board, a world clock, a calendar wall, a suggestion box, a team photo wall, a timer and a stopwatch.',
+      'What a meeting room and a team need: a screen on the wall, a sign by its door, a notice board, a clock, a calendar wall, a suggestion box, a team photo wall, a poster, a timer and a stopwatch.',
     tagline: 'Share on the wall, knock at the door.',
     icon: <ScreenIcon size={18} />,
   },

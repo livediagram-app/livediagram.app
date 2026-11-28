@@ -5,9 +5,6 @@ import {
   doorOnRoom,
   doorParts,
   doorsFollowRooms,
-  DOOR_REACH,
-  isNextToDoor,
-  toggledDoor,
   hasBuiltInDoorway,
   isOutlinedRoom,
   isRoomOutline,
@@ -233,34 +230,6 @@ describe('drawing', () => {
     expect(doorParts(8, 24).jambs[0]!.w).toBe(2);
     // Closed, the leaf lies across the opening from the same hinge, as long as it stood.
     expect(p.shut).toEqual({ x: p.leaf.x, y: p.leaf.y - 1.5, w: p.leaf.h, h: 3 });
-  });
-});
-
-// docs/specs/009-elements/room-builder.md "Opening and closing".
-describe('opening and closing a door', () => {
-  // A door across x 100..196 on the line y 0.
-  const door = { ...createShape('door', 100, -12), width: 96, height: 24 };
-
-  it('is next to a character within DOOR_REACH of its opening, on either side', () => {
-    expect(isNextToDoor({ x: 148, y: DOOR_REACH }, door)).toBe(true);
-    expect(isNextToDoor({ x: 148, y: -DOOR_REACH }, door)).toBe(true);
-    expect(isNextToDoor({ x: 148, y: DOOR_REACH + 1 }, door)).toBe(false);
-    // Past its end, measured to the end of the opening.
-    expect(isNextToDoor({ x: 196 + 30, y: 30 }, door)).toBe(true);
-    expect(isNextToDoor({ x: 196 + 40, y: 40 }, door)).toBe(false);
-    // Only a door is a door; a zero-width one is its one point.
-    expect(isNextToDoor({ x: 148, y: 0 }, { ...door, shape: 'chair' })).toBe(false);
-    expect(isNextToDoor({ x: 100, y: 10 }, { ...door, width: 0 })).toBe(true);
-  });
-
-  it('turns open to closed and back, an open door storing nothing', () => {
-    const shut = toggledDoor(door);
-    expect(shut.doorClosed).toBe(true);
-    const open = toggledDoor(shut);
-    expect('doorClosed' in open).toBe(false);
-    expect(open).toEqual(door);
-    expect(isValidElement(shut)).toBe(true);
-    expect(isValidElement({ ...door, doorClosed: 'yes' })).toBe(false);
   });
 });
 

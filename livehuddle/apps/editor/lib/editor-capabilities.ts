@@ -22,8 +22,6 @@ export type EditorCapabilities = {
   resize: (el: Element) => boolean;
   recolour: (el: Element) => boolean;
   remove: (el: Element) => boolean;
-  // Open or close a Door (docs/specs/009-elements/room-builder.md "Opening and closing").
-  swingDoor: (el: Element) => boolean;
   // Open a tab's Attendance, who was in it and when (docs/specs/012-collaboration/tab-attendance.md "Who sees it"):
   // an Editor's and a Participant's, never a Viewer's.
   seeAttendance: boolean;
@@ -53,7 +51,6 @@ export function resolveEditorCapabilities(input: {
       resize: always,
       recolour: always,
       remove: always,
-      swingDoor: always,
       seeAttendance: true,
       alwaysWalks: false,
     };
@@ -68,7 +65,6 @@ export function resolveEditorCapabilities(input: {
       resize: never,
       recolour: never,
       remove: never,
-      swingDoor: never,
       seeAttendance: false,
       alwaysWalks: true,
     };
@@ -82,7 +78,6 @@ export function resolveEditorCapabilities(input: {
     resize: never,
     recolour: never,
     remove: never,
-    swingDoor: always,
     seeAttendance: true,
     alwaysWalks: true,
   };

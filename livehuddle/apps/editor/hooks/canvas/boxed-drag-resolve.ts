@@ -9,6 +9,7 @@ import {
   distributionSnap,
   isBoxed,
   snapResizeBounds,
+  ROOM_WALL_SNAP_THRESHOLD,
   snapRoomWalls,
   snapRoomWallsResize,
   snapToAlignment,
@@ -19,6 +20,15 @@ import {
   type TextElement,
 } from '@livehuddle/document';
 import { hugResizedText, hugsText, type MeasureTextBlock } from '@/lib/text-hug';
+import { snapsToWalls, wallSnap } from '@/lib/space-3d/wall-snap';
+import { real3DPointAt } from '@/lib/real-3d/real-3d-pick';
+
+/** The floor point the 3D view looks at (the middle of the window), for which face of a wall a piece snaps to. */
+function viewFocus(): { x: number; y: number } | null {
+  return typeof window === 'undefined'
+    ? null
+    : real3DPointAt(window.innerWidth / 2, window.innerHeight / 2);
+}
 import {
   ALIGN_SNAP_THRESHOLD,
   constrainedBounds,
@@ -104,17 +114,23 @@ export function resolveBoxedMove({
   const aligned = elements;
   const edge = snapToAlignment(candidate, aligned, memberIds, ALIGN_SNAP_THRESHOLD);
   // A room also snaps wall to wall (docs/specs/009-elements/office.md "Rooms line up"): sharing a neighbour's wall
-  // line wins an axis over the box-edge snap when it is as near, since box edge to box edge leaves a double wall.
+  // line, within its wider reach, wins its axis over the box-edge snap, since box edge to box edge is a double wall.
   const walls = isBoxRoomId(elements, primaryId)
-    ? snapRoomWalls(candidate, elements, memberIds, ALIGN_SNAP_THRESHOLD)
+    ? snapRoomWalls(candidate, elements, memberIds, ROOM_WALL_SNAP_THRESHOLD)
     : null;
-  const wallX = !!walls?.snappedX && (!edge.snappedX || Math.abs(walls.dx) <= Math.abs(edge.dx));
-  const wallY = !!walls?.snappedY && (!edge.snappedY || Math.abs(walls.dy) <= Math.abs(edge.dy));
+  const wallX = !!walls?.snappedX;
+  const wallY = !!walls?.snappedY;
+  // Furniture snaps flush to a wall it comes near (docs/specs/008-canvas/3d-view.md "Editing in 3D"): a wall face wins
+  // its axis over an edge alignment, since lining up against the wall is what placing a piece by it is for.
+  const primary = elements.find((el) => el.id === primaryId);
+  const face = snapsToWalls(primary)
+    ? wallSnap(candidate, elements, memberIds, undefined, viewFocus())
+    : null;
   const snap = {
-    dx: wallX ? walls.dx : edge.dx,
-    dy: wallY ? walls.dy : edge.dy,
-    snappedX: edge.snappedX || wallX,
-    snappedY: edge.snappedY || wallY,
+    dx: face?.dx ?? (wallX ? walls.dx : edge.dx),
+    dy: face?.dy ?? (wallY ? walls.dy : edge.dy),
+    snappedX: edge.snappedX || wallX || face?.dx != null,
+    snappedY: edge.snappedY || wallY || face?.dy != null,
   };
   let snapDx = snap.dx;
   let snapDy = snap.dy;
@@ -290,7 +306,7 @@ export function resolveBoxedResize({
     // line up"), from the raw drag so the box-edge snap above cannot pull it a wall's width off.
     const walls =
       snapMode && !noSnap && !constrain && isBoxRoomId(elements, primaryId)
-        ? snapRoomWallsResize(raw, snapMode, elements, memberIds, ALIGN_SNAP_THRESHOLD)
+        ? snapRoomWallsResize(raw, snapMode, elements, memberIds, ROOM_WALL_SNAP_THRESHOLD)
         : null;
     const wallSnapped = !!walls && walls.guides.length > 0;
     const next = wallSnapped ? walls.bounds : edgeNext;

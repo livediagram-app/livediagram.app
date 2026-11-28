@@ -12,7 +12,7 @@ import {
 } from '@liveworkspace/workbench/components/dialogs/HideCursorsSwitch';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livehuddle/api-schema';
-import { type MapSize, type UserPreferences } from '@/lib/user-preferences';
+import { type UserPreferences } from '@/lib/user-preferences';
 import {
   elementTourSeen,
   markElementTourSeen,
@@ -256,8 +256,6 @@ export type SettingsCategorySpec = {
   rows: SettingsRowSpec[];
 };
 
-// A phone never draws the minimap (docs/specs/008-canvas/minimap.md), so all
-// three of its rows are inert there and share this note.
 // What every UI scale slider shares (docs/specs/007-editor/ui-scale.md).
 const UI_SCALE_SLIDER = {
   kind: 'slider',
@@ -289,9 +287,6 @@ function uiScalePartRow(
     event: { category: 'UI', changed: copy.changed },
   };
 }
-
-const MINIMAP_DESKTOP_ONLY =
-  'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
 
 // The Mouse section's rows answer a hover and a middle button, which a phone has neither of, so they are inert there
 // and share this note.
@@ -357,32 +352,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.alignmentGuides !== false,
         write: (p, v) => ({ ...p, alignmentGuides: v }),
         event: { category: 'UI', on: 'AlignmentGuidesOn', off: 'AlignmentGuidesOff' },
-      },
-      {
-        // docs/specs/008-canvas/3d-view.md "Turning the camera": Turn Left and Turn Right in the 3D view. Off unless
-        // set.
-        kind: 'toggle',
-        key: 'rotateIn3D',
-        keywords: 'rotate turn camera 3d view walk round',
-        section: 'Canvas',
-        label: 'Rotate in 3D View',
-        description:
-          'Shows Turn Left and Turn Right in the 3D view, to walk the camera round the room.',
-        read: (p) => p.rotateIn3D === true,
-        write: (p, v) => ({ ...p, rotateIn3D: v }),
-        event: { category: 'UI', on: 'RotateIn3DOn', off: 'RotateIn3DOff' },
-      },
-      {
-        // docs/specs/008-canvas/3d-engine.md: the 3D view as a real scene. On unless turned off.
-        kind: 'toggle',
-        key: 'real3D',
-        keywords: 'real 3d view webgl models depth',
-        section: 'Canvas',
-        label: 'Real 3D',
-        description: 'Draws the 3D view as a real 3D scene, with every piece and character modelled.',
-        read: (p) => p.real3D !== false,
-        write: (p, v) => ({ ...p, real3D: v }),
-        event: { category: 'UI', on: 'Real3DOn', off: 'Real3DOff' },
       },
       {
         // docs/specs/009-elements/images.md "Deleting an unused picture": one setting in every app, also set by the
@@ -518,7 +487,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     id: 'panels',
     label: 'Panels',
     // Each panel's settings were a sub-category of their own (Panels › Layers) until they became its sections: their
-    // old ids still land here.
+    // old ids still land here, the Map's too though it left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md
+    // "The Map").
     aliases: ['map', 'collaborate'],
     rows: [
       {
@@ -536,55 +506,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.panelOpacity ?? 1,
         write: (p, v) => ({ ...p, panelOpacity: v }),
         event: { category: 'UI', changed: 'PanelOpacity' },
-      },
-      {
-        section: 'Map',
-        // The Map's switch, written out rather than a panelSwitch: it keeps its
-        // older key and telemetry tokens so stored choices and the dashboard
-        // carry over the rename from "Show Map".
-        kind: 'toggle',
-        key: 'showMinimap',
-        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off enable',
-        illustration: 'showMinimap',
-        label: 'Enable Map',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description:
-          'An overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Drag it to move around.',
-        read: (p) => p.showMinimap !== false,
-        write: (p, v) => ({ ...p, showMinimap: v }),
-        event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
-      },
-      {
-        section: 'Map',
-        kind: 'toggle',
-        key: 'mapDimOutside',
-        parent: 'showMinimap',
-        keywords: 'shade minimap viewport dim',
-        illustration: 'mapDimOutside',
-        label: 'Dim Outside the View',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description: 'Shades what is off screen, so the part you are looking at stands out.',
-        read: (p) => p.mapDimOutside !== false,
-        write: (p, v) => ({ ...p, mapDimOutside: v }),
-        event: { category: 'UI', on: 'MapDimOn', off: 'MapDimOff' },
-      },
-      {
-        section: 'Map',
-        kind: 'choice',
-        key: 'mapSize',
-        parent: 'showMinimap',
-        keywords: 'minimap height short medium tall',
-        label: 'Map Size',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description: 'How much of the corner the Map takes up.',
-        options: [
-          { id: 'short', label: 'Short' },
-          { id: 'medium', label: 'Medium' },
-          { id: 'tall', label: 'Tall' },
-        ],
-        read: (p) => p.mapSize ?? 'medium',
-        write: (p, v) => ({ ...p, mapSize: v as MapSize }),
-        event: { category: 'UI', changed: 'MapSize' },
       },
       {
         section: 'Collaborate',

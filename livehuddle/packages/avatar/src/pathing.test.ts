@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import {
-  fenceReachFor,
-  fenceSegments,
-  fenceStep,
-  shutDoorLines,
-  type FenceSegment,
-} from './collision';
+import { fenceReachFor, fenceSegments, fenceStep, type FenceSegment } from './collision';
 import { avatarScale } from './config';
 import type { FencePoint } from './fence';
-import { buildNavGrid, clearWalk, findWalkPath, NAV_CELL, NAV_MAX_CELLS } from './pathing';
+import {
+  buildNavGrid,
+  clearWalk,
+  findWalkPath,
+  findWalkRoute,
+  NAV_CELL,
+  NAV_MAX_CELLS,
+} from './pathing';
 
 // docs/specs/008-canvas/avatar-mode.md "Finding the way": a click-walk routes round what blocks a step.
 
@@ -58,7 +59,7 @@ function walkRoute(from: FencePoint, route: FencePoint[], fences: FenceSegment[]
 
 function route(elements: Parameters<typeof fenceSegments>[0], from: FencePoint, to: FencePoint) {
   const fences = fenceSegments(elements);
-  const grid = buildNavGrid(fences, REACH, shutDoorLines(elements));
+  const grid = buildNavGrid(fences, REACH);
   const path = findWalkPath(grid, from, to);
   return { fences, grid, path, end: walkRoute(from, path, fences) };
 }
@@ -94,36 +95,22 @@ describe('findWalkPath', () => {
     }
   });
 
-  it('goes in through a Door piece, and stops just outside the walls once it is shut', () => {
+  it('goes in through a Door piece, one saved shut while doors were swung by hand included', () => {
     // A room with no built-in doorway and a Door in the middle of its right wall (x 395).
     const shut = shape('room', 'room', 0, 0, 400, 300, { roomDoor: 'none' });
     const door = shape('d', 'door', 395 - 48, 150 - 12, 96, 24, { rotation: 90 });
     const from = { x: -150, y: 150 };
     const to = { x: 200, y: 150 };
-    const open = route([shut, door], from, to);
-    expect(near(open.end, to)).toBe(true);
-    // In through the door on the far side, not over the near wall.
-    expect(open.path.some((p) => p.x > 395)).toBe(true);
-    const closed = route([shut, { ...door, doorClosed: true } as typeof door], from, to);
-    // Just outside the shut door (on the walker's side), within a click's reach of it, so the next click opens it:
-    // not the wall nearest the click (the back wall, y 31).
-    const end = closed.path.at(-1)!;
-    expect(end.x).toBeGreaterThan(395 + REACH);
-    expect(end.x).toBeLessThan(395 + 48);
-    expect(Math.abs(end.y - 150)).toBeLessThan(NAV_CELL);
-    expect(near(closed.end, end)).toBe(true);
+    for (const d of [door, { ...door, doorClosed: true } as typeof door]) {
+      const walk = route([shut, d], from, to);
+      expect(near(walk.end, to)).toBe(true);
+      // In through the door on the far side, not over the near wall.
+      expect(walk.path.some((p) => p.x > 395)).toBe(true);
+    }
   });
 
-  it('heads for the shut door nearest the walker when a room has two, and the nearest wall when it has none', () => {
+  it('stops just outside the wall nearest the click when a room has no door', () => {
     const shut = shape('room', 'room', 0, 0, 400, 300, { roomDoor: 'none' });
-    const right = shape('d1', 'door', 395 - 48, 150 - 12, 96, 24, {
-      rotation: 90,
-      doorClosed: true,
-    });
-    const left = shape('d2', 'door', 5 - 48, 150 - 12, 96, 24, { rotation: 90, doorClosed: true });
-    const end = route([shut, right, left], { x: -150, y: 150 }, { x: 300, y: 150 }).path.at(-1)!;
-    expect(end.x).toBeLessThan(5 - REACH);
-    expect(end.x).toBeGreaterThan(5 - 48);
     // Doorless: the wall nearest the click (its back, line y 31).
     const bare = route([shut], { x: -150, y: 150 }, { x: 200, y: 150 }).path.at(-1)!;
     expect(bare.y).toBeLessThan(31 - REACH);
@@ -212,6 +199,37 @@ function bigBoard() {
     }
   return els;
 }
+
+describe('findWalkRoute', () => {
+  // A 400 by 300 room, its doorway in the middle of its front wall, a doorless cupboard beside it.
+  const room = shape('room', 'room', 0, 0, 400, 300);
+  const cupboard = shape('cupboard', 'room', 600, 0, 200, 200, { roomDoor: 'none' });
+  const fences = fenceSegments([room, cupboard]);
+  const grid = buildNavGrid(fences, REACH);
+
+  it('routes round the walls to a spot it can reach, ending there', () => {
+    const path = findWalkRoute(grid, { x: 200, y: -150 }, { x: 200, y: 150 })!;
+    expect(path.at(-1)).toEqual({ x: 200, y: 150 });
+    expect(path.length).toBeGreaterThan(1);
+    expect(findWalkRoute(null, { x: 0, y: 0 }, { x: 9, y: 9 })).toEqual([{ x: 9, y: 9 }]);
+  });
+
+  it('is null for a spot behind walls or in a wall, where findWalkPath stops short', () => {
+    const shut = { x: 700, y: 120 };
+    expect(findWalkRoute(grid, { x: 200, y: 150 }, shut)).toBeNull();
+    expect(findWalkPath(grid, { x: 200, y: 150 }, shut).at(-1)).not.toEqual(shut);
+    // On the back wall's line.
+    expect(findWalkRoute(grid, { x: 200, y: 150 }, { x: 200, y: 31 })).toBeNull();
+  });
+
+  it('is null for feet walled in where no open cell is near, where findWalkPath walks straight', () => {
+    // Feet deep in a big footprint: no open cell within reach of them.
+    const pool = shape('pool', 'swimming-pool', 1000, 1000, 600, 600);
+    const g = buildNavGrid(fenceSegments([pool]), REACH);
+    expect(findWalkRoute(g, { x: 1300, y: 1300 }, { x: 900, y: 900 })).toBeNull();
+    expect(findWalkPath(g, { x: 1300, y: 1300 }, { x: 900, y: 900 })).toEqual([{ x: 900, y: 900 }]);
+  });
+});
 
 describe('findWalkPath on a big board', () => {
   const els = bigBoard();

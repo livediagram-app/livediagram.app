@@ -26,8 +26,6 @@ export function usePaletteCatalogue({
   onExitAvatarMode,
   onAddShape,
   onAddSticker,
-  onAddText,
-  onAddSticky,
   onAddLinkCard,
   onAddAvatar,
   onAddImage,
@@ -49,8 +47,6 @@ export function usePaletteCatalogue({
     armed(() => onAddShape(kind, opts))();
   // Stickers arm the draw gesture too (they ride the shape intent carrying the sticker id).
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
-  const addText = armed(onAddText);
-  const addSticky = armed(onAddSticky);
   const addLinkCard = armed(onAddLinkCard);
   // Components arm the draw gesture (tap-or-drag) and close a popover
   // palette so the canvas is clear to draw on.
@@ -74,9 +70,7 @@ export function usePaletteCatalogue({
   const tileActions: PaletteTileActions = withTileActionPreamble<PaletteTileActions>(
     {
       addShape,
-      addText,
       beginRoomWalls,
-      addSticky,
       addImage,
       addLinkCard,
       addSticker,

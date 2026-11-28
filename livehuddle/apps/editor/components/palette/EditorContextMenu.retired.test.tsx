@@ -61,23 +61,28 @@ const image = {
 describe('a retired shape’s element menu', () => {
   it('offers no Shape, Opacity or Style', () => {
     open({ mode: 'element', elementId: 'q', x: 10, y: 10 }, [qaBoard]);
-    expect(button('Arrange')).toBe(true);
+    expect(button('Arrange')).toBe(false);
     expect(button('Shape')).toBe(false);
     expect(button('Appearance')).toBe(false);
     expect(screen.queryByLabelText('Opacity')).toBeNull();
   });
 
-  it('still offers Appearance on a shape livehuddle has (the Shape section left with the diagram shapes)', () => {
+  // The menus' Appearance, Arrange and Rotation left livehuddle
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Element looks, layers, opacity and rotation").
+  it('offers a shape livehuddle has no Shape, Arrange, Rotation or Appearance', () => {
     open({ mode: 'element', elementId: 's', x: 10, y: 10 }, [square]);
-    expect(button('Shape')).toBe(false);
-    expect(button('Appearance')).toBe(true);
+    // A fixed-size button with no section of its own: the menu has nothing to show, so it does not open.
+    expect(document.querySelector('[aria-label="Element menu"]')).toBeNull();
+    for (const gone of ['Shape', 'Arrange', 'Rotation', 'Appearance'])
+      expect(button(gone)).toBe(false);
   });
 });
 
 describe('a selection holding a retired shape', () => {
   it('offers no Shape to morph it into', () => {
     open({ mode: 'multi', x: 10, y: 10 }, [image, qaBoard]);
-    expect(button('Arrange')).toBe(true);
+    expect(button('Size')).toBe(true);
+    expect(button('Arrange')).toBe(false);
     expect(button('Shape')).toBe(false);
   });
 

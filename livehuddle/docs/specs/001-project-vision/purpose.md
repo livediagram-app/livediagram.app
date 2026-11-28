@@ -69,11 +69,11 @@ place they meet.
 
 The full list is in [v1 scope](../002-project-scope/v1-scope.md).
 
-- **Being together in a Space**: Avatar mode first-class, live cursors, presence, follow-me, Bring Focus.
+- **Being together in a Space**: Avatar mode first-class, live cursors, presence, follow-me.
 - **Spaces to meet in**: the thirty-two Spaces templates, every Space element to build more.
 - **Talking**: proximity audio and calls ([Future work](../005-project-roadmap/future-work.md) and the calls specs in
   `012-collaboration/`), speech bubbles, comments with mentions and reactions.
-- **Keeping a meeting moving**: the Timer and Stopwatch pieces, and Bring Focus.
+- **Keeping a meeting moving**: the Timer and Stopwatch pieces.
 - **Light content**: sticky notes, text and stickers.
 - **The liveworkspace platform**: one account, the One Explorer, teams, share links with the three roles, media,
   Offline Mode, Google Drive sync, the Community, the REST API with API tokens, telemetry (no MCP server, CLI or
@@ -107,7 +107,7 @@ spec that moved it.
   slide decks, building a deck, presenting, the Page element, and the diagram tools left over from Workshop (shapes,
   arrows and lines, the Draw tools, the Layout containers, tables, charts, the components and the
   embeds) leave livehuddle, and the Frame went later; livediagram keeps them all. What stays: Spaces, avatars, rooms, calls, a timer
-  (now the Timer and Stopwatch pieces) and Bring Focus, and light content (sticky notes, text, stickers); the Icons category, images and link cards went later.
+  (now the Timer and Stopwatch pieces), and light content (sticky notes, text, stickers); the Icons category, images and link cards went later.
   The full list, and the build part that removes each, is [Not in livehuddle](../002-project-scope/not-in-livehuddle.md).
 - **The Reaction Pads, the laser, the spotlight, Isometric and Zen went too** (owner, 2026-11-05): in a Space your
   character points, walks up to things and celebrates with its own Reactions

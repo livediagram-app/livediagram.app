@@ -88,9 +88,9 @@ async function toggle(page: Page, name: string): Promise<void> {
 }
 
 async function tourTheChrome(page: Page): Promise<void> {
-  await (await paletteTile(page, 'Add Sticky Note')).click();
+  await (await paletteTile(page, 'Add Chair')).click();
   await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
-  const square = page.getByRole('img', { name: 'Sticky note', exact: true });
+  const square = page.getByRole('img', { name: 'Chair', exact: true });
   await expect(square).toHaveCount(1);
   await page.waitForTimeout(400);
 
@@ -157,14 +157,6 @@ test.describe('Motion budget', () => {
     pageErrors,
   }) => {
     await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
-    // The flat walk this morph is measured on: the 3D view off (docs/specs/008-canvas/3d-view.md, DEFAULTS D141).
-    await page.addInitScript(() => {
-      try {
-        localStorage.setItem('livehuddle:v2:space-3d', '0');
-      } catch {
-        // No storage on this document: nothing to set.
-      }
-    });
     await startBlank(page);
     const start = page.getByRole('region', { name: /^Start a Space$/ });
     if (await start.isVisible()) {

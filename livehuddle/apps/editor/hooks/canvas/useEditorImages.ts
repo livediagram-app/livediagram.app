@@ -28,7 +28,13 @@
 // contract.
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
-import { isBoxed, type Element } from '@livehuddle/document';
+import {
+  isBoxed,
+  isPoster,
+  withPosterPicture,
+  withoutPosterPicture,
+  type Element,
+} from '@livehuddle/document';
 import { apiListImages, type ImageSummary } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import type { PickedImage } from '@/lib/upload-image';
@@ -49,6 +55,9 @@ type EditorImagesDeps = {
   // throwaway per-partition guest — uploads would land in an un-owned
   // gallery nobody can manage. Everything else in the embed stays editable.
   embedMode: boolean;
+  // Whether this session chooses a Poster's picture (docs/specs/009-elements/poster.md "Share roles"): an Editor's,
+  // lib/poster-picture.ts. Gates the poster's double click (imageContext.posterPicker) and its fill / clear here.
+  choosesPosterPicture?: boolean;
   // The history-aware element mutator. Snapshots history, same path the
   // rest of element CRUD uses.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
@@ -64,6 +73,7 @@ type EditorImagesDeps = {
 
 export function useEditorImages(deps: EditorImagesDeps) {
   const { editsBlocked, isReadOnly, embedMode, commit } = deps;
+  const posterPicker = !!deps.choosesPosterPicture && !embedMode;
   const { documentId, ownerId, sessionShareCode } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
@@ -132,6 +142,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
             shareCode: sessionShareCode,
             // Offered only where the picker opens.
             onOpenPicker: isReadOnly || embedMode || editsBlocked ? undefined : openImagePickerFor,
+            posterPicker,
           }
         : undefined,
     [
@@ -142,6 +153,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
       embedMode,
       editsBlocked,
       openImagePickerFor,
+      posterPicker,
     ],
   );
 
@@ -155,8 +167,11 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // A search pick carries a credit (docs/specs/009-elements/image-search.md); any
   // other pick drops the old one so it never describes a picture that's gone.
   const applyImageToElement = (elementId: string, image: ImageDescriptor) => {
+    // A Poster's picture (docs/specs/009-elements/poster.md "Choosing its picture") is an Editor's alone.
     commit((els) =>
       els.map((el) => {
+        if (el.id === elementId && isPoster(el))
+          return posterPicker ? withPosterPicture(el, image) : el;
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { credit: _old, ...rest } = el;
         void _old;
@@ -171,6 +186,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
       }),
     );
     if (image.credit) track('Element', 'Used', 'ImageSearch');
+    if (posterPicker) track('Element', 'Changed', 'Poster');
     setImagePickerOpenFor(null);
   };
 
@@ -182,6 +198,8 @@ export function useEditorImages(deps: EditorImagesDeps) {
   const removeImageFromElement = (elementId: string) => {
     commit((els) =>
       els.map((el) => {
+        if (el.id === elementId && isPoster(el))
+          return posterPicker ? withoutPosterPicture(el) : el;
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { naturalWidth: _w, naturalHeight: _h, credit: _c, ...rest } = el;
         void _w;

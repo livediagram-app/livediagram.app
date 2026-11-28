@@ -124,12 +124,13 @@ expected behaviour for an account-bound app, and with the shared
 scope the chrome, accessibility and notification choices follow the
 person into every liveworkspace app.
 
-**Panel corner layout is the deliberate exception.** Which corner
-each corner panel docks into ([Panel corner docking](panel-docking.md)) is a
+**Panel corner layout was the deliberate exception** (gone with the Map, livehuddle's last corner panel:
+[Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-map); a stored layout stays unread). Which corner
+each corner panel docked into ([Panel corner docking](panel-docking.md)) was a
 per-device ergonomic choice (screen size, handedness, monitor), so it
-lives in its own **device-local** `localStorage` store
-(`livehuddle:panel-layout:v1`) and is **not** part of this synced
-blob. Don't fold panel placement into `UserPreferences`.
+lived in its own **device-local** `localStorage` store
+(`livehuddle:panel-layout:v1`), never in this synced blob. Should a panel placement come back, it stays out of
+`UserPreferences`.
 
 ### Sign-up merge
 
@@ -197,7 +198,7 @@ type UserPreferences = {
   // property (usePanelOpacity), read by every surface tagged
   // `data-panel-translucent`: MovablePanel in both its docked and its
   // popover branch (so the Explorer and Collaborate
-  // popovers follow it too), the Map, the Quick style panel and the
+  // popovers follow it too), the Quick style panel and the
   // Toolbar strip. Buttons are not panels: the
   // bottom-right cluster buttons and the zoom controls stay opaque.
   // Defaults to 1 (fully opaque).
@@ -238,11 +239,6 @@ type UserPreferences = {
   // unaffected; only the visual hint is hidden. Defaults to true
   // (guides on). See docs/specs/008-canvas/canvas-and-palette.md's Alignment guides subsection.
   alignmentGuides?: boolean;
-
-  // When true, the 3D view offers Turn Left / Turn Right (and [ and ]) to
-  // turn its camera. Missing / false === off, the default.
-  // See docs/specs/008-canvas/3d-view.md "Turning the camera".
-  rotateIn3D?: boolean;
 
   // When true, the editor adds `.reduce-motion` to <html> so globals.css
   // collapses decorative animations + transitions to ~instant
@@ -354,7 +350,7 @@ Missing key === undefined === default behaviour. Concretely:
   default). A value below 1 makes every panel translucent at rest
   (snapping back to opaque on hover / focus) via the
   `--lvd-panel-opacity` custom property, on every surface: docked,
-  popover (the cluster popovers), the Map, Quick style and the Toolbar
+  popover (the cluster popovers), Quick style and the Toolbar
   strip. Buttons stay opaque. The **Explorer** is always fully opaque,
   docked or as a popover: it is where documents are read and managed,
   and its menus open outside the panel, so a fade would set in just as
@@ -537,12 +533,12 @@ and the dialog stays as the one complete, browsable index of them.
     you flip things whose effect is on the canvas behind it.
 
   **It is the central place to find every preference.** Categories:
-  **Editor** (a **Canvas** section: alignment guides, Rotate in 3D View,
+  **Editor** (a **Canvas** section: alignment guides,
   element indicators (Auto-Attach Arrows left in Work Tracker #423 part 4); a **Mouse** section: middle-mouse
   pan (Quick-Add on Hover left with Quick Connect); no Presenting sub-category since Work Tracker #423 part 2), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
-  collapsible groups), **Panels** (panel opacity, then a section per panel: **Map**, then **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md), then **Audio Proximity Ring** (`hearingRing`, missing means shown; [Proximity audio](../012-collaboration/proximity-audio.md#the-talking-equaliser) "Your hearing ring"))),
+  collapsible groups), **Panels** (panel opacity, then a section per panel: **Collaborate** (the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md), then **Audio Proximity Ring** (`hearingRing`, missing means shown; [Proximity audio](../012-collaboration/proximity-audio.md#the-talking-equaliser) "Your hearing ring"))),
   **Accessibility** (reduce motion), **Getting Started** (one switch per guided tour, see **Getting Started** below),
   **Explorer** (once its own **Spaces** category, id kept: **Automatically Open Explorer** (`autoOpenExplorer`, common, off by default: the homepage opens the Explorer, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-on-the-explorer)), **Show Home Banner**, then a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#surfaces) entry, with Change and Clear; those are not a
@@ -610,13 +606,11 @@ and the dialog stays as the one complete, browsable index of them.
   liveworkspace.app. A guest gets a **Your Data** category under Account (id `data`) holding one stand-in row,
   "Sign in to download your data." with the **Sign In** link, as for API Tokens.
 
-  Panels holds Panel Opacity, then a section per panel,
-  Map, then Collaborate. Each section opens with that panel's **Enable
-  switch** ("Enable Map", "Enable Collaborate Panel"; see the panel
-  switches in the data model). The panel's other rows nest beneath the
-  switch (`parent`) and are offered only while it is on: a setting for a
-  panel you have turned off has nothing to act on. The Map's switch keeps its stored key
-  (`showMinimap`) and its telemetry tokens, only its label changed. A parent's sub-categories follow it directly in the catalogue. In the
+  Panels holds Panel Opacity, then a section per panel: Collaborate. The Map's section (Enable Map, Dim Outside the
+  View, Map Size) left with the Map ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-map)); its
+  stored `showMinimap`, `mapDimOutside` and `mapSize` stay in the blob, unread, for the other apps. A row nested
+  beneath a switch (`parent`) is offered only while the switch is on: a setting for something you have turned off has
+  nothing to act on. A parent's sub-categories follow it directly in the catalogue. In the
   list the parent is an **accordion**: its sub-categories sit indented beneath
   it only while it is expanded, so they do not take up the list all the time.
   It starts collapsed. On desktop, clicking the parent opens its own pane and
@@ -661,7 +655,7 @@ and the dialog stays as the one complete, browsable index of them.
   repeated under each row.
 
   Row kinds: `toggle`, `choice` (a segmented control, e.g.
-  the theme and the minimap size), `slider` (panel opacity, UI scale, committing on
+  When I Delete an Unused Image), `slider` (panel opacity, UI scale, committing on
   release so one drag is not one PUT per pixel), `toggleGroup` (several
   switches as one row of chips, see **Toggle groups** below), `appearance` (the one row
   backed by the device-local store, not `UserPreferences`), and `tokens` (the
@@ -675,8 +669,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   Settings whose effect is **visual** carry a small **before/after
   illustration** drawn from the real editor, which **rings the state
-  currently in force** so the picture doubles as a readout: the minimap,
-  alignment guides, and the minimap's dimming.
+  currently in force** so the picture doubles as a readout: alignment guides.
 
   Pick-one settings whose options LOOK different draw **one picture per
   option** instead, side by side with no arrow, the one in force ringed
@@ -698,11 +691,8 @@ and the dialog stays as the one complete, browsable index of them.
   note to show). On a phone-sized viewport the row stays visible, greyed,
   showing its stored value, but its control (and its illustration) takes no
   input, and the note says why; the stored value is untouched, so it still
-  applies on a desktop. The Map's rows (Enable Map, Dim Outside the View,
-  Map Size) are desktop only: a phone never draws the Map
-  ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
-  and read as broken. So is the Mouse section's Middle-Mouse
-  Pan: a phone has no middle button.
+  applies on a desktop. The Mouse section's Middle-Mouse Pan is desktop only: a
+  phone has no middle button, so flipping it there did nothing and read as broken.
 
   **Getting Started** is a category of its own: one switch per guided tour, **Workshop
   Tour** and **Receptionist's Welcome**, each with a line saying where it is on offer and a **Learn More**
@@ -849,8 +839,8 @@ and the dialog stays as the one complete, browsable index of them.
   **Editor** group holds `middleMousePan` (default on): holding the
   middle mouse button drags the canvas in both axes from anywhere, over
   empty space or elements, whatever tool is active; off leaves the middle
-  button to the browser, and `rotateIn3D` (default off): when on, the [3D view](../008-canvas/3d-view.md#turning-the-camera) offers Turn
-  Left and Turn Right (and `[` and `]`) to turn its camera. The
+  button to the browser. (Rotate in 3D View and Real 3D are gone: the
+  [3D view](../008-canvas/3d-view.md) always turns and is always 3D.) The
   **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
   a full keyboard and off on a tablet. Below it, the shortcut

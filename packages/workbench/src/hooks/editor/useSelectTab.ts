@@ -8,7 +8,8 @@ type SelectTabContext = {
   setSelectedId: (id: null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
   setEditingId: (id: null) => void;
-  setFormatSourceId: (id: null) => void;
+  // Absent in an editor with no format painter (livehuddle).
+  setFormatSourceId?: (id: null) => void;
 };
 
 export function createUseSelectTab(useEditorContext: () => SelectTabContext) {
@@ -20,7 +21,7 @@ export function createUseSelectTab(useEditorContext: () => SelectTabContext) {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
       setEditingId(null);
-      setFormatSourceId(null);
+      setFormatSourceId?.(null);
     };
   };
 }

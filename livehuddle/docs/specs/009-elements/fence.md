@@ -27,6 +27,11 @@ the room, the stage and the rug: the pieces a floor is laid out with.
   the rails run to the very ends, so two fences placed end to end continue each other's rails,
   and two fences whose boxes share a corner put their end posts on the same spot. The ordinary
   snap guides line their edges up.
+- **Placed on a lawn's edge, it fences the whole side.** A Fence or Garden Fence placed from the palette with its
+  middle within 64 px of an upright Grass area's side (inside or out, and alongside it) lands along that whole side,
+  just inside the grass, turned to run with it: one click fences a side (the owner, 2026-11-27: "I want fences to snap
+  to the edge of grass automatically so I can one click if I want to cover a whole side of the grass in the perfect
+  position"). The preview shows it there before the click. Dragged or resized later, it is an ordinary fence.
 - **No label and no settings `…`.** A fence is scenery, like a chair; there is nothing to write on
   it and nothing to set beyond its colour.
 - **Its colour is its stroke.** Unstyled it is a wood brown that reads on light and dark paper;
@@ -45,6 +50,17 @@ fence**, from either side.
 - A character keeps a small **reach** (its feet's width, so a Tall character's is wider than a
   Small one's) away from the line, so it stops at the fence rather than standing in it. Two fences whose ends are closer together than a character is
   wide leave no gap to squeeze through, so fences joined by hand need not meet exactly.
+- **A wall keeps the whole body out of it** (the owner, 2026-11-27: "looks like the character can walk into the wall
+  like a glitch and window"). A wall stands up in the 3D view with a thickness, and the figure is wider at the
+  shoulders and arms than at the feet (about 19 px either side at Regular, measured on the walking figure), so a
+  wall's line (a room's, a corridor's, an Office Pod's, a Fence's, a Garden Fence's, its ends at a doorway's jambs
+  included) keeps the reach grown to the body's half-width (its Size's, `FENCE_BODY_SHARE` of the reach) plus the
+  wall's own half-thickness, its **pad**: 5 px for a room's or a corridor's wall (its skirting and coping), 3 for an
+  Office Pod's glass or a Fence, 2 for a Garden Fence's pickets. So the widest part of the body stops at the wall's
+  face, walking into it or sideways along it. A footprint's edges keep the plain reach (pieces stand under arms and
+  beside seats), and so does sitting: a seat snap ignores the pad, so a seat beside a wall is never moved off its
+  seat, and standing up there may step away from the wall. A 96 px Door still leaves a Tall character's body room to
+  walk through.
 - **Walking into a fence slides along it.** A diagonal walk that meets a fence keeps the part of
   its movement that runs along the fence, so a character steered into a fence skims along it the
   way people walk along a wall. A click-walk that can make no progress stops where it is; stopped within two

@@ -70,7 +70,7 @@ recognise itself in a peer's message.
   Alex next moved.
 - While following, a pill reads **"Following Alex"** with a **Stop**.
 - **Any canvas gesture of your own breaks it, instantly and silently**: pan,
-  zoom, pinch, arrow keys, fit-to-screen, the minimap ([Minimap](../008-canvas/minimap.md)). Grabbing the
+  zoom, pinch, arrow keys, fit-to-screen. Grabbing the
   canvas IS the statement that you want your own view back, and a follow that
   survives it would be a fight the user cannot win. No confirmation, no toast:
   it ends the moment you move, and the pill going away says so.

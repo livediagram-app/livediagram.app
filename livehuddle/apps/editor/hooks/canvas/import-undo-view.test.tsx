@@ -5,7 +5,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createSticky, type Element, type Tab } from '@livehuddle/document';
+import { createShape, type Element, type Tab } from '@livehuddle/document';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import {
   computeFitToScreen,
@@ -20,7 +20,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const CANVAS = { width: 1000, height: 800 };
 
 const sticky = (id: string, x: number, y: number) =>
-  ({ ...createSticky(x, y), id, label: id }) as Element;
+  ({ ...createShape('desk', x, y), id, label: id }) as Element;
 
 // The bounding box of a tab's boxed elements.
 const boxOf = (elements: readonly Element[]) => {
@@ -72,7 +72,6 @@ function setup() {
       commitTabs: history.commit,
       setSelectedId: vi.fn(),
       setEditingId: vi.fn(),
-      setFormatSourceId: vi.fn(),
       setImportError: vi.fn(),
       requestFit,
       noteImport: view.noteImport,

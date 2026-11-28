@@ -66,7 +66,7 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
   it shows it:
   - `CanvasChrome` and its panels take no view; inside it the parts that convert canvas points to
     the screen (the guide and lane overlays, draw previews, palette-drag guides, `useCanvasViewKey`),
-    the zoom controls and the Map subscribe with `useViewportOf`;
+    and the zoom controls subscribe with `useViewportOf`;
   - the element layer's remote cursors and laser overlay, and the selection toolbars, subscribe.
 - A zoom tick therefore renders `CanvasView`, the counter-scaled parts and those subscribers; the
   chrome (the Palette strip, the Explorer, the command palette) renders 0 times. A pan renders only the

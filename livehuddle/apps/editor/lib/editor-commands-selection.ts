@@ -6,7 +6,7 @@ import type { CommandContext, CommandHandlers, EditorCommand } from './editor-co
 // Split out of buildEditorCommands, which was one 250-line function assembling
 // every command in the editor. This is the block that depends on the
 // SELECTION rather than on the document, the tab or the history: duplicate,
-// delete, reorder, rotate, animation, and the status markers. Notes and
+// delete, turn, animation, and the status markers. Notes and
 // comments left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md
 // "Comments, actions, links and notes").
 //
@@ -43,39 +43,10 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
       keywords: 'duplicate copy clone',
       run: h.duplicateSelection,
     });
-    out.push({
-      id: 'bring-to-front',
-      name: 'Bring to Front',
-      keywords: 'front forward top raise order layer z-index arrange',
-      run: h.bringToFront,
-    });
-    out.push({
-      id: 'send-to-back',
-      name: 'Send to Back',
-      keywords: 'back backward bottom lower order layer z-index arrange',
-      run: h.sendToBack,
-    });
   }
 
-  // Rotation is for a single element that can turn (an annotation marker cannot).
-  if (isSingle && ctx.singleRotates) {
-    for (const deg of [90, 180, 270] as const) {
-      out.push({
-        id: `rotate-${deg}`,
-        name: `Rotate ${deg}°`,
-        keywords: 'rotate turn spin angle rotation orientation',
-        run: () => h.rotate(deg),
-      });
-    }
-    out.push({
-      id: 'rotate-0',
-      name: 'Reset Rotation',
-      keywords: 'rotate reset clear angle rotation straighten upright 0',
-      run: () => h.rotate(0),
-    });
-  }
-
-  // A piece of furniture turns a quarter at a time instead (docs/specs/009-elements/furniture-facing.md "Turning a
+  // No Bring to Front, Send to Back or free Rotate (docs/specs/002-project-scope/not-in-livehuddle.md "Element looks,
+  // layers, opacity and rotation"). A piece of furniture turns a quarter at a time (docs/specs/009-elements/furniture-facing.md "Turning a
   // placed piece"): a single piece or a selection holding one.
   if (ctx.selectionTurns) {
     out.push({

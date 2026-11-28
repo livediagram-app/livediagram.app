@@ -44,7 +44,6 @@ type CanvasSelection = {
 // The modes that decide whether a selected element shows its grips.
 type GripContext = {
   editingId: string | null;
-  isPaintMode: boolean;
   readOnly: boolean;
   // A read-only session that may still resize this element (a Participant): handles, never edge anchors, since a
   // connector is not its to draw.
@@ -64,7 +63,6 @@ export function elementGrips(
     single &&
     isBoxed(el) &&
     ctx.editingId !== el.id &&
-    !ctx.isPaintMode &&
     (!ctx.readOnly || ctx.resizable === true) &&
     !isFixedSizeElement(el);
   return { handles, anchors: handles && !ctx.readOnly };
@@ -75,7 +73,6 @@ export function deriveCanvasSelection(input: {
   selectedId: string | null;
   multiSelectedIds: ReadonlySet<string>;
   editingId: string | null;
-  isPaintMode: boolean;
   readOnly: boolean;
   // An element context menu is open. One question, one answer: a left click
   // asks "what is this" (popover), a right click "what can I do with it"
@@ -89,7 +86,6 @@ export function deriveCanvasSelection(input: {
     selectedId,
     multiSelectedIds,
     editingId,
-    isPaintMode,
     readOnly,
     elementMenuOpen,
   } = input;
@@ -114,7 +110,6 @@ export function deriveCanvasSelection(input: {
     selected &&
     !elementMenuOpen &&
     editingId !== selected.id &&
-    !isPaintMode &&
     multiSelectedIds.size === 0
   );
   // Resize handles and edge anchors: the per-element rule each element view also applies.
@@ -122,7 +117,7 @@ export function deriveCanvasSelection(input: {
     const el = elements.find((e) => e.id === id);
     const single = id === selectedId && multiSelectedIds.size === 0;
     return el && single
-      ? elementGrips(el, true, { editingId, isPaintMode, readOnly })
+      ? elementGrips(el, true, { editingId, readOnly })
       : { handles: false, anchors: false };
   };
   const resizeVisible = (id: string) => gripsOf(id).handles;
@@ -144,7 +139,6 @@ export function deriveCanvasSelection(input: {
     !!unionResizeBounds &&
     !!unionResizePrimaryId &&
     editingId !== unionResizePrimaryId &&
-    !isPaintMode &&
     !readOnly;
 
   // The floating multi-selection toolbar (Duplicate / Export /
@@ -158,7 +152,7 @@ export function deriveCanvasSelection(input: {
       ? unionRects(elements.filter((el) => multiSelectedIds.has(el.id)).map(selectionExtent))
       : null;
   const showMultiToolbar =
-    !!multiToolbarBounds && multiSelectedIds.size > 1 && !isPaintMode && !readOnly;
+    !!multiToolbarBounds && multiSelectedIds.size > 1 && !readOnly;
 
   return {
     multiPrimaryId,

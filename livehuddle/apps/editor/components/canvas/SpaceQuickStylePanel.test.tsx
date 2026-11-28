@@ -17,18 +17,21 @@ const state = vi.hoisted(() => ({
   isReadOnly: false,
   contextMenu: null as unknown,
   mobile: false,
+  canWrite: true,
 }));
 const actions = vi.hoisted(() => ({
   setRoomWallsSelected: vi.fn(),
   setRoomFloorSelected: vi.fn(),
   setRoomFloorColourSelected: vi.fn(),
   setPieceTypeSelected: vi.fn(),
+  commitLabel: vi.fn(),
 }));
 vi.mock('@/app/document/[id]/EditorContext', () => ({
   useEditorContext: () => ({
     activeTab: { elements: state.elements },
     isReadOnly: state.isReadOnly,
     contextMenu: state.contextMenu,
+    can: { writeText: () => state.canWrite },
     ...actions,
   }),
 }));
@@ -62,6 +65,7 @@ beforeEach(() => {
   state.isReadOnly = false;
   state.contextMenu = null;
   state.mobile = false;
+  state.canWrite = true;
   select();
   Object.values(actions).forEach((f) => f.mockClear());
 });
@@ -91,6 +95,38 @@ describe('SpaceQuickStylePanel', () => {
     expect(actions.setRoomFloorSelected).toHaveBeenCalledWith('carpet');
     fireEvent.click(within(p).getByRole('button', { name: 'Navy' }));
     expect(actions.setRoomFloorColourSelected).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows large Walls and Floor pictures, the floor types three to a page', () => {
+    select('r1');
+    render(<SpaceQuickStylePanel editing />);
+    const p = panel()!;
+    expect(p.querySelectorAll('[data-walls-picture]')).toHaveLength(2);
+    expect(p.querySelectorAll('[data-floor-picture]')).toHaveLength(5);
+    expect(within(p).getByRole('group', { name: 'Floor types page 1 of 2' })).toBeTruthy();
+    expect(within(p).getByRole('button', { name: 'Next floor types' })).toBeTruthy();
+    expect(
+      within(p).getByRole('button', { name: 'Floorboards' }).getAttribute('aria-pressed'),
+    ).toBe('true');
+  });
+
+  it("leads with one room's name and renames it through the canvas's rename", () => {
+    select('r1');
+    render(<SpaceQuickStylePanel editing />);
+    const name = within(panel()!).getByRole('textbox', { name: 'Room name' });
+    fireEvent.change(name, { target: { value: 'Kitchen' } });
+    fireEvent.keyDown(name, { key: 'Enter' });
+    expect(actions.commitLabel).toHaveBeenCalledWith('r1', 'Kitchen');
+  });
+
+  it('has no name field for several rooms, or where the session may not rename', () => {
+    select('r1', 'r2');
+    const { rerender } = render(<SpaceQuickStylePanel editing />);
+    expect(within(panel()!).queryByRole('textbox', { name: 'Room name' })).toBeNull();
+    select('r1');
+    state.canWrite = false;
+    rerender(<SpaceQuickStylePanel editing />);
+    expect(within(panel()!).queryByRole('textbox', { name: 'Room name' })).toBeNull();
   });
 
   it("shows a rug's types, the one it has chosen", () => {

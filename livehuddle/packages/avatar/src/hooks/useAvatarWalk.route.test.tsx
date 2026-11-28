@@ -86,18 +86,18 @@ describe('useAvatarWalk finding the way', () => {
     expect(arrived).not.toHaveBeenCalled();
   });
 
-  it('stops just outside the shut door of a room clicked into', () => {
+  // room-builder.md "Opening on their own": nobody is ever stuck at a door.
+  it('walks through a Door into the room clicked into, one saved shut included', () => {
     const shut = { ...room, roomDoor: 'none' };
-    // A shut Door in the middle of the right wall (x 395).
+    // A Door in the middle of the right wall (x 395), saved shut while doors were swung by hand.
     const door = shape('d', 'door', 395 - 48, 150 - 12, 96, 24, { rotation: 90, doorClosed: true });
     const { result } = walker([shut, door]);
     act(() => result.current.teleportTo({ x: -150, y: 150 }));
     act(() => result.current.walkTo({ x: 200, y: 150 }));
     run(8_000);
     const pos = result.current.readPos()!;
-    expect(pos.x).toBeGreaterThan(395);
-    expect(pos.x).toBeLessThan(395 + 48);
-    expect(Math.abs(pos.y - 150)).toBeLessThan(16);
+    expect(Math.hypot(pos.x - 200, pos.y - 150)).toBeLessThan(2);
+    expect(result.current.poseStore.get().walking).toBe(false);
   });
 
   it('sits only in the chair it was going to, not one it walks through on the way', () => {

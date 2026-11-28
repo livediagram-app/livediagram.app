@@ -7,6 +7,15 @@ import { SEATING_MODELS } from './seating';
 import { STORAGE_MODELS } from './storage';
 import { OUTDOOR_MODELS } from './outdoor';
 import { ROUNDED_MODELS } from './rounded';
+import { PAD_MODELS } from './pad';
+import { STAGE_MODELS } from './stage';
+import { LAMP_MODELS } from './lamps';
+import { TREE_MODELS } from './trees';
+import { TURNED_SEAT_MODELS } from './turned-seats';
+import { POND_MODELS } from './pond';
+import { POSTER_MODELS } from './poster';
+import { STAIRS_MODELS } from './stairs';
+import { ROAD_MODELS } from './road';
 
 export const MODELS: ModelTable = {
   ...FIRST_MODELS,
@@ -14,6 +23,15 @@ export const MODELS: ModelTable = {
   ...STORAGE_MODELS,
   ...OUTDOOR_MODELS,
   ...ROUNDED_MODELS,
+  ...PAD_MODELS,
+  ...STAGE_MODELS,
+  ...LAMP_MODELS,
+  ...TREE_MODELS,
+  ...TURNED_SEAT_MODELS,
+  ...POND_MODELS,
+  ...POSTER_MODELS,
+  ...STAIRS_MODELS,
+  ...ROAD_MODELS,
 };
 
 /** Builds a piece's model in its frame. */

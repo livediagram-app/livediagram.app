@@ -3,15 +3,17 @@ import { Chip, Stage, Window } from '@liveworkspace/help-site/art/parts';
 import { Character } from './character';
 
 // About livehuddle: what it is in one picture. Three windows fanned out, one per part of a meeting in a Space (the
-// day's sticky notes on the wall, the team round its table, a Timer on the wall), under the two promises: free, and
+// day's notes pinned on a Notice Board, the team round its table, a Timer on the wall), under the two promises: free, and
 // open source.
 
 export function AboutArt() {
   return (
     <Stage>
-      {/* Notes: the day's sticky notes on the wall, tilted back on the left. */}
+      {/* Notes: the day's notes pinned on a Notice Board, tilted back on the left. */}
       <g transform="rotate(-7 92 120)">
         <Window x={18} y={52} w={150} h={118} title="Notes">
+          <rect x={24} y={78} width={138} height={86} rx={3} className="fill-amber-800" />
+          <rect x={27} y={81} width={132} height={80} rx={2} className="fill-amber-300" />
           {[0, 1, 2, 3, 4, 5].map((n) => (
             <rect
               key={n}
@@ -20,7 +22,16 @@ export function AboutArt() {
               width={36}
               height={32}
               rx={2}
-              className={['fill-amber-200', 'fill-sky-200', 'fill-rose-200'][n % 3]}
+              className={['fill-amber-50', 'fill-sky-100', 'fill-rose-100'][n % 3]}
+            />
+          ))}
+          {[0, 1, 2, 3, 4, 5].map((n) => (
+            <circle
+              key={`pin${n}`}
+              cx={48 + (n % 3) * 44}
+              cy={88 + Math.floor(n / 3) * 40}
+              r={2}
+              className="fill-rose-500"
             />
           ))}
         </Window>

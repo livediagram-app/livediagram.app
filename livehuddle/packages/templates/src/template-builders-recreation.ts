@@ -3,6 +3,8 @@
 // Fridge), sofas and chairs. Built with spacePlan (template-office-parts.ts).
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
+//
+// Drawn at their final size for the 3D view (virtual-office-template.md "Laid out for the 3D view").
 
 import type { Element } from '@livehuddle/document';
 import { arrival } from './template-arrival';
@@ -13,34 +15,31 @@ import {
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
+import { against, standAt, sofaOnRug } from './template-3d-place';
 
-// A row of Bar Stools in front of a bar along the back wall, `y` just clear of its front: a stool's sitter faces up
-// the canvas, toward the bar.
+// A row of Bar Stools, their sitters facing up at the counter, models centred on `y`.
 function stools(xs: readonly number[], y: number): OfficePiece[] {
-  return xs.map((x) => ({ kind: 'bar-stool', x, y }));
+  return xs.map((x) => standAt('bar-stool', x, y, 's'));
 }
 
-// A sofa on its rug with a chair turned to it, the rug's top left at (x, y); the chair on the `side` given, close
-// beside the sofa as one seating group, so no gap between them is a squeeze to walk through
-// (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
-function lounge(x: number, y: number, side: 'left' | 'right'): OfficePiece[] {
+// A lounge by the front wall: a sofa against it facing up over its rug, a chair beside the rug turned to the sofa
+// (`side` the side of the sofa the chair stands on). `at` is the sofa's middle along the wall.
+function lounge(at: number, room: { w: number; h: number }, side: 'left' | 'right'): OfficePiece[] {
   return [
-    { kind: 'rug', x, y },
-    { kind: 'sofa', x: x + 24, y: y + 20, facing: 'n' },
+    ...sofaOnRug('s', at, room),
     side === 'right'
-      ? { kind: 'chair', x: x + 188, y: y + 20, facing: 'e' }
-      : { kind: 'chair', x: x - 64, y: y + 20, facing: 'w' },
+      ? standAt('chair', at + 170, room.h - 180, 'e')
+      : standAt('chair', at - 170, room.h - 180, 'w'),
   ];
 }
 
 // --- Rooftop Bar -------------------------------------------------------------------
 
-const ROOF_W = 1100;
-const ROOF_H = 620;
+const ROOF = { w: 1375, h: 775 };
 
 export function buildRooftopBar(cx: number, cy: number): Element[] {
-  const width = ROOF_W;
-  const height = SPACE_HEAD + ROOF_H + SPACE_BELOW;
+  const width = ROOF.w;
+  const height = SPACE_HEAD + ROOF.h + SPACE_BELOW;
   const x0 = cx - width / 2;
   const y0 = cy - height / 2;
   const rooms: OfficeRoom[] = [
@@ -48,61 +47,44 @@ export function buildRooftopBar(cx: number, cy: number): Element[] {
       name: 'Rooftop Bar',
       x: 0,
       y: 0,
-      w: ROOF_W,
-      h: ROOF_H,
+      ...ROOF,
       door: 's',
       pieces: [
-        // The bar along the back: two counters end to end, the cabinet and the fridge either side, a tree in each
-        // corner.
-        { kind: 'tree', x: 24, y: 30 },
-        { kind: 'drinks-cabinet', x: 190, y: 40 },
-        { kind: 'bar', x: 310, y: 40 },
-        { kind: 'bar', x: 550, y: 40 },
-        { kind: 'drinks-fridge', x: 820, y: 36 },
-        { kind: 'tree', x: 956, y: 30 },
-        ...stools([330, 390, 450, 510, 570, 630, 690, 750], 170),
-        // Two lounges either side of the doorway, well clear of it.
-        ...lounge(60, 460, 'right'),
-        ...lounge(840, 460, 'left'),
-        // A hammock in each side corner under the trees, off the walk to the bar: walk up and it sways, sit in it
-        // and it is yours (docs/specs/009-elements/piece-moments.md "Hammock").
-        { kind: 'hammock', x: 30, y: 250 },
-        { kind: 'hammock', x: 918, y: 250 },
-        // A planter either side of the way in.
-        { kind: 'outdoor-plant', x: 420, y: 530 },
-        { kind: 'outdoor-plant', x: 610, y: 530 },
+        // Along the back: a tree in each corner, the Drinks Cabinet, the long Bar of two counters and the fridge.
+        standAt('tree', 80, 130),
+        against('drinks-cabinet', 'n', 220, ROOF),
+        against('bar', 'n', 440, ROOF),
+        against('bar', 'n', 680, ROOF),
+        against('drinks-fridge', 'n', 880, ROOF),
+        standAt('tree', ROOF.w - 80, 130),
+        ...stools([350, 410, 470, 530, 590, 650, 710, 770], 128),
+        // Two lounges either side of the doorway.
+        ...lounge(300, ROOF, 'right'),
+        ...lounge(ROOF.w - 300, ROOF, 'left'),
+        // A Hammock on each side wall, Outdoor Plants by the way in.
+        against('hammock', 'w', 380, ROOF),
+        against('hammock', 'e', 380, ROOF),
+        against('outdoor-plant', 'w', 640, ROOF),
+        against('outdoor-plant', 'e', 640, ROOF),
       ],
     },
   ];
   return spacePlan(
     x0,
     y0,
-    width,
     rooms,
-    {
-      text: 'Rooftop Bar',
-      width: 260,
-      sticker: 'emoji-clinking-glasses',
-      subtitle:
-        'Drinks after work: pull up a stool at the bar, sink into a sofa, or swing in a hammock under the trees.',
-    },
-    // In the middle of the terrace, the bar ahead and a sofa either side.
-    arrival({
-      x: cx,
-      y: cy + 36,
-      hint: 'You arrive on the Avatar Pad. A stool or a sofa seats you, and the cabinet or the fridge gets you a drink.',
-    }),
+    // On the terrace between the Bar and the lounges.
+    arrival({ x: cx, y: y0 + SPACE_HEAD + 400 }),
   );
 }
 
 // --- Cafe --------------------------------------------------------------------------
 
-const CAFE_W = 1000;
-const CAFE_H = 580;
+const CAFE = { w: 1250, h: 725 };
 
 export function buildCafe(cx: number, cy: number): Element[] {
-  const width = CAFE_W;
-  const height = SPACE_HEAD + CAFE_H + SPACE_BELOW;
+  const width = CAFE.w;
+  const height = SPACE_HEAD + CAFE.h + SPACE_BELOW;
   const x0 = cx - width / 2;
   const y0 = cy - height / 2;
   const rooms: OfficeRoom[] = [
@@ -110,54 +92,37 @@ export function buildCafe(cx: number, cy: number): Element[] {
       name: 'Cafe',
       x: 0,
       y: 0,
-      w: CAFE_W,
-      h: CAFE_H,
+      ...CAFE,
       door: 's',
-      // Windows in the front and left walls, onto the street (docs/specs/009-elements/room-builder.md "Window").
       windows: [
-        { side: 's', at: 220 },
-        { side: 's', at: 790 },
-        { side: 'w', at: 300 },
+        { side: 's', at: 275 },
+        { side: 's', at: 990 },
+        { side: 'w', at: 375 },
       ],
       pieces: [
-        // The counter, its stools, and the coffee machine and the fridge behind the end of it.
-        { kind: 'bar', x: 40, y: 40 },
-        ...stools([60, 120, 180, 240], 170),
-        { kind: 'coffee-machine', x: 310, y: 48 },
-        { kind: 'drinks-fridge', x: 400, y: 36 },
-        // Two tables to share on the right, and a table for two (a pair of chairs facing each other).
-        // An aisle between the two tables (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
-        { kind: 'meeting-table', x: 640, y: 60 },
-        { kind: 'meeting-table', x: 640, y: 348 },
-        { kind: 'chair', x: 330, y: 300, facing: 'w' },
-        { kind: 'chair', x: 418, y: 300, facing: 'e' },
-        // The sofa nook.
-        { kind: 'rug', x: 60, y: 420 },
-        { kind: 'sofa', x: 84, y: 440, facing: 'n' },
-        // The cafe's dog, beside the nook (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog").
-        { kind: 'pet-bed', x: 292, y: 482 },
-        { kind: 'plant', x: 920, y: 50 },
-        { kind: 'plant', x: 920, y: 480 },
+        // The counter with its stools, coffee and the fridge along the back wall.
+        against('bar', 'n', 160, CAFE),
+        ...stools([70, 130, 190, 250], 128),
+        against('coffee-machine', 'n', 360, CAFE),
+        against('drinks-fridge', 'n', 460, CAFE),
+        // Two tables on the right, a pair of chairs facing each other in the middle.
+        { kind: 'meeting-table', x: 920, y: 150 },
+        { kind: 'meeting-table', x: 920, y: 450 },
+        standAt('chair', 465, 380, 'w'),
+        standAt('chair', 545, 380, 'e'),
+        // The sofa nook: a sofa against the front wall over its rug, the dog's bed beside it.
+        ...sofaOnRug('s', 220, CAFE),
+        standAt('pet-bed', 410, 640),
+        against('plant', 'n', 1190, CAFE),
+        against('plant', 's', 1190, CAFE),
       ],
     },
   ];
   return spacePlan(
     x0,
     y0,
-    width,
     rooms,
-    {
-      text: 'Cafe',
-      width: 200,
-      sticker: 'emoji-coffee',
-      subtitle:
-        'Meet for a coffee: a seat at the counter, a table to share, or the sofa in the corner.',
-    },
-    // In the middle of the cafe, the counter, the coffee machine and the tables round it.
-    arrival({
-      x: cx + 52,
-      y: cy - 100,
-      hint: 'You arrive on the Avatar Pad. The coffee machine makes a coffee, and any seat is yours.',
-    }),
+    // In the middle of the cafe, the counter on one side and the tables on the other.
+    arrival({ x: x0 + 720, y: y0 + SPACE_HEAD + 300 }),
   );
 }

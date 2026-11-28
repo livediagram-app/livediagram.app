@@ -51,8 +51,7 @@ the rules in [Avatar mode](../008-canvas/avatar-mode.md#where-it-lives)):
 ### 2. The Space elements
 
 Every tile of the four Space categories (Travel, Seats, Rooms, Perks; [The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): Portal
-([Portal element](../009-elements/portal-element.md)), Bring Focus
-([Bring Focus](../012-collaboration/bring-focus.md)), Chair, Desk and Sofa
+([Portal element](../009-elements/portal-element.md)), Chair, Desk and Sofa
 ([Chair](../009-elements/chair.md)), Fence
 ([Fence](../009-elements/fence.md)), Avatar Pad
 ([Avatar Pad](../009-elements/avatar-pad.md)), and Room, Meeting Table, Plant,
@@ -74,10 +73,10 @@ Every tab is a meeting board, livehuddle's one editor mode, stored as `'workshop
 - **The Timer and Stopwatch** pieces in the Meet category ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md)).
   The Session strip left: its Timer for these pieces ([Not in livehuddle](not-in-livehuddle.md#the-session-strips-timer)),
   its quick vote before it ([Not in livehuddle](not-in-livehuddle.md#the-vote)).
-- **Facilitation**: the [facilitator baton](../012-collaboration/facilitator.md), Bring Focus and follow-me.
+- **Facilitation**: the [facilitator baton](../012-collaboration/facilitator.md) and follow-me.
 
 Why only these (owner, 2026-11-04, Work Tracker #423): livehuddle is about meeting in Spaces, not workshops. A Team
-Pod's stand-up wants a timer and the All-Hands Hall needs Bring Focus;
+Pod's stand-up wants a timer;
 the rest of Workshop mode (polls, quizzes, Q&A, agendas, reveals, the retros and workshops) is livediagram's, as are
 the diagram tools ([Not in livehuddle](not-in-livehuddle.md)). This replaces "all of Workshop mode", D2 in
 [Open decisions](../005-project-roadmap/open-decisions.md).

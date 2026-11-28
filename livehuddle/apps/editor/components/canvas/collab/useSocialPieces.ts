@@ -155,10 +155,12 @@ function arcadeFront(a: Arcade): Box {
     case 's':
       return {
         id: a.id,
+        // Its base starts 52/112 down its box (office-geometry.ts, a cabinet as deep as it really is): the floor
+        // just behind that, where a walk to its front stops.
         x: a.x - ARCADE_REACH,
-        y: a.y + a.height * 0.4,
+        y: a.y + a.height * (52 / 112) - ARCADE_REACH - 8,
         width: a.width + 2 * ARCADE_REACH,
-        height: a.height * 0.4,
+        height: ARCADE_REACH + 8 + a.height * 0.2,
       };
     default:
       return { ...base, x: a.x - ARCADE_REACH, width: a.width + 2 * ARCADE_REACH };

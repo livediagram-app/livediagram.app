@@ -71,10 +71,8 @@ describe('buildDrawnBoxed', () => {
     expect(unseeded.textSize).toBe('md'); // the shape factory's own default
   });
 
-  it('draws a sticky to the dragged box, with no tilt and no fixed size', () => {
-    const plain = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 3, 3, null, tab());
-    expect('fillColor' in plain && plain.fillColor != null).toBe(false);
-    const dragged = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 500, 400, null, tab());
+  it('draws a link card to the dragged box, with no tilt and no fixed size', () => {
+    const dragged = buildDrawnBoxed({ type: 'link-card' }, 0, 0, 500, 400, null, tab());
     expect(dragged.width).toBe(500);
     expect((dragged as { fixedSize?: boolean }).fixedSize).toBeUndefined();
     expect(dragged.rotation).toBeUndefined();

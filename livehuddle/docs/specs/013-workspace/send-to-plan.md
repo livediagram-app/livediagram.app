@@ -6,8 +6,15 @@ livehuddle's own.
 
 ## What it sends
 
+> **Retired with the sticky notes** (2026-11-27, [The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)):
+> a Space's stickies were its meeting's action items and the one thing livehuddle sent, so with them every entry went:
+> the selection toolbar's **Send to Plan** (one element or several), a walking reader's footer, the tab menu's
+> **Send Stickies to Plan**, Wrap Up's **Send Actions to Plan** and the "call ended with stickies" suggestion. A
+> Participant or a Viewer gets no selection toolbar. The host stays, so a card sent before keeps its chip on any
+> element that is still there. The rest of this file records the design before 2026-11-27.
+
 livehuddle has no comments or actions ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)): a Space's
-stickies are its meeting's action items, so they are what it sends.
+stickies were its meeting's action items, so they were what it sent.
 
 - **A sticky**: the **Send to Plan** button on its selection toolbar. A Participant's or a Viewer's toolbar holds that
   button alone (every other button there is an Editor's), and shows only on a sticky with words while they may send.
@@ -31,12 +38,12 @@ keys.
 
 ## Who sees it
 
-| Role                             | Entry                                                                                  | Chips |
-| -------------------------------- | -------------------------------------------------------------------------------------- | ----- |
-| Editor                           | The selection toolbar, a walking reader's footer, the tab menu's Send Stickies to Plan | Yes   |
-| Participant                      | The selection toolbar, one or several (Send to Plan alone); a walking reader's footer  | Yes   |
-| Viewer                           | The selection toolbar, one or several (Send to Plan alone); a walking reader's footer  | Yes   |
-| Guest, Offline, embed, Community | None (the platform's "Who may send")                                                   | No    |
+| Role                             | Entry                                                                               | Chips |
+| -------------------------------- | ----------------------------------------------------------------------------------- | ----- |
+| Editor                           | None since 2026-11-27 (was the selection toolbar, a reader's footer, Send Stickies) | Yes   |
+| Participant                      | None since 2026-11-27 (was the selection toolbar and a walking reader's footer)     | Yes   |
+| Viewer                           | None since 2026-11-27 (was the selection toolbar and a walking reader's footer)     | Yes   |
+| Guest, Offline, embed, Community | None (the platform's "Who may send")                                                | No    |
 
 A send needs only read access here: what decides is the person's Edit on the plan they pick, which the picker and the
 index check. A chip shows only to a reader who can open its plan.

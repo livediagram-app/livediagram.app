@@ -24,7 +24,8 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   ];
   const box = (id: string, x: number, label: string) => ({
     id,
-    type: 'sticky',
+    type: 'shape',
+    shape: 'desk',
     x,
     y: 160,
     width: 220,

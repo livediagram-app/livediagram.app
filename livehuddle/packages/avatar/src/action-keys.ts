@@ -8,13 +8,18 @@
 import { REACTIONS, type Reaction } from '@liveworkspace/model-core/reaction-bursts';
 import type { AvatarReactionKind } from './reactions';
 
-// The letter each Behaviour answers to: its initial, so the key is the word.
+// The letter each Behaviour answers to: its initial, so the key is the word. Clap's C is Cheer's, so it takes the K
+// it ends on; none is E or V (the ways out of the mode) or a digit (the bursts).
 export const AVATAR_BEHAVIOUR_KEYS: Record<AvatarReactionKind, string> = {
   'jumping-jacks': 'J',
   wave: 'W',
   spin: 'S',
   cheer: 'C',
   dance: 'D',
+  'raise-hand': 'H',
+  clap: 'K',
+  'thumbs-up': 'T',
+  point: 'P',
 };
 
 // The digit each Reaction burst answers to: its place in the panel's row (REACTIONS order).

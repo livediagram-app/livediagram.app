@@ -6,7 +6,7 @@ import { waveDelay } from '@/lib/piece-moment-motions';
 import { useFreshMoment, vars } from './moment-kit';
 
 // The walk-up answers that the pieces' own views play (docs/specs/009-elements/piece-moments.md "Which pieces have a
-// moment", Work Tracker 626): a note swinging on the Notice Board, the World Clock's hands ticking round, the Calendar
+// moment", Work Tracker 626): a note swinging on the Notice Board, the Clock's minute hand ticking round, the Calendar
 // Wall's page lifting (drawn by their live faces, which lie over the art), and the Window's light brightening (drawn
 // by WindowView, to its size). The Hammock and the Suggestion Box move on their art like any static piece
 // (piece-moment-motions.ts, OfficeMoments). Each is one-shot CSS on transform and opacity (app/piece-moments-office.css),
@@ -65,7 +65,7 @@ export function LonePin({ play, x, y }: { play: PieceMomentPlay; x: number; y: n
   );
 }
 
-/** A World Clock's minute hand ticking once round its dial at (cx, cy), the dials in a wave from your side. */
+/** A Clock's minute hand ticking once round its dial at (cx, cy), from your side. */
 export function TickingHand({
   play,
   cx,

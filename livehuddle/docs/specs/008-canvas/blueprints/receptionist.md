@@ -33,8 +33,14 @@ Derived from [the Receptionist](../receptionist.md). The spec decides; this file
 - **Detours are local.** A greeting (`greetDetour`, held `RECEPTIONIST_GREET_MS`), a talk (`talkDetour`, held until
   released) or a lead to a room (`leadDetour`) walks from wherever he is. When it ends, his day resumes from where
   the detour left him, within that leg.
-- **A rung bell** (`bellDetour`) walks him behind that desk (`BEHIND_DESK`), else beside its front, the first spot
-  with a route; held `RECEPTIONIST_GREET_MS` with a wave, as a greeting. Yours sets an `answeringYou` flag that opens
+- **A rung bell** (`bellDetour`) walks him behind that desk, else beside its front, the first spot with a route
+  (`receptionistRoute`, which is `findWalkRoute`: null when the spot is in a footprint or a wall's reach, walled off,
+  or past the search cap, never findWalkPath's straight line). `behindDeskSpots` lists the behind spots by the desk's
+  `chairFacing`: `BEHIND_DESK` then `BEHIND_DESK / 2 + 4` past its back edge, at a quarter, three quarters and half
+  along (`BEHIND_ALONG`), then halfway across the gap between that edge and the counter's footprint
+  (`officeFootprint`); a spot whose line to the counter's back crosses a wall (the grid's non-solid fences) is dropped.
+  An unreachable detour or day stop walks `findWalkPath`'s route, as near as it gets. `useReceptionistWorld` rebuilds
+  the fences and grid when `modelFootprintsOn()` changes, as useAvatarWalk does; held `RECEPTIONIST_GREET_MS` with a wave, as a greeting. Yours sets an `answeringYou` flag that opens
   his bubble (`'bell'`) when he stands there. A ring from someone else is skipped while your bubble is open.
 - **Seen behind the desk in 3D**: `deskBehind(desks, at)` (receptionist-timeline.ts) finds the desk whose
   `BEHIND_DESK` spot (or nearer) he stands on. While he stands still there with the camera unturned (`turnQuarter`

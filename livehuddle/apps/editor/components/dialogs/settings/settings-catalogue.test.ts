@@ -288,46 +288,28 @@ describe('settings sub-categories', () => {
 
   it('keeps every setting that acts in both modes on Editor itself', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
-    expect(keys).toEqual(['alignmentGuides', 'rotateIn3D', 'unusedImageChoice', 'middleMousePan']);
+    expect(keys).toEqual(['alignmentGuides', 'unusedImageChoice', 'middleMousePan']);
   });
 
   it('files each panel as a section of Panels, after Panel Opacity', () => {
     expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels')).toEqual([]);
     const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     expect(panels.rows[0]!.key).toBe('panelOpacity');
-    expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual([
-      'Map',
-      'Collaborate',
-    ]);
+    expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual(['Collaborate']);
     // Their old sub-category ids still land on Panels.
     expect(panels.aliases).toEqual(['map', 'collaborate']);
   });
 
-  it('opens the Map section with its Enable switch, on by default', () => {
-    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
-    // The Collaborate Panel and its switch left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md
-    // "Comments, actions, links and notes"); its section keeps the cursor and hearing-ring rows.
-    expect(panels.rows.map((r) => r.key)).not.toContain('collaboratePanelEnabled');
-    const switches: Record<string, [string, string]> = {
-      Map: ['showMinimap', 'Enable Map'],
-    };
-    for (const [section, [key, label]] of Object.entries(switches)) {
-      const row = panels.rows.find((r) => r.section === section)!;
-      expect([row.key, row.label]).toEqual([key, label]);
-      if (row.kind !== 'toggle') throw new Error(`${key} is not a toggle`);
-      expect(row.read({})).toBe(true);
-      expect(row.write({}, false)).toEqual({ [key]: false });
-    }
-  });
-
-  it("offers a panel's other rows only while its Enable switch is on", () => {
-    const rows = (section: string, preferences: UserPreferences) =>
-      visibleCategories({ emailEnabled: false, signedIn: false, preferences })
-        .find((c) => c.id === 'panels')!
-        .rows.filter((r) => r.section === section)
-        .map((r) => r.key);
-    expect(rows('Map', { showMinimap: false })).toEqual(['showMinimap']);
-    expect(rows('Map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
+  // The Map left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "The Map"), and the Collaborate Panel
+  // and its switch with comments and actions ("Comments, actions, links and notes"); Collaborate's section keeps the
+  // cursor and hearing-ring rows.
+  it('offers no Map rows and no Collaborate Panel switch', () => {
+    const keys = SETTINGS_CATEGORIES.flatMap((c) => c.rows.map((r) => r.key));
+    for (const gone of ['showMinimap', 'mapDimOutside', 'mapSize', 'collaboratePanelEnabled'])
+      expect(keys).not.toContain(gone);
+    expect(SETTINGS_CATEGORIES.flatMap((c) => c.rows).filter((r) => r.section === 'Map')).toEqual(
+      [],
+    );
   });
 
   it('names a sub-category by its path', () => {

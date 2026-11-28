@@ -14,22 +14,29 @@ or the first room, and everybody starts there.
 
 ## The element
 
-A **shape kind**, `avatar-pad`, in the palette's **Travel** category ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)), beside the portal, the bring focus button and the link card:
+A **shape kind**, `avatar-pad`, in the palette's **Travel** category ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)), beside the portal and the directory:
 like them it is somewhere a character goes. The tile reads
 **Avatar Pad**. Search adds one in any mode, as it adds any element.
 
-- **Drawn as a piece of the Space.** A round teleport platform seen from the room's camera angle, a little
-  above, drawn in the same style as the furniture ([Office](office.md)): smooth vector shapes, outlined in the
-  theme's line colour at the furniture's line weight, the platform's body in the same soft wash as a seat, its side
-  shaded toward the room. A ring of brand-cyan light is set into a recessed well in the top, with a soft glow round a
-  bright core where the character stands, and five small lamps glow along the rim's front. It scales cleanly at any
-  size and zoom: no pixel grid, no blocky edges.
-- **Alive, not busy.** The ring, its glow and the lamps breathe on a slow, gentle pulse (an eased fade the browser's
-  compositor plays, so a still board does no work for it: [Canvas performance](../008-canvas/canvas-performance.md#a-still-space-does-nothing)),
-  so a pad on a still board still reads as switched on. It stops under reduced motion.
-- **Theme lines, fixed light.** The outline and body follow the theme on light and dark paper, as every piece of
-  furniture does, so the pad sits in the room. The light (ring, glow, core, lamps) keeps the avatar's own brand
-  cyan whatever the theme, as a plant keeps its leaves: it is the part that says "the characters arrive here".
+- **Round from above in 3D**, whatever its box: a circle as wide as the box's narrower side, in its middle, and a
+  character stands on that circle's top (the owner, 2026-11-27: "avatar pad should be round not oval, thats a holdout
+  from the old 2d style"), and **grounded, not a teleporter** (the owner, 2026-11-27: "make it less scifi"): an oak
+  platform with a round rug in its top and a compass rose inlaid where the character stands, no glow
+  ([3D engine](../008-canvas/3d-engine.md) "The Avatar Pad stands with depth"). The flat drawing below is the same
+  platform, so the palette tile, the floor's drawing and an export match it.
+- **Drawn as a piece of the Space.** A low round oak platform seen from the room's camera angle, a little above,
+  drawn in the same style as the furniture ([Office](office.md)): smooth vector shapes, outlined in the theme's line
+  colour at the furniture's line weight, its side shaded toward the room with a walnut band round it. A round rug lies
+  in its top (a cream field bound in terracotta, a sage band), and in its middle, where the character stands, a walnut
+  medallion rimmed in ochre with a compass rose inlaid. A grounded arrival spot, not a teleporter (the owner,
+  2026-11-27: "make it less scifi"): no glow, no lamps, no light. It scales cleanly at any size and zoom: no pixel
+  grid, no blocky edges.
+- **Still.** It does not pulse or shimmer: like the rest of the furniture it is drawn once and a still board does no
+  work for it ([Canvas performance](../008-canvas/canvas-performance.md#a-still-space-does-nothing)). The arrival is
+  the pad's only motion.
+- **Theme lines, fixed woods.** The outline and the side's shading follow the theme on light and dark paper, as
+  every piece of furniture does, so the pad sits in the room. The oak, walnut and the rug keep their own warm
+  colours whatever the theme, as a plant keeps its leaves, so the pad reads as the same platform on either paper.
 - **No label, and one setting.** There is nothing to write on it. The tab's first pad has the
   [Receptionist](../008-canvas/receptionist.md#asking-him-to-leave): its element menu in Edit mode holds a
   **Receptionist** section with one switch, stored as `receptionistLeft: true` when he was asked to leave (absent is
@@ -41,7 +48,7 @@ like them it is somewhere a character goes. The tile reads
   does not ring it as "the element you are on": the arrival is the pad's highlight.
 - Otherwise an ordinary element: move, resize, rotate, copy, delete, export.
 - **One drawing, on the canvas and in an export**: both paint the same vector table in `@livehuddle/document`.
-  The export draws the pad as it stands, ring lit; the shimmer and the arrival are the canvas's.
+  The export draws the pad as it stands; the arrival is the canvas's.
 
 ## Every Space and blank tab has one
 
@@ -51,8 +58,9 @@ Avatar Pad - probably replace the old selection mode button").
 
 - **Every Spaces template** (all thirty-two, in every category) places **one** pad, which replaced its **Walk In**
   [Selection Mode button](mode-button.md), **in the middle of the action** ([Where a Space's pad
-  stands](#where-a-spaces-pad-stands)), with the how-to line centred under it (`arrival` in
-  `packages/templates/src/template-arrival.ts`). A pad is a floor, so it comes first in the template's elements with
+  stands](#where-a-spaces-pad-stands)), on its own (`arrival` in
+  `packages/templates/src/template-arrival.ts`). The how-to line that stood under it went with every text element
+  ([The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)). A pad is a floor, so it comes first in the template's elements with
   the other floors (`floorsFirst` in `build-template.ts`).
 - **A building's other floors** (the Hotel and Suites' Suites and Rooftop, the Co-working Tower's Level 2 and Level 3)
   have one too, by their Elevators and Directory: a ride still steps you out beside the Elevator, and someone who
@@ -78,7 +86,7 @@ Avatar Pad - probably replace the old selection mode button").
 
 ### Where a Space's pad stands
 
-Someone joining a Space arrives on its pad, and opening walking puts them in the middle of the screen at 100%
+Someone joining a Space arrives on its pad, and opening walking puts them in the middle of the screen at 180%
 ([The camera](../008-canvas/avatar-mode.md#the-camera)), so the pad decides what a newcomer sees first. It used to
 stand at the entrance, under the plan's bottom-right corner, which left the newcomer at the edge of the Space, away from
 everyone, and (seen from a seat near the bottom of a room, with the camera following) under the canvas's bottom-right
@@ -89,48 +97,44 @@ away when joining, for example in the middle of a key room, or the centre of a c
   people, the seats and the stage are on screen around you when you arrive, at every window size.
 - **On open floor**: neither the pad nor the Regular character standing on its core touches a wall, a fence or a piece
   of furniture; the pad lies on no Garden Path (its stones would hide under it) and on no Stage (the presenter's).
-- **The how-to line under it**: centred under the pad and at most 360 px wide, so a phone's view centred on someone
-  arriving (390 px at 100%) shows it whole; never over a piece or a wall (it may cross a path). Where the floor is
-  narrow the line is narrower and wraps, or says less. (A line level with the pad, beside it, ran off a phone's screen:
-  PR #1386's browser check.)
 - **Inside the plan**: never in the margin under it or in its bottom-right quarter, where the bottom-right cluster
   floats. A building's other floors keep theirs by the Elevators.
 
-| Space            | Where everyone arrives                                                                  | Line width |
-| ---------------- | --------------------------------------------------------------------------------------- | ---------- |
-| Virtual Office   | The middle of the corridor every room opens onto, between the Desks' and Lounge's doors | 360        |
-| Coworking Space  | The open floor between the desk clusters and the lounge                                 | 160        |
-| Team Pod         | The middle of the pod, between the desks and the table                                  | 320        |
-| All-Hands Hall   | The centre aisle among the rows, facing the stage (the line a narrow sign down it)      | 140        |
-| Focus Library    | The open floor between the two rows of desks                                            | 320        |
-| Training Room    | The middle of the room, the four tables round it and the stage ahead                    | 360        |
-| Rooftop Bar      | The middle of the terrace, the bar ahead and a sofa either side                         | 360        |
-| Cafe             | The middle of the cafe, the counter, coffee machine and tables round it                 | 360        |
-| Garden Retreat   | The lawn beside the summer house, its door and the campfire in view                     | 360        |
-| City Park        | The lawn above the fountain plaza, between the north path and the trees                 | 260        |
-| Company Campus   | The Auditorium, in the aisle between its first two rows                                 | 360        |
-| Conference Venue | The Main Hall, in the aisle between its first two rows                                  | 360        |
-| Startup HQ       | The Town Hall, in the aisle between its first two rows                                  | 360        |
-| School Quad      | The Lecture Hall, in the aisle between its first two rows                               | 360        |
-| Hotel and Suites | The lobby, before the reception desk, between the columns and the Directory             | 240        |
-| Co-working Tower | The lobby, between the Hot Desks' door and the Lifts                                    | 360        |
-| Expo Hall        | The aisle between the stage's two rows of chairs, the booths either side                | 360        |
-| Beach Offsite    | The sand between the huts' walk and the campfire                                        | 360        |
-| Festival Field   | The crowd field in front of the Main Stage, the stage ahead and the stalls to the left  | 360        |
-| Interview Suite  | The waiting area, the interview rooms' doors and signs ahead                            | 360        |
-| Client Lounge    | The lounge, between the sofas and the coffee bar, every room's door ahead               | 360        |
-| Document Room    | The aisle behind the last row of chairs, the wall screen ahead                          | 200        |
-| Classroom        | The lobby, before the Classroom's door                                                  | 360        |
-| Hackathon Hall   | The hack floor below the Snack Bar, the team tables and the stage's door in view        | 360        |
-| Art Gallery      | The foyer below the galleries, the Main Gallery's door and the café in view             | 360        |
-| Wellness Studio  | The lobby below the Yoga Studio, the juice bar and the studio doors in view             | 360        |
-| Arcade Lounge    | The arcade floor, between the two banks of machines                                     | 360        |
-| Games Night Den  | The hall, in front of the Den's door                                                    | 360        |
-| Sports Bar       | The games floor, between the ping-pong and the pool, below the Bar's door               | 360        |
-| Family House     | The hall, below the Stairs, between the Living Room's door and the Kitchen's            | 240        |
-| City Townhouse   | The hall, just below the Stairs                                                         | 360        |
-| Country Cottage  | The hall, just below the Stairs, the garden through the gate                            | 360        |
-| Music Hall       | The standing floor, in front of the stage                                               | 360        |
+| Space            | Where everyone arrives                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| Virtual Office   | The middle of the corridor every room opens onto, between the Desks' and Lounge's doors |
+| Coworking Space  | The open floor between the desk clusters and the lounge                                 |
+| Team Pod         | The middle of the pod, between the desks and the table                                  |
+| All-Hands Hall   | The centre aisle among the rows, facing the stage                                       |
+| Focus Library    | The open floor between the two rows of desks                                            |
+| Training Room    | The middle of the room, the four tables round it and the stage ahead                    |
+| Rooftop Bar      | The middle of the terrace, the bar ahead and a sofa either side                         |
+| Cafe             | The middle of the cafe, the counter, coffee machine and tables round it                 |
+| Garden Retreat   | The lawn beside the summer house, its door and the campfire in view                     |
+| City Park        | The lawn above the fountain plaza, between the north path and the trees                 |
+| Company Campus   | The Auditorium, in the aisle between its first two rows                                 |
+| Conference Venue | The Main Hall, in the aisle between its first two rows                                  |
+| Startup HQ       | The Town Hall, in the aisle between its first two rows                                  |
+| School Quad      | The Lecture Hall, in the aisle between its first two rows                               |
+| Hotel and Suites | The lobby, before the reception desk, between the columns and the Directory             |
+| Co-working Tower | The lobby, between the Hot Desks' door and the Lifts                                    |
+| Expo Hall        | The aisle between the stage's two rows of chairs, the booths either side                |
+| Beach Offsite    | The sand between the huts' walk and the campfire                                        |
+| Festival Field   | The crowd field in front of the Main Stage, the stage ahead and the stalls to the left  |
+| Interview Suite  | The waiting area, the interview rooms' doors and signs ahead                            |
+| Client Lounge    | The lounge, between the sofas and the coffee bar, every room's door ahead               |
+| Document Room    | The aisle behind the last row of chairs, the wall screen ahead                          |
+| Classroom        | The lobby, before the Classroom's door                                                  |
+| Hackathon Hall   | The hack floor below the Snack Bar, the team tables and the stage's door in view        |
+| Art Gallery      | The foyer below the galleries, the Main Gallery's door and the café in view             |
+| Wellness Studio  | The lobby below the Yoga Studio, the juice bar and the studio doors in view             |
+| Arcade Lounge    | The arcade floor, between the two banks of machines                                     |
+| Games Night Den  | The hall, in front of the Den's door                                                    |
+| Sports Bar       | The games floor, between the ping-pong and the pool, below the Bar's door               |
+| Family House     | The hall, below the Stairs, between the Living Room's door and the Kitchen's            |
+| City Townhouse   | The hall, just below the Stairs                                                         |
+| Country Cottage  | The hall, just below the Stairs, the garden through the gate                            |
+| Music Hall       | The standing floor, in front of the stage                                               |
 
 A campus lands you in its main hall, where the all-company moments happen; its Directory stays just inside the gate.
 
@@ -146,6 +150,9 @@ placed it has said where people arrive:
 3. Otherwise, the spot the character was left on, while it is still on screen.
 4. Otherwise, the centre of the view.
 
+- **A wave on arrival.** A character that lands on the pad (entering the mode, or a lift, stairs or portal landing it
+  on a new tab) waves hello on its own, everyone seeing it, about 1.6 seconds later, as the arrival's zoom settles on
+  it. It does not wave if it has already walked off, sat down or started another move by then, nor after leaving.
 - **The camera comes too.** When the pad's core is off screen, the view centres on it as the character appears,
   as it does on a trip through a [portal](portal-element.md). Zoom is never touched. A pad already on screen
   leaves the view where it is.
@@ -174,7 +181,7 @@ it materialises, so the character seems to beam in rather than pop.
   `AVATAR_PAD_MAX_ARRIVALS` beams play on one screen at once, oldest dropped first, so a room of forty arriving
   together cannot fill the canvas with light.
 - **Reduced motion: no beam.** The arrival is decoration; under `prefers-reduced-motion` (or the editor's own
-  reduced-motion setting) the character simply appears on the pad, and the ring does not shimmer.
+  reduced-motion setting) the character simply appears on the pad.
 - A character walking onto a pad, or stepping out of a portal onto one, is not arriving: no beam.
 
 ## Share roles

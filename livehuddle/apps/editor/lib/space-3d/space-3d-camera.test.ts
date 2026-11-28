@@ -7,6 +7,8 @@ import {
   SPACE_3D_TILT_MS,
   floorPointAt,
   screenPointOf,
+  screenPointAbove,
+  screenRectOf,
   stageTransform,
 } from './space-3d-camera';
 
@@ -85,5 +87,24 @@ describe('the 3D view camera (docs/specs/008-canvas/3d-view.md "The camera")', (
     const css = readFileSync(new URL('../../app/space-3d.css', import.meta.url), 'utf8');
     expect(css).toContain(`transform: ${stageTransform()};`);
     expect(css).toContain(`transform ${SPACE_3D_TILT_MS}ms`);
+  });
+});
+
+describe('screenPointAbove and screenRectOf (3d-view.md "Editing in 3D": the toolbar over a piece as drawn)', () => {
+  const size = { width: 800, height: 600 };
+  const view = { zoom: 1.4, offset: { x: -100, y: 50 } };
+  it('is screenPointOf on the floor, and higher up the screen the taller it stands', () => {
+    const p = { x: 420, y: 260 };
+    expect(screenPointAbove(p, 0, size, view, 52)).toEqual(screenPointOf(p, size, view, 52));
+    expect(screenPointAbove(p, 40, size, view, 52).y).toBeLessThan(
+      screenPointOf(p, size, view, 52).y,
+    );
+  });
+  it('boxes a standing piece from its footprint up to its top', () => {
+    const r = { x: 400, y: 240, width: 60, height: 40 };
+    const flat = screenRectOf(r, 0, size, view, 52);
+    const tall = screenRectOf(r, 50, size, view, 52);
+    expect(tall.y).toBeLessThan(flat.y);
+    expect(tall.y + tall.height).toBeCloseTo(flat.y + flat.height, 6);
   });
 });

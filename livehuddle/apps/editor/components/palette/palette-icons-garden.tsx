@@ -103,3 +103,14 @@ export function GardenFenceIcon({ size = 14 }: IconSizeProps = {}) {
     </Glyph>
   );
 }
+
+// The Road (docs/specs/009-elements/road.md): two kerbs and a dashed centre line, a car's front in its lane.
+export function RoadIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M1.5 6h21M1.5 18h21" />
+      <path d="M2 12h3M8 12h3M14 12h3M20 12h2" />
+      <rect x="9" y="13.5" width="7" height="3" rx="1" />
+    </Glyph>
+  );
+}

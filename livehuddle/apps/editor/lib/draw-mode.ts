@@ -6,7 +6,7 @@ import type { ComponentKind, SelectionMode, ShapeKind } from '@livehuddle/docume
 // then enters a "drag to define" gesture and forwards the resolved
 // start + end points to the editor on pointer-up. Discriminated so
 // the canvas can render the right preview per intent (oval for a
-// circle shape, dashed box for text / sticky / image, etc.) and the
+// circle shape, dashed box for an image or a link card, etc.) and the
 // editor's commit handler can mint the right element type from the
 // same gesture. The arrow, the pens, the polygon and the Path and Fill
 // tools left with the element engine's part 4
@@ -35,8 +35,6 @@ export type PendingDraw =
       // compound kind reads wrong named by its kind alone (a Funnel is a pyramid underneath).
       name?: string;
     }
-  | { type: 'text' }
-  | { type: 'sticky' }
   | { type: 'image' }
   // A link card (docs/specs/009-elements/link-cards.md) is its own element type rather than a ShapeKind, so it needs
   // its own intent to ride the same gesture. It used to drop at the viewport centre
@@ -68,11 +66,6 @@ const COMPONENT_LABELS: Record<ComponentKind, string> = {
   avatar: 'Avatar',
 };
 
-// Whether a freshly drawn element drops straight into typing: a text box is only useful once typed into.
-export function opensForTyping(intent: PendingDraw): boolean {
-  return intent.type === 'text';
-}
-
 // Whether a tap places the armed intent (docs/specs/008-canvas/canvas-and-palette.md "Adding elements"): every
 // box and component does; the Room Builder's walls are a gesture with no tap.
 export function dropsOnTap(intent: PendingDraw | null | undefined): intent is PendingDraw {
@@ -86,10 +79,6 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
   switch (intent.type) {
     case 'shape':
       return `${press} to drop or drag to draw ${shapeIntentName(intent)}`;
-    case 'text':
-      return `${press} to drop or drag to place text`;
-    case 'sticky':
-      return `${press} to drop or drag to draw a sticky note`;
     case 'image':
       return `${press} to drop or drag to draw image bounds`;
     case 'link-card':
@@ -101,8 +90,8 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
   }
 }
 
-// Builds a per-tool cursor for non-shape draw intents: text, sticky,
-// image, link card. Reads the same crosshair-at-(4, 4) shape as
+// Builds a per-tool cursor for non-shape draw intents: image, link card,
+// the Room Builder. Reads the same crosshair-at-(4, 4) shape as
 // drawShapeCursor so every draw-mode pointer has the same anchor,
 // then layers a tiny tool-specific glyph in the lower-right. Anything
 // the discriminated union adds in future falls back to 'crosshair'
@@ -113,16 +102,6 @@ export function drawIntentCursor(intent: PendingDraw): string {
   // diamond outlines this drew left with them (docs/specs/002-project-scope/not-in-livehuddle.md "The element
   // engine", part 5).
   if (intent.type === 'shape') return 'crosshair';
-  if (intent.type === 'text') {
-    return drawCursorFromGlyph(
-      `<path d="M13 13 H24 M18.5 13 V23 M16 23 H21" stroke="black" stroke-width="1.4" stroke-linecap="round" fill="none" />`,
-    );
-  }
-  if (intent.type === 'sticky') {
-    return drawCursorFromGlyph(
-      `<path d="M13 13 H21 L24 16 V23 H13 Z M21 13 V16 H24" stroke="black" stroke-width="1.4" stroke-linejoin="round" fill="none" />`,
-    );
-  }
   if (intent.type === 'image') {
     return drawCursorFromGlyph(
       `<rect x="13" y="14" width="11" height="9" rx="1" fill="none" stroke="black" stroke-width="1.4" /><circle cx="15.5" cy="16.5" r="0.9" fill="black" /><path d="M13 21 L16 18.5 L18.5 20.5 L21 18 L24 20" stroke="black" stroke-width="1.2" stroke-linejoin="round" fill="none" />`,

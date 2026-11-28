@@ -19,6 +19,8 @@
 //
 // Colour is deliberately absent. The shirt takes the participant's presence
 // colour so a character matches its owner's cursor and name chip.
+import type { AvatarReactionKind } from './reactions';
+
 export type AvatarGender = 'male' | 'female';
 
 export type AvatarClothing =
@@ -57,6 +59,9 @@ export type AvatarHair =
 
 export type AvatarSize = 'small' | 'regular' | 'tall';
 
+// Build (docs/specs/008-canvas/avatar-mode.md "Build"): how broad the 3D character is, never its height or its reach.
+export type AvatarBuild = 'skinny' | 'slim' | 'regular' | 'broad' | 'large';
+
 // Hair colour (docs/specs/008-canvas/avatar-mode.md "Hair Colour"): natural colours first, then bold
 // ones. A look like the rest, never an identity: the shirt keeps the presence colour.
 export type AvatarHairColour =
@@ -83,6 +88,9 @@ export type AvatarConfig = {
   // Brown, the hair every character had before. An older receiver's parser rebuilds the config field by field and
   // simply drops it.
   hairColour?: AvatarHairColour;
+  // Optional for the same reason: absent (or a token this build does not know) draws Regular, the character as it was
+  // before the choice existed, and an older receiver drops it.
+  build?: AvatarBuild;
 };
 
 // One participant's Avatar-mode character (docs/specs/008-canvas/avatar-mode.md), as it travels over the
@@ -119,7 +127,7 @@ export type AvatarPresence = {
   x: number;
   y: number;
   facing: 'down' | 'up' | 'left' | 'right';
-  // The sender's costume (docs/specs/008-canvas/avatar-mode.md): gender / clothing / hair / size / hair colour, each a
+  // The sender's costume (docs/specs/008-canvas/avatar-mode.md): gender / clothing / hair / size / hair colour / build, each a
   // preset token from a closed set. Optional: a lean packet leaves it out (AvatarPacket below) and the receiver keeps
   // the last one it saw from that peer, falling back to the default character for one it never saw. Purely
   // cosmetic, and never an identity claim.
@@ -127,8 +135,9 @@ export type AvatarPresence = {
   // A reaction in progress (docs/specs/008-canvas/avatar-mode.md): which one, and how far into it the
   // sender is. The pose is derived from these two by a pure function on both
   // ends, so the wire carries a kind and a clock rather than a pose.
+  // A receiver parses the kind (parseAvatarReactionKind): one a newer client sends draws as standing.
   reaction?: {
-    kind: 'jumping-jacks' | 'wave' | 'spin' | 'cheer' | 'dance';
+    kind: AvatarReactionKind;
     elapsedMs: number;
   };
   walking: boolean;
@@ -161,6 +170,10 @@ export type AvatarPresence = {
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none. Presence for the session only;
   // a receiver draws only a status it knows. Optional so an older client's packet parses as no status.
   status?: AvatarStatus | null;
+  // A raised hand (docs/specs/008-canvas/avatar-mode.md "Raise Hand"): true while it is up, absent otherwise. A held
+  // state, not a performance, so it costs one packet up and one down. A receiver draws it only for exactly `true`;
+  // an older client ignores the field.
+  handUp?: boolean;
 };
 
 // A character as it travels (docs/specs/008-canvas/avatar-mode.md "A busy room", "The costume rides only when it is
@@ -200,6 +213,7 @@ export function leanAvatarPacket(full: AvatarPacket, withCostume: boolean): Avat
   if (full.seat) out.seat = full.seat;
   if (full.holding) out.holding = full.holding;
   if (full.status) out.status = full.status;
+  if (full.handUp === true) out.handUp = true;
   return out;
 }
 

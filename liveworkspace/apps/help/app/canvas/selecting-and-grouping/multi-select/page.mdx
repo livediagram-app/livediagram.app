@@ -45,28 +45,39 @@ The marquee is a selection rectangle you drag across the canvas. Start the drag 
 
 Because the marquee starts on empty canvas, it never conflicts with dragging an element. Press directly on a shape and you move that shape; press on the background and you draw a marquee instead. A drag of only a few pixels counts as a click, so it simply clears the selection.
 
-<Figure app="livediagram"
+<Figure
+  app="livediagram"
   caption="A marquee drag sweeps a rectangle across the canvas, selecting every element it fully encloses."
 >
   <DiagramCanvas.MultiSelect />
 </Figure>
 
-<Figure app="livedesign" caption="A marquee drag across a page selects every element it fully encloses.">
+<Figure
+  app="livedesign"
+  caption="A marquee drag across a page selects every element it fully encloses."
+>
   <DesignMultiSelect />
 </Figure>
 
-<Figure app="livedocuments" caption="Drag a box across a slide to select everything inside it; what sits outside stays unselected.">
+<Figure
+  app="livedocuments"
+  caption="Drag a box across a slide to select everything inside it; what sits outside stays unselected."
+>
   <DocumentsMultiSelect />
 </Figure>
 
-<Figure app="livehuddle" caption="Drag a box round several desks, or Shift-click them, to select them together and move them as one.">
+<Figure
+  app="livehuddle"
+  caption="Drag a box round several desks, or Shift-click them, to select them together and move them as one."
+>
   <HuddleMultiSelect />
 </Figure>
 
 <AppNote app="livediagram">
-  On a phone, and on a tablet worked by finger such as an iPad, the canvas starts on the
-  [Hand tool](/help/selection-modes/hand/), where a drag pans instead. Switch to
-  [Select](/help/selection-modes/select/) from the canvas tool menu (or press `V` on a keyboard) to draw a marquee.
+  On a phone, and on a tablet worked by finger such as an iPad, the canvas starts on the [Hand
+  tool](/help/selection-modes/hand/), where a drag pans instead. Switch to
+  [Select](/help/selection-modes/select/) from the canvas tool menu (or press `V` on a keyboard) to
+  draw a marquee.
 </AppNote>
 
 <AppNote app="livedesign,livedocuments">
@@ -124,11 +135,6 @@ beside **Export** (see [Send to Plan](/help/collaboration/send-to-plan/)).
   The toolbar also has [**Save to Library**](/help/palette/library/) (to place the set again in any
   document) and **Lock** (**Unlock** when every one of them is locked). A single selected element
   has no toolbar: right-click it (or long-press on a touch screen) for its menu.
-</AppNote>
-
-<AppNote app="livehuddle">
-  The toolbar also has **Rotate Left** and **Rotate Right** (when the selection holds furniture that
-  turns, such as chairs or desks, each piece turning about its own centre).
 </AppNote>
 
 <Figure

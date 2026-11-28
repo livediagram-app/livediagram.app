@@ -15,6 +15,8 @@ export type AvatarPaletteActions = {
   // A whole new character (keeping the size).
   onRandomise: () => void;
   onReaction: (kind: AvatarReactionKind) => void;
+  // Whether your hand is raised: Raise Hand's card shows pressed while it is (a press lowers it).
+  handUp?: boolean | undefined;
   onBurst?: ((reaction: Reaction) => void) | undefined;
   // Your presence colour: the shirt every tile wears.
   shirt?: string | undefined;
@@ -27,6 +29,7 @@ export const AVATAR_FLYOUT_WIDTH: Record<AvatarPaletteCategoryId, number> = {
   character: 320,
   clothes: 416,
   hair: 416,
+  build: 416,
   status: 576,
   behaviour: 448,
   reactions: 448,
@@ -35,6 +38,7 @@ export const AVATAR_FLYOUT_WIDTH_CLASS: Record<AvatarPaletteCategoryId, string> 
   character: 'w-[20rem]',
   clothes: 'w-[26rem]',
   hair: 'w-[26rem]',
+  build: 'w-[26rem]',
   status: 'w-[36rem]',
   behaviour: 'w-[28rem]',
   reactions: 'w-[28rem]',

@@ -230,12 +230,10 @@ describe('Avatar mode presses', () => {
     peerAvatars: unknown[] = [],
     {
       elements,
-      onToggleDoor,
       onReadElement,
       feet = { x: 0, y: 0 },
     }: {
       elements?: unknown[];
-      onToggleDoor?: (id: string) => boolean;
       feet?: { x: number; y: number };
       onReadElement?: (id: string) => void;
     } = {},
@@ -272,7 +270,6 @@ describe('Avatar mode presses', () => {
         readPeerAvatars: () => peerAvatars,
         onPushPeer,
         elements,
-        onToggleDoor,
         onReadElement,
         isoCamera: {},
         beginPendingDrawGesture: () => false,
@@ -304,7 +301,7 @@ describe('Avatar mode presses', () => {
     return face;
   };
 
-  it.each(['directory', 'elevator', 'stairs', 'notice-board', 'world-clock', 'portal'])(
+  it.each(['directory', 'elevator', 'stairs', 'notice-board', 'portal'])(
     'opens a %s in place: no walk, and the press kept from the element',
     (kind) => {
       for (const pointer of ['mouse', 'touch']) {
@@ -345,42 +342,16 @@ describe('Avatar mode presses', () => {
   // A door centred on the press point (120, 240), across a horizontal wall.
   const door = { id: 'door', type: 'shape', shape: 'door', x: 72, y: 228, width: 96, height: 24 };
 
-  it('swings a door the character stands beside, and does not walk', () => {
-    const onToggleDoor = vi.fn(() => true);
-    const { press, walkTo } = avatarSetup([], {
-      elements: [door],
-      onToggleDoor,
-      feet: { x: 120, y: 270 },
-    });
-    press('mouse');
-    expect(onToggleDoor).toHaveBeenCalledWith('door');
-    expect(walkTo).not.toHaveBeenCalled();
-  });
-
-  it('walks to the near side of a far door, swinging nothing', () => {
-    const onToggleDoor = vi.fn(() => true);
-    const { press, walkTo } = avatarSetup([], {
-      elements: [door],
-      onToggleDoor,
-      feet: { x: 120, y: 700 },
-    });
-    press('mouse');
-    expect(onToggleDoor).not.toHaveBeenCalled();
-    const to = walkTo.mock.calls[0]?.[0] as { x: number; y: number };
-    expect(to.x).toBeCloseTo(120);
-    expect(to.y).toBeGreaterThan(240);
-  });
-
-  it('walks a Viewer, who may not swing it, even beside the door', () => {
-    const onToggleDoor = vi.fn(() => false);
-    const { press, walkTo } = avatarSetup([], {
-      elements: [door],
-      onToggleDoor,
-      feet: { x: 120, y: 270 },
-    });
-    press('mouse');
-    expect(onToggleDoor).toHaveBeenCalledWith('door');
-    expect(walkTo).toHaveBeenCalledTimes(1);
+  // docs/specs/009-elements/room-builder.md "Opening on their own": a door is never swung by hand.
+  it('walks on a press on a door, beside it or far from it', () => {
+    for (const feet of [
+      { x: 120, y: 270 },
+      { x: 120, y: 700 },
+    ]) {
+      const { press, walkTo } = avatarSetup([], { elements: [door], feet });
+      press('mouse');
+      expect(walkTo).toHaveBeenCalledTimes(1);
+    }
   });
 
   // docs/specs/009-elements/piece-moments.md "A press beside it": a moment piece under the press point (120, 240).
@@ -447,7 +418,6 @@ describe('Avatar mode presses', () => {
     'mode-button',
     'focus-button',
     'notice-board',
-    'world-clock',
     'screen',
     'room-sign',
     'jukebox',

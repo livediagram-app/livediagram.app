@@ -45,8 +45,6 @@ function setup(
     return useSelectionEditing({
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
       isReadOnly: false,
-      formatSourceId: null,
-      formatToolActive: false,
       documentName: 'My document',
       tabs: [tab],
       activeTab: tab,
@@ -54,10 +52,8 @@ function setup(
       commit,
       discardLastStep,
       tickTabs: vi.fn(),
-      applyFormatFromSource: vi.fn(),
       lockedByOther: () => false,
       set: {
-        setFormatSourceId: vi.fn(),
         setSelectedId: vi.fn(),
         setEditingId,
         setEditCursorAtEnd: vi.fn(),

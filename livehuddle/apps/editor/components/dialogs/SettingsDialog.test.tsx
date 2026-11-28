@@ -147,7 +147,7 @@ describe('SettingsDialog', () => {
     setViewport(true);
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
-    expect(screen.getByRole('heading', { name: 'Map' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Collaborate' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /^Settings./ }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();

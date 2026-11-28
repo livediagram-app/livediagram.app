@@ -142,7 +142,7 @@ export function templatePreviewGroup24(kind: TemplateKind): ReactElement | null 
         </svg>
       );
     case 'training-room':
-      // A small stage up front, Bring Focus beside it, and four tables either side of the aisle.
+      // A small stage up front and four tables either side of the aisle.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
           <Room x={3} y={3} w={74} h={44} door="bottom" />
@@ -150,7 +150,6 @@ export function templatePreviewGroup24(kind: TemplateKind): ReactElement | null 
           <rect x={28} y={11} width="24" height="2.2" rx="0.6" fill={STAGE_FRONT} />
           {/* The trainer's podium on the stage. */}
           <rect x={45} y={7.4} width="2.4" height="3.4" rx="0.4" fill={WOOD} />
-          <rect x={55} y={7} width="7" height="5" rx="1" fill="rgb(129 140 248)" />
           <Table x={9} y={21} />
           <Table x={56} y={21} />
           <Table x={9} y={35} />

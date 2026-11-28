@@ -25,10 +25,22 @@ const by = (els: Element[], kind: string) =>
   els.filter((e): e is ShapeElement => e.type === 'shape' && e.shape === kind);
 
 describe('roomier', () => {
-  it('grows a room about the centre and keeps a piece its size', () => {
+  it('keeps two rooms that share a wall sharing it', () => {
+    const [a, b] = roomier([room(0, 0, 400, 300), room(390, 0, 400, 300)], 0, 0) as ShapeElement[];
+    expect(b!.x).toBeCloseTo(a!.x + a!.width - 10, 6);
+    const [t, u] = roomier([room(0, 0, 400, 300), room(0, 264, 400, 300)], 0, 0) as ShapeElement[];
+    expect(u!.y).toBeCloseTo(t!.y + t!.height - 36, 6);
+  });
+
+  it('grows a room about the centre by its wall lines and keeps a piece its size', () => {
     const els = [room(0, 0, 400, 300), at('plant', 180, 140)];
     const [r, plant] = roomier(els, 0, 0) as ShapeElement[];
-    expect([r!.width, r!.height]).toEqual([400 * TEMPLATE_ROOMY, 300 * TEMPLATE_ROOMY]);
+    // Its walls' lines (5 px in at the sides and the front, 31 px in at the back) grow, so rooms that shared a wall
+    // still share it (templates-by-mode.md "Made for 3D").
+    expect([r!.width, r!.height]).toEqual([
+      (400 - 10) * TEMPLATE_ROOMY + 10,
+      (300 - 36) * TEMPLATE_ROOMY + 36,
+    ]);
     expect(plant!.width).toBe(els[1]!.type === 'shape' ? (els[1] as ShapeElement).width : 0);
   });
 

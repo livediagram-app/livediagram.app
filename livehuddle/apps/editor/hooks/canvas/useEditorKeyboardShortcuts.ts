@@ -47,20 +47,14 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   const liveRef = useLatest(deps);
 
   // Escape cancels whichever transient editor mode is active:
-  // format-painter, or a pending draw-to-size shape.
+  // Walk, or a pending draw-to-size shape.
   // Keeping the narrow deps means the listener only attaches while
   // one of those modes is on, so we pay nothing in the idle case.
   // The setters come through the ref so the same-render values apply.
   useEffect(() => {
-    const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
+    const { pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
-    if (
-      formatSourceId === null &&
-      pendingDraw === null &&
-      canvasTool !== 'format' &&
-      canvasTool !== 'avatar'
-    )
-      return;
+    if (pendingDraw === null && canvasTool !== 'avatar') return;
     const onKey = (e: KeyboardEvent) => {
       // A modal dialog owns the keyboard while open (its own Escape
       // closes it); cancelling canvas modes behind it double-acts.
@@ -91,18 +85,9 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         const live = liveRef.current;
         // Claim the key when it cancelled something, so a later listener
         // (the non-modal poll sheet's Escape-to-skip) knows it's spoken for.
-        if (
-          live.formatSourceId !== null ||
-          live.pendingDraw !== null ||
-          live.canvasTool === 'format' ||
-          live.canvasTool === 'avatar'
-        ) {
+        if (live.pendingDraw !== null || live.canvasTool === 'avatar') {
           e.preventDefault();
         }
-        liveRef.current.setFormatSourceId(null);
-        // Persistent Format tool: Escape exits the tool entirely (back to
-        // Select) from either phase, not just disarming the base.
-        if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
         // Avatar mode (docs/specs/008-canvas/avatar-mode.md): Escape puts the walking character away and
         // hands editing back (on touch a drag on empty canvas pans, as Edit does there).
         if (liveRef.current.canvasTool === 'avatar') {
@@ -115,7 +100,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, liveRef]);
+  }, [deps.enabled, deps.pendingDraw, deps.canvasTool, liveRef]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
   // Cmd-C / Cmd-V, the E / V / W Edit and Walk keys. One listener for the
@@ -163,9 +148,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         key === 'Escape' &&
         !inText &&
         live.editingId === null &&
-        live.formatSourceId === null &&
         live.pendingDraw === null &&
-        live.canvasTool !== 'format' &&
         live.canvasTool !== 'avatar' &&
         (selectedId !== null || multiSelectedIds.size > 0)
       ) {
@@ -202,7 +185,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           !passesSearchChords(e, target)
         )
           return;
-        // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate, z-order) is still the
+        // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate) is still the
         // canvas's: left to the browser, Cmd+A selected the page's text and Cmd+D bookmarked it.
         if (!runModShortcut(e, live) && live.isReadOnly && coveredKeyRole(e) === 'swallow') {
           e.preventDefault();

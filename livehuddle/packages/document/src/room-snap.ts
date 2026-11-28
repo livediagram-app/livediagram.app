@@ -31,6 +31,20 @@ function sharedWallTargets(t: Box) {
   };
 }
 
+/**
+ * How near (canvas px) a room's wall has to come to a neighbouring room's wall line to share it. Far wider than the
+ * edge snap's 6 px: rooms are hundreds of px across, and a room dropped roughly beside another (box edge to box edge,
+ * a little apart, or a little over) is meant to share its wall, never to stand a second wall beside it (the owner,
+ * 2026-11-27). In the tilted 3D view, at the 60 % or so a Space is edited at, 6 px was 4 screen px, too fine to hit by
+ * eye with the walls standing up; this is about 50 there. Canvas px, so it is the same share of a room at every zoom,
+ * and still narrower than a Corridor (120), so a gap left for one is kept.
+ */
+export const ROOM_WALL_SNAP_THRESHOLD = 80;
+
+// Whether two spans overlap: a room shares a wall only with a neighbour actually beside it on the other axis, never
+// with one far above or below whose wall line merely passes near.
+const overlaps = (a0: number, a1: number, b: [number, number]) => a0 < b[1] && a1 > b[0];
+
 type Best = { delta: number; line: number; span: [number, number] } | null;
 const closer = (best: Best, delta: number, threshold: number) =>
   Math.abs(delta) <= threshold && (best === null || Math.abs(delta) < Math.abs(best.delta));
@@ -38,6 +52,7 @@ const closer = (best: Best, delta: number, threshold: number) =>
 /**
  * The shared-wall snap for a room being moved: the nearest delta per axis (within `threshold`) that puts one of its
  * walls on a neighbouring room's wall line, and the guide along that line. `snappedX/Y` false when none is in range.
+ * Only a room beside it on the other axis (their spans overlapping) counts.
  */
 export function snapRoomWalls(
   candidate: Box,
@@ -52,14 +67,18 @@ export function snapRoomWalls(
     const t = sharedWallTargets(el);
     const spanY: [number, number] = [el.y, el.y + el.height];
     const spanX: [number, number] = [el.x, el.x + el.width];
-    const dl = t.left.at - candidate.x;
-    if (closer(bx, dl, threshold)) bx = { delta: dl, line: t.left.line, span: spanY };
-    const dr = t.right.at - (candidate.x + candidate.width);
-    if (closer(bx, dr, threshold)) bx = { delta: dr, line: t.right.line, span: spanY };
-    const dt = t.top.at - candidate.y;
-    if (closer(by, dt, threshold)) by = { delta: dt, line: t.top.line, span: spanX };
-    const db = t.bottom.at - (candidate.y + candidate.height);
-    if (closer(by, db, threshold)) by = { delta: db, line: t.bottom.line, span: spanX };
+    if (overlaps(candidate.y, candidate.y + candidate.height, spanY)) {
+      const dl = t.left.at - candidate.x;
+      if (closer(bx, dl, threshold)) bx = { delta: dl, line: t.left.line, span: spanY };
+      const dr = t.right.at - (candidate.x + candidate.width);
+      if (closer(bx, dr, threshold)) bx = { delta: dr, line: t.right.line, span: spanY };
+    }
+    if (overlaps(candidate.x, candidate.x + candidate.width, spanX)) {
+      const dt = t.top.at - candidate.y;
+      if (closer(by, dt, threshold)) by = { delta: dt, line: t.top.line, span: spanX };
+      const db = t.bottom.at - (candidate.y + candidate.height);
+      if (closer(by, db, threshold)) by = { delta: db, line: t.bottom.line, span: spanX };
+    }
   }
   return {
     dx: bx?.delta ?? 0,
@@ -93,19 +112,21 @@ export function snapRoomWallsResize(
     const t = sharedWallTargets(el);
     const spanY: [number, number] = [el.y, el.y + el.height];
     const spanX: [number, number] = [el.x, el.x + el.width];
-    if (left) {
+    const besideX = overlaps(candidate.y, candidate.y + candidate.height, spanY);
+    const besideY = overlaps(candidate.x, candidate.x + candidate.width, spanX);
+    if (left && besideX) {
       const d = t.left.at - candidate.x;
       if (closer(bx, d, threshold)) bx = { delta: d, line: t.left.line, span: spanY };
     }
-    if (right) {
+    if (right && besideX) {
       const d = t.right.at - (candidate.x + candidate.width);
       if (closer(bx, d, threshold)) bx = { delta: d, line: t.right.line, span: spanY };
     }
-    if (top) {
+    if (top && besideY) {
       const d = t.top.at - candidate.y;
       if (closer(by, d, threshold)) by = { delta: d, line: t.top.line, span: spanX };
     }
-    if (bottom) {
+    if (bottom && besideY) {
       const d = t.bottom.at - (candidate.y + candidate.height);
       if (closer(by, d, threshold)) by = { delta: d, line: t.bottom.line, span: spanX };
     }

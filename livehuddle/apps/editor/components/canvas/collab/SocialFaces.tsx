@@ -5,8 +5,7 @@ import { CountBadge, Glyph } from '@livehuddle/ui';
 import { drawnRect } from '@livehuddle/avatar/seats';
 import { facingView } from '@livehuddle/avatar/facing';
 import {
-  CLOCK_DIALS_ON_FACE,
-  CLOCK_FACE,
+  CLOCK_DIAL,
   DEFAULT_NOTE_COLOR,
   NOTE_PAPER,
   NOTES_ON_FACE,
@@ -14,11 +13,9 @@ import {
   OFFICE_ART,
   notesNewestFirst,
   pieceFacing,
-  type ClockZone,
   type ShapeElement,
 } from '@livehuddle/document';
-import { useMinuteNow } from '@/lib/minute-clock';
-import { zoneTime } from '@/lib/zone-time';
+import { localClock, useMinuteNow } from '@/lib/minute-clock';
 import { pieceControlProps } from '@/lib/piece-control';
 import {
   toggleJukeboxListening,
@@ -28,12 +25,11 @@ import {
 import { ArcadeFace } from './ArcadeFace';
 import { PingPongGame } from './PingPongGame';
 import { NoticeBoardPopover, NoticeBoardReader } from './NoticeBoardPopover';
-import { WorldClockReader } from './WorldClockReader';
 import { useFreshMoment } from './moment-kit';
 import { LonePin, NoteSwing, swingingNote, TickingHand } from './WalkUpMoments';
 
 // The live faces of the social pieces (docs/specs/009-elements/social-pieces.md) laid over their art: the Notice
-// Board's cards and Notes button, the World Clock's dials, the Jukebox's Play / Mute button and the Arcade Machine's
+// Board's cards and Notes button, the Clock's hands, the Jukebox's Play / Mute button and the Arcade Machine's
 // Insert Coin bubble and its game (ArcadeFace.tsx). Each lies over the drawn rectangle of its piece (the art is fitted
 // whole and centred), and draws in the piece's own grid, so it scales with the piece and the canvas.
 
@@ -61,7 +57,7 @@ export function SocialFace({
     case 'notice-board':
       return <NoticeBoardFace element={element} walking={walking} />;
     case 'world-clock':
-      return <WorldClockFace element={element} walking={walking} />;
+      return <ClockFace element={element} />;
     case 'jukebox':
       return <JukeboxFace element={element} />;
     case 'arcade-machine':
@@ -299,135 +295,81 @@ function PinGlyph() {
   );
 }
 
-// --- World Clock ---------------------------------------------------------------------------------------------
+// --- Clock ---------------------------------------------------------------------------------------------------
 
-const LOCAL_ZONE: ClockZone[] = [{ zone: '', label: 'Local' }];
-
-function WorldClockFace({ element, walking }: { element: ShapeElement; walking: boolean }) {
+// The Clock (social-pieces.md "Clock", kind `world-clock`): its twelve marks and two hands on the drawing's face, at
+// the viewer's own local time, moved on once a minute by the one shared timer. No second hand, no reader.
+function ClockFace({ element }: { element: ShapeElement }) {
   const now = useMinuteNow();
-  const [reading, setReading] = useState(false);
-  const zones = (element.clockZones?.length ? element.clockZones : LOCAL_ZONE).slice(
-    0,
-    CLOCK_DIALS_ON_FACE,
-  );
   const art = OFFICE_ART['world-clock'].front;
-  const { x, w } = CLOCK_FACE;
-  const step = w / zones.length;
-  const r = 13;
-  // Walking up plays its answer (piece-moments.md): each minute hand ticks once round, dial by dial from your side.
+  const { cx, cy, r } = CLOCK_DIAL;
+  const t = now ? localClock(now) : null;
+  const minuteA = t ? t.minute * 6 : 0;
+  const hourA = t ? (t.hour % 12) * 30 + t.minute * 0.5 : 0;
+  // Walking up plays its answer (piece-moments.md): the minute hand ticks once round.
   const play = useFreshMoment(element.id);
+  const minuteHand = (
+    <line
+      x1={cx}
+      y1={cy + r * 0.12}
+      x2={cx}
+      y2={cy - r * 0.8}
+      stroke="#1f2937"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      transform={`rotate(${minuteA} ${cx} ${cy})`}
+    />
+  );
+  const label = t
+    ? new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+    : undefined;
   return (
     <Overlay element={element}>
       <svg
         viewBox={`0 0 ${art.width} ${art.height}`}
         className="absolute inset-0 h-full w-full"
         role="img"
-        aria-label={zones
-          .map(
-            (z) =>
-              `${z.label || 'Local'}: ${zoneTime(z.zone || undefined, now)?.text ?? 'unknown'}`,
-          )
-          .join(', ')}
+        aria-label={label ? `Clock: ${label}` : 'Clock'}
       >
-        {zones.map((z, i) => {
-          const cx = x + step * (i + 0.5);
-          const cy = 32;
-          const t = now ? zoneTime(z.zone || undefined, now) : null;
-          const minuteA = t ? t.minute * 6 : 0;
-          const hourA = t ? (t.hour % 12) * 30 + t.minute * 0.5 : 0;
+        {Array.from({ length: 12 }, (_, k) => {
+          const a = (k * Math.PI) / 6;
+          const inner = k % 3 === 0 ? r - 6 : r - 3.6;
           return (
-            <g key={`${z.zone}-${i}`}>
-              <circle cx={cx} cy={cy} r={r + 1.5} fill="#fde68a" />
-              <circle cx={cx} cy={cy} r={r} fill="#fffbeb" stroke="#78350f" strokeWidth={1.2} />
-              {Array.from({ length: 12 }, (_, k) => {
-                const a = (k * Math.PI) / 6;
-                const inner = k % 3 === 0 ? r - 3.4 : r - 2.2;
-                return (
-                  <line
-                    key={k}
-                    x1={cx + Math.sin(a) * inner}
-                    y1={cy - Math.cos(a) * inner}
-                    x2={cx + Math.sin(a) * (r - 1)}
-                    y2={cy - Math.cos(a) * (r - 1)}
-                    stroke="#78350f"
-                    strokeWidth={k % 3 === 0 ? 1.1 : 0.6}
-                    strokeLinecap="round"
-                  />
-                );
-              })}
-              {t ? (
-                <>
-                  <line
-                    x1={cx}
-                    y1={cy}
-                    x2={cx}
-                    y2={cy - r * 0.52}
-                    stroke="#1f2937"
-                    strokeWidth={1.8}
-                    strokeLinecap="round"
-                    transform={`rotate(${hourA} ${cx} ${cy})`}
-                  />
-                  {play ? (
-                    <TickingHand play={play} cx={cx} cy={cy} width={art.width}>
-                      <line
-                        x1={cx}
-                        y1={cy}
-                        x2={cx}
-                        y2={cy - r * 0.8}
-                        stroke="#1f2937"
-                        strokeWidth={1.1}
-                        strokeLinecap="round"
-                        transform={`rotate(${minuteA} ${cx} ${cy})`}
-                      />
-                    </TickingHand>
-                  ) : (
-                    <line
-                      x1={cx}
-                      y1={cy}
-                      x2={cx}
-                      y2={cy - r * 0.8}
-                      stroke="#1f2937"
-                      strokeWidth={1.1}
-                      strokeLinecap="round"
-                      transform={`rotate(${minuteA} ${cx} ${cy})`}
-                    />
-                  )}
-                </>
-              ) : null}
-              <circle cx={cx} cy={cy} r={1.4} fill="#b45309" />
-              <text
-                x={cx}
-                y={55}
-                textAnchor="middle"
-                fontSize={7.5}
-                fontWeight={700}
-                fill="#fef3c7"
-              >
-                {clip(z.label || 'Local', 12)}
-              </text>
-              <text
-                x={cx}
-                y={66.5}
-                textAnchor="middle"
-                fontSize={6.5}
-                fontWeight={600}
-                fill="#fde68a"
-              >
-                {now ? (t ? t.text : '?') : ''}
-                {t && t.dayShift !== 0 ? ` ${t.dayShift > 0 ? '+' : ''}${t.dayShift}` : ''}
-              </text>
-            </g>
+            <line
+              key={k}
+              x1={cx + Math.sin(a) * inner}
+              y1={cy - Math.cos(a) * inner}
+              x2={cx + Math.sin(a) * (r - 1.6)}
+              y2={cy - Math.cos(a) * (r - 1.6)}
+              stroke="#44403c"
+              strokeWidth={k % 3 === 0 ? 2.4 : 1.2}
+              strokeLinecap="round"
+            />
           );
         })}
+        {t ? (
+          <>
+            <line
+              x1={cx}
+              y1={cy + r * 0.1}
+              x2={cx}
+              y2={cy - r * 0.5}
+              stroke="#1f2937"
+              strokeWidth={3}
+              strokeLinecap="round"
+              transform={`rotate(${hourA} ${cx} ${cy})`}
+            />
+            {play ? (
+              <TickingHand play={play} cx={cx} cy={cy} width={art.width}>
+                {minuteHand}
+              </TickingHand>
+            ) : (
+              minuteHand
+            )}
+          </>
+        ) : null}
+        <circle cx={cx} cy={cy} r={2.2} fill="#b45309" />
       </svg>
-      {walking ? <ReaderHit label="Read the World Clock" onOpen={() => setReading(true)} /> : null}
-      {reading ? (
-        <WorldClockReader
-          title={element.label?.trim() || 'World Clock'}
-          zones={element.clockZones?.length ? element.clockZones : LOCAL_ZONE}
-          onClose={() => setReading(false)}
-        />
-      ) : null}
     </Overlay>
   );
 }

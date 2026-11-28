@@ -1,16 +1,10 @@
 import { useRef, type ReactNode } from 'react';
-import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { useEdgeAwarePlacement } from '@liveworkspace/workbench/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
-import { DuplicateIcon, FormatPainterIcon, TrashIcon, HoverCard } from '@livehuddle/ui';
-import {
-  BringToFrontIcon,
-  EllipsisIcon,
-  SendToBackIcon,
-  TextIcon,
-} from '@liveworkspace/workbench/components/canvas/selection-popover-icons';
+import { DuplicateIcon, TrashIcon, HoverCard } from '@livehuddle/ui';
+import { EllipsisIcon } from '@liveworkspace/workbench/components/canvas/selection-popover-icons';
+import { ImageGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
-import { TurnButtons } from '@livehuddle/avatar/components/TurnButtons';
 import type { Rect } from '@livehuddle/document';
 
 type SelectionPopoverProps = {
@@ -21,35 +15,18 @@ type SelectionPopoverProps = {
   suspended?: boolean;
   // Omitted in read-only / view-role mode, which suppresses the Delete button.
   onDelete?: () => void;
-  // Enter inline text-edit mode on the selected element. Passed for every
-  // text-CAPABLE element (see elementSupportsText) — including ones with no
-  // label yet, so the button itself teaches that text can be added. Absent
-  // for kinds with no label (tables, images, annotations, data shapes).
-  onEditText?: () => void;
-  // True when the element already has text: the button reads "Edit Text";
-  // false = "Add Text". Defaults to edit for older callers.
-  hasText?: boolean;
-  // Turn a piece of furniture a quarter (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"): a piece
-  // that turns only.
-  onTurn?: (quarters: 1 | -1) => void;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
-  // The Format painter, loaded with this element (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): its
-  // one way in. Omitted in read-only.
-  onFormatPainter?: () => void;
-  // Intra-LAYER z-order (docs/specs/006-document/layers.md gained no z-nudge until now): stack this
-  // element in front of / behind its band-mates WITHOUT moving it between
-  // layers, which is what the element menu's Bring to Front does.
-  onBringToFront?: () => void;
-  onSendToBack?: () => void;
-  // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md), where this session may send and it has words.
-  onSendToPlan?: () => void;
   // Open the same context menu that a right-click on the element
   // would open, anchored under the ellipsis button. Surfaces the
   // full action list on touch devices that can't right-click.
   onOpenContextMenu?: (screenX: number, screenY: number) => void;
+  // A Poster's picture (docs/specs/009-elements/poster.md "Choosing its picture"): opens the image picker for it. An
+  // Editor's alone; `pictureLabel` says Choose or Change.
+  onChoosePicture?: () => void;
+  pictureLabel?: string;
   // Small caption above (or below) the toolbar naming what's selected
   // ("Selected Square", "Selected Element").
   title?: string;
@@ -79,15 +56,10 @@ export function SelectionPopover({
   canvasOffset,
   zoom,
   onDelete,
-  onEditText,
-  hasText = true,
-  onTurn,
   onDuplicate,
-  onFormatPainter,
-  onBringToFront,
-  onSendToBack,
-  onSendToPlan,
   onOpenContextMenu,
+  onChoosePicture,
+  pictureLabel = 'Choose Picture',
   compact = false,
   suspended = false,
   title,
@@ -174,81 +146,30 @@ export function SelectionPopover({
             </>
           ) : null}
 
-          {onEditText ? (
+          {onChoosePicture ? (
             <>
               <PopoverButton
-                label={hasText ? 'Edit Text' : 'Add Text'}
-                description={
-                  hasText ? "Edit this element's text." : 'Give this element a text label.'
-                }
-                onClick={onEditText}
+                label={pictureLabel}
+                description="Upload a picture, pick one from your gallery or search."
+                onClick={onChoosePicture}
               >
-                <TextIcon />
+                <ImageGlyph />
               </PopoverButton>
               <Divider />
             </>
           ) : null}
 
-          {onTurn ? (
-            <>
-              <TurnButtons onTurn={onTurn} />
-              <Divider />
-            </>
-          ) : null}
-
-          {onDuplicate || onFormatPainter ? (
-            <>
-              {onDuplicate ? (
-                <PopoverButton
-                  label="Duplicate"
-                  description="Create a copy of this element."
-                  onClick={onDuplicate}
-                >
-                  <DuplicateIcon />
-                </PopoverButton>
-              ) : null}
-              {onFormatPainter ? (
-                <PopoverButton
-                  label="Format Painter"
-                  description="Copy this element's look, then press others to paint it on."
-                  onClick={onFormatPainter}
-                >
-                  <FormatPainterIcon />
-                </PopoverButton>
-              ) : null}
-              <Divider />
-            </>
-          ) : null}
-
-          {onBringToFront && onSendToBack ? (
+          {onDuplicate ? (
             <>
               <PopoverButton
-                label="Bring to Front"
-                description="Stack this in front of everything else on its layer."
-                onClick={onBringToFront}
+                label="Duplicate"
+                description="Create a copy of this element."
+                onClick={onDuplicate}
               >
-                <BringToFrontIcon />
-              </PopoverButton>
-              <PopoverButton
-                label="Send to Back"
-                description="Stack this behind everything else on its layer."
-                onClick={onSendToBack}
-              >
-                <SendToBackIcon />
+                <DuplicateIcon />
               </PopoverButton>
               <Divider />
             </>
-          ) : null}
-
-          {/* Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a card for it in liveplanner. */}
-          {onSendToPlan ? (
-            <PopoverButton
-              label="Send to Plan"
-              description="Make a card for it in one of your plans."
-              onClick={onSendToPlan}
-            >
-              <SendToPlanMenuIcon size={16} />
-            </PopoverButton>
           ) : null}
 
           {showDelete ? (

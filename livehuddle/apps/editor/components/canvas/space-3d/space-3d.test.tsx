@@ -2,17 +2,9 @@
 import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
-import { NO_POSE, type AvatarPose } from '@livehuddle/avatar/pose';
 import { buildTemplate } from '@livehuddle/templates';
-import {
-  setSpace3DTiltNow,
-  space3DPreference,
-  space3DTiltNow,
-  SPACE_3D_STORAGE_KEY,
-} from '@/lib/space-3d/space-3d-preference';
-import { SPACE_3D_TILT_MS } from '@/lib/space-3d/space-3d-camera';
-import { space3DEase } from '@/lib/space-3d/space-3d-zoom';
+import { createShape } from '@livehuddle/document';
+import { setSpace3DTiltNow, space3DTiltNow } from '@/lib/space-3d/space-3d-preference';
 import { standAttr } from '@/lib/space-3d/space-3d-pieces';
 import { standingPiecesOnScreen } from '@/lib/space-3d/standing-pieces-on-screen';
 
@@ -37,10 +29,9 @@ vi.mock('@liveworkspace/workbench/hooks/canvas/useViewportStore', () => ({
 }));
 
 import { space3DStageStyle, useSpace3DView } from './useSpace3DView';
-import { Space3DButton } from './Space3DButton';
+import { Space3DTurnButtons } from './Space3DTurnButtons';
 import { space3DTurn } from '@/lib/space-3d/space-3d-turn';
 import { Space3DWalls } from './Space3DWalls';
-import { useSpace3DZoom } from './useSpace3DZoom';
 import {
   InSpace3DOverlay,
   Space3DOverlayProvider,
@@ -48,10 +39,10 @@ import {
   useInSpace3D,
 } from './Space3DOverlay';
 import { loadSpace3DWalls } from '@/lib/editor-deferred-code';
+import { arrivalIntroPlaying } from '@/lib/space-3d/arrival-intro';
 
 beforeEach(() => {
   vi.useFakeTimers();
-  space3DPreference.set(false);
   setSpace3DTiltNow(0);
   reduced.on = false;
   localStorage.clear();
@@ -61,167 +52,81 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const frames = () =>
-  act(() => {
-    vi.advanceTimersByTime(40);
-  });
-
-describe('useSpace3DView (docs/specs/008-canvas/3d-view.md "Turning it on and off")', () => {
-  it('stays flat until it is on and you walk', () => {
-    const { result, rerender } = renderHook(({ walking }) => useSpace3DView(walking), {
+describe('useSpace3DView (docs/specs/008-canvas/3d-view.md: always 3D)', () => {
+  it('is 3D from the first frame, in Edit and Walk alike, with its tilt for a press', () => {
+    const { rerender } = renderHook(({ walking }) => useSpace3DView(walking), {
       initialProps: { walking: false },
     });
-    act(() => space3DPreference.set(true));
-    expect(result.current).toBe('flat');
-    rerender({ walking: true });
-    expect(result.current).toBe('rising');
-    expect(loadSpace3DWalls).toHaveBeenCalled();
-  });
-
-  it('tilts after two frames, then falls and flattens after the tilt time when you leave Walk', () => {
-    space3DPreference.set(true);
-    const { result, rerender } = renderHook(({ walking }) => useSpace3DView(walking), {
-      initialProps: { walking: true },
-    });
-    frames();
-    expect(result.current).toBe('tilted');
     expect(space3DTiltNow()).toBe(52);
-    rerender({ walking: false });
-    expect(result.current).toBe('falling');
-    expect(space3DTiltNow()).toBe(0);
+    expect(loadSpace3DWalls).toHaveBeenCalled();
+    rerender({ walking: true });
+    expect(space3DTiltNow()).toBe(52);
+  });
+
+  it('has no Shift+3 switch', () => {
+    space3DTurn.set(0);
+    renderHook(() => useSpace3DView(true));
     act(() => {
-      vi.advanceTimersByTime(SPACE_3D_TILT_MS);
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { code: 'Digit3', key: '#', shiftKey: true, bubbles: true }),
+      );
     });
-    expect(result.current).toBe('flat');
+    expect(space3DTiltNow()).toBe(52);
+    expect(space3DTurn.get()).toBe(0);
   });
 
-  it('skips the tilt animation under reduced motion', () => {
-    reduced.on = true;
-    const { result } = renderHook(() => useSpace3DView(true));
-    act(() => space3DPreference.set(true));
-    expect(result.current).toBe('tilted');
-    act(() => space3DPreference.set(false));
-    expect(result.current).toBe('flat');
-  });
-
-  it('turns on and off with Shift+3 while walking, not while typing or not walking', () => {
-    const { rerender } = renderHook(({ walking }) => useSpace3DView(walking), {
-      initialProps: { walking: true },
-    });
+  it('turns the camera with [ and ], not while typing', () => {
+    space3DTurn.set(0);
+    renderHook(() => useSpace3DView(true));
     const press = (target: EventTarget = window) =>
       act(() => {
-        target.dispatchEvent(
-          new KeyboardEvent('keydown', { code: 'Digit3', key: '#', shiftKey: true, bubbles: true }),
-        );
+        target.dispatchEvent(new KeyboardEvent('keydown', { code: 'BracketRight', bubbles: true }));
       });
+    // Turning the camera right turns the floor the other way (space-3d-turn.ts).
     press();
-    expect(space3DPreference.get()).toBe(true);
-    expect(localStorage.getItem(SPACE_3D_STORAGE_KEY)).toBe('1');
+    expect(space3DTurn.get()).toBe(-1);
     const input = document.body.appendChild(document.createElement('input'));
     press(input);
-    expect(space3DPreference.get()).toBe(true);
+    expect(space3DTurn.get()).toBe(-1);
     input.remove();
-    rerender({ walking: false });
-    press();
-    expect(space3DPreference.get()).toBe(true);
+    space3DTurn.set(0);
   });
 
-  it('styles the stage only while it shows', () => {
-    expect(space3DStageStyle('flat')).toBeUndefined();
-    expect(space3DStageStyle('rising')).toEqual({
-      '--space-tilt': '0deg',
-      '--space-stand': '0deg',
-      '--space-turn': '0deg',
-    });
-    expect(space3DStageStyle('tilted')).toEqual({
+  it('styles the stage with the camera tilt and turn', () => {
+    expect(space3DStageStyle(1)).toEqual({
       '--space-tilt': '52deg',
       '--space-stand': '-90deg',
-      '--space-turn': '0deg',
-    });
-    expect(space3DStageStyle('falling')).toEqual({
-      '--space-tilt': '0deg',
-      '--space-stand': '0deg',
-      '--space-turn': '0deg',
+      '--space-turn': '90deg',
     });
   });
 });
 
-describe('Space3DButton', () => {
-  it('is a 3D View toggle that says its key, lit while on', () => {
-    render(<Space3DButton />);
-    const button = screen.getByRole('button', { name: '3D View' });
-    expect(button.getAttribute('aria-pressed')).toBe('false');
-    fireEvent.click(button);
-    expect(space3DPreference.get()).toBe(true);
-    expect(screen.getByRole('button', { name: '3D View' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
-  });
-
-  // 3d-view.md "Turning the camera": off unless Rotate in 3D View is on.
-  it('offers Turn Left and Turn Right only with Rotate in 3D View on', () => {
-    space3DPreference.set(true);
-    render(<Space3DButton />);
-    expect(screen.queryByRole('button', { name: 'Turn Left' })).toBeNull();
-    cleanup();
-    render(<Space3DButton turning />);
-    expect(screen.getByRole('button', { name: 'Turn Left' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Turn Right' })).toBeTruthy();
-  });
-
-  it('leaves [ and ] alone unless Rotate in 3D View is on, and turns back when it goes off', () => {
-    space3DPreference.set(true);
+describe('Space3DTurnButtons', () => {
+  it('turns the camera a quarter each way', () => {
     space3DTurn.set(0);
-    const press = () =>
-      act(() => {
-        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'BracketRight', bubbles: true }));
-      });
-    const { rerender } = renderHook(({ turning }) => useSpace3DView(true, turning), {
-      initialProps: { turning: false },
-    });
-    press();
-    expect(space3DTurn.get()).toBe(0);
-    rerender({ turning: true });
-    press();
-    expect(space3DTurn.get()).not.toBe(0);
-    rerender({ turning: false });
+    render(<Space3DTurnButtons />);
+    fireEvent.click(screen.getByRole('button', { name: 'Turn Right' }));
+    expect(space3DTurn.get()).toBe(-1);
+    fireEvent.click(screen.getByRole('button', { name: 'Turn Left' }));
     expect(space3DTurn.get()).toBe(0);
   });
 });
 
-describe('Space3DWalls (docs/specs/008-canvas/3d-view.md "Walls in front of you are cut away")', () => {
+describe('Space3DWalls (docs/specs/008-canvas/3d-view.md "Performance")', () => {
   const office = buildTemplate('virtual-office', 0, 0);
   const size = { width: 1400, height: 900 };
 
-  it('stands up the walls near the view and fades those in front of your feet as you move', () => {
-    const pose = createStateStore<AvatarPose>(NO_POSE);
-    const { container } = render(<Space3DWalls elements={office} poseStore={pose} size={size} />);
-    const walls = container.querySelectorAll('[data-space-wall]');
-    expect(walls.length).toBeGreaterThan(10);
-    expect(container.querySelectorAll('[data-cut]')).toHaveLength(0);
-    const first = walls[0] as HTMLElement;
-    // Stand just behind the first wall's middle: it is in front of your feet.
-    const box = first.style.transform.match(/translate\(([-\d.]+)px, ([-\d.]+)px\)/)!;
-    const width = parseFloat(first.style.width);
-    const angle = Number(first.style.transform.match(/rotate\(([-\d.e]+)deg\)/)![1]);
-    const mid = {
-      x: Number(box[1]) + (Math.cos((angle * Math.PI) / 180) * width) / 2,
-      y: Number(box[2]) + (Math.sin((angle * Math.PI) / 180) * width) / 2 - 10,
-    };
-    act(() => pose.set({ ...NO_POSE, pos: mid }));
-    expect(first.hasAttribute('data-cut')).toBe(true);
-    act(() => pose.set({ ...NO_POSE, pos: { x: -99999, y: -99999 } }));
-    expect(container.querySelectorAll('[data-cut]')).toHaveLength(0);
-    expect(container.querySelector('[data-space-wall-label]')?.textContent).toBeTruthy();
+  it('builds no wall or roof of its own: the 3D scene draws them (3d-engine.md)', () => {
+    const { container } = render(<Space3DWalls elements={office} size={size} />);
+    expect(container.querySelector('[data-space-walls]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-space-wall], [data-space-roof]')).toHaveLength(0);
   });
 
   it("paints the walls in the tab's colour, in evening light on a dark canvas, and leaves the plaster unset", () => {
-    const pose = createStateStore<AvatarPose>(NO_POSE);
     const layer = (wallColor?: string, darkCanvas?: boolean) =>
       render(
         <Space3DWalls
           elements={office}
-          poseStore={pose}
           size={size}
           wallColor={wallColor}
           darkCanvas={darkCanvas}
@@ -234,33 +139,30 @@ describe('Space3DWalls (docs/specs/008-canvas/3d-view.md "Walls in front of you 
     expect(layer('#d5e6d3', true).style.getPropertyValue('--space-wall')).not.toBe('#d5e6d3');
   });
 
-  it('draws only the walls near the view, and chooses them again when the view has moved far', () => {
-    const pose = createStateStore<AvatarPose>(NO_POSE);
-    const board = [...office, ...buildTemplate('virtual-office', 40000, 0)];
-    const { container } = render(<Space3DWalls elements={board} poseStore={pose} size={size} />);
-    const near = container.querySelectorAll('[data-space-wall]').length;
+  it('lays the floor round the view, and again when the view has moved far, not during an arrival', () => {
+    const floor = { backgroundColor: 'rgb(1, 2, 3)' };
+    const { container } = render(<Space3DWalls elements={office} size={size} floor={floor} />);
+    const left = () =>
+      parseFloat(container.querySelector<HTMLElement>('[data-space-floor]')!.style.left);
+    const near = left();
     act(() => {
+      arrivalIntroPlaying.set(true);
       view.value = { zoom: 1, offset: { x: -40000, y: 0 } };
       for (const fn of view.subs) fn();
     });
-    const far = container.querySelectorAll('[data-space-wall]');
-    expect(far.length).toBe(near);
-    expect(
-      [...far].every(
-        (w) =>
-          Number((w as HTMLElement).style.transform.match(/translate\(([-\d.]+)px/)![1]) > 30000,
-      ),
-    ).toBe(true);
+    expect(left()).toBe(near);
+    act(() => arrivalIntroPlaying.set(false));
+    expect(left()).toBeGreaterThan(30000);
     view.value = { zoom: 1, offset: { x: 0, y: 0 } };
   });
 });
 
 describe('the overlay (docs/specs/008-canvas/3d-view.md "What it shows")', () => {
   function Bubble() {
-    return <span data-testid="bubble">{useInSpace3D() ? '3d' : 'flat'}</span>;
+    return <span data-testid="bubble">{useInSpace3D() ? '3d' : 'none'}</span>;
   }
 
-  it('draws a bubble in place while flat, and in the overlay over every wall while 3D', () => {
+  it('draws a bubble in place until the overlay mounts, then in the overlay over every wall', () => {
     const world = document.createElement('div');
     const overlay = document.createElement('div');
     document.body.append(world, overlay);
@@ -273,7 +175,7 @@ describe('the overlay (docs/specs/008-canvas/3d-view.md "What it shows")', () =>
     );
     const { rerender } = render(at(false, null), { container: world });
     expect(world.contains(screen.getByTestId('bubble'))).toBe(true);
-    expect(screen.getByTestId('bubble').textContent).toBe('flat');
+    expect(screen.getByTestId('bubble').textContent).toBe('none');
     rerender(at(true, overlay));
     expect(overlay.contains(screen.getByTestId('bubble'))).toBe(true);
     expect(world.contains(screen.getByTestId('bubble'))).toBe(false);
@@ -284,7 +186,7 @@ describe('the overlay (docs/specs/008-canvas/3d-view.md "What it shows")', () =>
     const onNode = vi.fn();
     view.value = { zoom: 1.5, offset: { x: 10, y: -20 } };
     const { container } = render(
-      <Space3DOverlayStage style={space3DStageStyle('tilted')} zoom={1.5} onNode={onNode} />,
+      <Space3DOverlayStage style={space3DStageStyle()} zoom={1.5} onNode={onNode} />,
     );
     const stage = container.querySelector<HTMLElement>('[data-space-overlay]')!;
     expect(stage.hasAttribute('data-space-stage')).toBe(true);
@@ -336,8 +238,10 @@ describe('the overlay (docs/specs/008-canvas/3d-view.md "What it shows")', () =>
 });
 
 describe('standing pieces (docs/specs/008-canvas/3d-view.md "Pieces stand up")', () => {
-  const office = buildTemplate('virtual-office', 0, 0);
-  const far = buildTemplate('virtual-office', 40000, 0);
+  // Two Office Pods in view: the only pieces whose boxes still stand anything up (the rest are the scene's models).
+  const pods = [createShape('office-pod', 200, 200), createShape('office-pod', 600, 200)];
+  const office = [...buildTemplate('virtual-office', 0, 0), ...pods];
+  const far = [...buildTemplate('virtual-office', 40000, 0), createShape('office-pod', 40200, 200)];
   const size = { width: 1400, height: 900 };
   // The world layer: each element's box as the element plane draws it, beside the walls layer.
   const World = ({
@@ -353,22 +257,16 @@ describe('standing pieces (docs/specs/008-canvas/3d-view.md "Pieces stand up")',
       {boxes.map((el) => (
         <div key={el.id} data-element-id={el.id} data-space-stands={standAttr(el)} />
       ))}
-      {walls ? (
-        <Space3DWalls
-          elements={elements}
-          poseStore={createStateStore<AvatarPose>(NO_POSE)}
-          size={size}
-        />
-      ) : null}
+      {walls ? <Space3DWalls elements={elements} size={size} /> : null}
     </div>
   );
 
-  it('stands the pieces near the view, not the far ones or what lies flat, and lays them down when it flattens', () => {
+  it('stands the Office Pods near the view, not the far ones nor any modelled piece, and lays them down when it goes', () => {
     const board = [...office, ...far];
     const { container, rerender } = render(<World elements={board} walls />);
     const near = [...container.querySelectorAll<HTMLElement>('[data-space-near]')];
-    expect(near.length).toBeGreaterThan(5);
     const nearIds = new Set(near.map((n) => n.dataset.elementId));
+    expect(nearIds).toEqual(new Set(pods.map((p) => p.id)));
     expect(far.some((el) => nearIds.has(el.id))).toBe(false);
     for (const n of near) expect(n.hasAttribute('data-space-stands')).toBe(true);
     rerender(<World elements={board} walls={false} />);
@@ -397,70 +295,5 @@ describe('standing pieces (docs/specs/008-canvas/3d-view.md "Pieces stand up")',
     expect(read[0]!.rect).toEqual({ left: 10, top: 20, width: 30, height: 40 });
     expect(read[0]!.rotated).toBe(false);
     expect(standingPiecesOnScreen(document.createElement('div'), office)).toEqual([]);
-  });
-});
-
-describe('useSpace3DZoom (docs/specs/008-canvas/3d-view.md "It brings the camera closer")', () => {
-  beforeEach(() => {
-    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
-  });
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-  // The zoom eases over the tilt's length; this runs it to the end.
-  const settle = () => {
-    act(() => {
-      vi.advanceTimersByTime(SPACE_3D_TILT_MS + 50);
-    });
-  };
-  const harness = (walking: boolean) =>
-    renderHook(
-      ({ walking: w }) => {
-        const [zoom, setZoom] = useState(1);
-        useSpace3DZoom(w, zoom, setZoom);
-        return { zoom, setZoom };
-      },
-      { initialProps: { walking } },
-    );
-
-  it('zooms in when the switch turns it on while walking, and back to the same zoom when it turns off', () => {
-    const { result } = harness(true);
-    act(() => space3DPreference.set(true));
-    // Eased, on the tilt's curve: part of the way there mid-tilt, all the way at its end.
-    act(() => {
-      vi.advanceTimersByTime(SPACE_3D_TILT_MS / 4);
-    });
-    expect(result.current.zoom).toBeGreaterThan(1);
-    expect(result.current.zoom).toBeLessThan(1.4);
-    settle();
-    expect(result.current.zoom).toBeCloseTo(1.4);
-    act(() => space3DPreference.set(false));
-    settle();
-    expect(result.current.zoom).toBe(1);
-  });
-
-  it('eases on the same curve as the tilt', () => {
-    expect(space3DEase(0)).toBe(0);
-    expect(space3DEase(1)).toBe(1);
-    // cubic-bezier(0.22, 1, 0.36, 1) is well past half way a quarter of the way in.
-    expect(space3DEase(0.25)).toBeGreaterThan(0.6);
-    expect(space3DEase(0.5)).toBeGreaterThan(space3DEase(0.25));
-  });
-
-  it('zooms back out by the step when you zoomed while in 3D', () => {
-    const { result } = harness(true);
-    act(() => space3DPreference.set(true));
-    settle();
-    act(() => result.current.setZoom(2.8));
-    act(() => space3DPreference.set(false));
-    settle();
-    expect(result.current.zoom).toBeCloseTo(2);
-  });
-
-  it('leaves the zoom alone when the switch turns while not walking', () => {
-    const { result } = harness(false);
-    act(() => space3DPreference.set(true));
-    act(() => space3DPreference.set(false));
-    expect(result.current.zoom).toBe(1);
   });
 });

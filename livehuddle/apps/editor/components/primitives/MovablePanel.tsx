@@ -9,8 +9,6 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 import type { MovablePanelProps } from './MovablePanel.types';
 import { usePopoverTopClearance } from '@liveworkspace/workbench/components/primitives/usePopoverTopClearance';
 
-export type { MovablePanelDockProps } from './MovablePanel.types';
-
 export const MovablePanel: (props: MovablePanelProps) => React.JSX.Element | null =
   createMovablePanel<HelpArticleKey>({
     HelpArticleLink,

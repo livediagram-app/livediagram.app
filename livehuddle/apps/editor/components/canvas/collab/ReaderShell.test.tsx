@@ -63,7 +63,7 @@ describe('the reader (docs/specs/008-canvas/avatar-mode.md "The reader")', () =>
   it('Escape closes it', () => {
     const onClose = vi.fn();
     render(
-      <ReaderShell title="World Clock" onClose={onClose}>
+      <ReaderShell title="Notice Board" onClose={onClose}>
         <p>Times</p>
       </ReaderShell>,
     );

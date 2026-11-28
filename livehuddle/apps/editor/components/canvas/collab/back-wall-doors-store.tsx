@@ -40,8 +40,7 @@ export function BackWallDoorsProvider({
 function sameDoors(a: readonly BackWallDoor[], b: readonly BackWallDoor[]): boolean {
   return (
     a === b ||
-    (a.length === b.length &&
-      a.every((d, i) => d.from === b[i]!.from && d.to === b[i]!.to && d.closed === b[i]!.closed))
+    (a.length === b.length && a.every((d, i) => d.from === b[i]!.from && d.to === b[i]!.to))
   );
 }
 

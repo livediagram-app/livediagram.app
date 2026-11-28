@@ -1,6 +1,6 @@
 # Furniture art style
 
-Status: **approved** (owner, 2026-11-17). Every piece of a Space, in the flat plan, in the 3D view and in an export,
+Status: **approved** (owner, 2026-11-17). Every piece of a Space, in the palette, on the 3D view's floor and in an export,
 is drawn in **one shaded illustration style**: real materials lit from above, soft contact shadows, and each edge in a
 deeper shade of its own material. The characters are out of scope here; they get their own redesign.
 
@@ -9,7 +9,7 @@ deeper shade of its own material. The characters are out of scope here; they get
 Pieces were drawn as flat colour inside one dark outline, and the seating was a translucent wash of the theme's
 stroke. Chairs and sofas read as grey placeholders beside a colourful jukebox or fireplace, the floor showed through
 appliances, and nothing looked like the thing it is. The owner asked for one cohesive, more realistic style, the same
-in 2D and 3D, with nothing taken away: every piece keeps its drawings, facings, seats, live faces and walk-up moments.
+in every drawing and model, with nothing taken away: every piece keeps its drawings, facings, seats, live faces and walk-up moments.
 
 ## Light
 
@@ -30,7 +30,7 @@ What a piece is made of keeps its colour whatever the theme; the theme still col
 - **Frames are wood and steel.** A Chair has a wooden frame and legs; a Desk a wooden top on steel legs; a Sofa
   wooden feet and a throw pillow; a Meeting Table a wooden top, notebooks at each place and a jug of water.
 - **Machines are appliance white, shelves are wood.** A piece with no fill of its own takes its kind's material:
-  wood for a Bookshelf, Drinks Cabinet, World Clock and Notice Board, stone for a Pillar and Column, concrete for an
+  wood for a Bookshelf, Drinks Cabinet, Clock and Notice Board, stone for a Pillar and Column, concrete for an
   Outdoor Plant's planter, and a solid appliance white for everything else, so the floor never shows through.
 - **Colours are natural.** The fixed palettes are tuned from bright primaries toward natural tones: leaf greens,
   terracotta, oak and walnut. Each piece keeps its hue.

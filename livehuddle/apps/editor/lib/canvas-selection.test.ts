@@ -24,7 +24,6 @@ const arrow = (id: string, from = { x: 0, y: 0 }, to = { x: 50, y: 50 }): Elemen
 // editable. Individual tests override what they exercise.
 const base = {
   editingId: null,
-  isPaintMode: false,
   tabLocked: false,
   readOnly: false,
 };
@@ -84,12 +83,6 @@ describe('deriveCanvasSelection', () => {
     const s = derive({ elements: [box('a')], selectedId: 'a', readOnly: true });
     expect(s.showPopover).toBe(true); // popover does NOT gate on readOnly
     expect(s.showHandlesFor('a')).toBe(false);
-  });
-
-  it('format-paint mode suppresses single-select chrome', () => {
-    const paint = derive({ elements: [box('a')], selectedId: 'a', isPaintMode: true });
-    expect(paint.showPopover).toBe(false);
-    expect(paint.showHandlesFor('a')).toBe(false);
   });
 
   it('a marquee multi-selection uses union resize and hides the single popover', () => {
@@ -284,7 +277,6 @@ describe('elementGrips', () => {
   const contexts = [
     base,
     { ...base, editingId: 'a' },
-    { ...base, isPaintMode: true },
     { ...base, readOnly: true },
   ];
 

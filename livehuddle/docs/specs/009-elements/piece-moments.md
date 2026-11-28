@@ -24,8 +24,8 @@ Every piece you place is one of three:
 
 - **Interactive**: it already does something when you click it or walk up to it (you sit, get a drink, travel, ring,
   play, read). It plays no moment: its own answer is the feedback. **Six are the exception** (Work Tracker 626):
-  the Hammock, the Notice Board, the World Clock, the Calendar Wall, the Suggestion Box and the Window answer a press
-  (or, for the Window, nothing at all) but did nothing when you walked up, so each now plays a **walk-up answer**, a
+  the Hammock, the Notice Board, the Clock, the Calendar Wall, the Suggestion Box and the Window answer a press
+  (or, for the Clock and the Window, nothing at all) but did nothing when you walked up, so each now plays a **walk-up answer**, a
   moment like a still piece's, under the same rules.
 - **Structural**: it is the building or the ground (a room, a wall, a floor, a rug). It plays no moment.
 - **Static**: everything else, which just sits there. **Every static piece has a moment of its own.**
@@ -43,7 +43,7 @@ Every piece you place is one of three:
 | Door                                                                                                                                                                                     | Interactive | It swings when you go through                                                                                             |
 | Portal, Avatar Pad, Elevator, Stairs, Directory, Signpost                                                                                                                                | Interactive | You travel, or a press takes you                                                                                          |
 | Notice Board                                                                                                                                                                             | Interactive | A press opens it. **Walk-up: a pin wobbles**: the top note on your side swings on its pin; on a bare board a pin wobbles  |
-| World Clock                                                                                                                                                                              | Interactive | A press opens it. **Walk-up: ticking on**: each minute hand ticks once round its dial, dial by dial from your side        |
+| Clock                                                                                                                                                                                    | Interactive | Scenery. **Walk-up: ticking on**: its minute hand ticks once round its face                                               |
 | Calendar Wall                                                                                                                                                                            | Interactive | A press opens it. **Walk-up: the page lifts**: the bottom corner away from you curls up and falls back                    |
 | Suggestion Box                                                                                                                                                                           | Interactive | A press opens it. **Walk-up: a note peeks**: the note in the slot rises and sinks back, and the lightbulb glows           |
 | Screen, Room Sign, Timer, Stopwatch, Mode Button, Focus Button, Link Card, Video                                                                                                         | Interactive | A press uses it, or its face is live                                                                                      |
@@ -68,6 +68,8 @@ Every piece you place is one of three:
 | Lockers                                                                                                                                                                                  | Static      | **A note**: the bank rattles and a folded note slips out of the vent of the locker nearest you and flutters down          |
 | Coat Rack                                                                                                                                                                                | Static      | **Swinging**: the coats and the scarf swing from their hooks away from you, and the hat hops                              |
 | Umbrella Stand                                                                                                                                                                           | Static      | **Rattled**: the three umbrellas jiggle in turn in the stand, and a raindrop drips from it onto the floor                 |
+| Floor Lamp                                                                                                                                                                               | Static      | **Flicker**: the shade and its pool of light flicker off and on twice, and the lamp rocks away from you                   |
+| Table Lamp, Desk Lamp                                                                                                                                                                    | Static      | **Flicker**: the shade (the head) and its pool of light flicker off and on twice                                          |
 | Kitchen Counter                                                                                                                                                                          | Static      | **Ajar**: the cupboard door nearest you swings open a little and shuts with a bounce                                      |
 | Kitchen Sink                                                                                                                                                                             | Static      | **A drip**: the tap drips three drops into the sink, each with a ring, and the tea towel sways                            |
 | Fridge                                                                                                                                                                                   | Static      | **A cold puff**: a puff of cold air spills from the door seal, and the notes on the door flutter                          |
@@ -96,7 +98,7 @@ first clock to tick are on your side, and the calendar's page lifts at its far c
 **Turned pieces.** A moment's art sits on the front drawing (a fire's flames, a book on its shelf). A piece turned to
 show its back or its side ([furniture-facing.md](furniture-facing.md)) plays a **nudge** instead: the whole drawing
 gives a small bump and settles, as if you had brushed it, so it still answers. A Tree, an Outdoor Plant and a Plant
-look the same from every side and play their own moment at every facing, and so do the Notice Board, the World Clock
+look the same from every side and play their own moment at every facing, and so do the Notice Board, the Clock
 and the Calendar Wall, whose live faces show at every facing and play their walk-up answer there.
 
 ## When one plays
@@ -104,8 +106,8 @@ and the Calendar Wall, whose live faces show at every facing and play their walk
 - **Walking right next to the piece**: your character's feet come within **24 px** of the piece's base (the strip
   from part way down its drawing to just below it; all round a pond, a campfire or a swimming pool, which you walk
   round). A piece on a wall (a Dartboard, a Hand Dryer, a Team Photo Wall, Stage Curtains) reaches **56 px** below
-  it, to the floor in front of the wall, and one standing on a counter (a Microwave, a Kettle) **96 px**, to the floor
-  in front of the counter. The Notice Board, the World Clock and the Calendar Wall hang on a wall and reach **56 px**
+  it, to the floor in front of the wall, and one standing on a counter or a desk (a Microwave, a Kettle, a Table Lamp, a Desk Lamp) **96 px**, to the
+  floor in front of the counter or desk. The Notice Board, the Clock and the Calendar Wall hang on a wall and reach **56 px**
   below, like the Dartboard. A Window reaches **56 px** into the room on its light's side, from the wall along its
   whole width and **24 px** past each end, whichever wall it is turned onto. The moment is decided on the step you
   arrive, never while you stand there.
@@ -123,8 +125,8 @@ A click on a moment piece **you already stand beside replays its moment** where 
 
 - **Which pieces**: the moment pieces whose click walks you to them: every static piece but the Podium, and the
   Window. Seats keep walking you to the seat, every time: the Hammock, and the Podium, whose click stands you at its
-  speaker spot. The Notice Board, the World Clock, the Calendar Wall and the Suggestion Box keep their own press,
-  which opens them.
+  speaker spot. The Notice Board, the Calendar Wall and the Suggestion Box keep their own press, which opens them. The
+  Clock has none: a press beside it replays its walk-up answer.
 - **Beside**: your feet within **48 px** of the piece's box, the reach a [Door](room-builder.md) swings at
   (`DOOR_REACH`), or anywhere walking up to it plays its moment (its reach above, so a Kettle on a counter answers from
   the floor in front of the counter and a Dartboard from the floor in front of its wall).

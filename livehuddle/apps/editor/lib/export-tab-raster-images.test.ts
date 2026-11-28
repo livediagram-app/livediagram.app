@@ -95,9 +95,6 @@ describe('renderTabToCanvas images drawn through their SVG', () => {
     expect(end.x).toBeLessThanOrEqual(vx! + vw!);
     expect(end.y).toBeGreaterThanOrEqual(vy!);
     expect(end.y).toBeLessThanOrEqual(vy! + vh!);
-    // A shut door draws no swing in either.
-    const shut = tab({ ...door, doorClosed: true } as unknown as ImageElement);
-    expect(renderTabToSvg(shut, { fontCss: '' })).not.toContain('stroke-dasharray="4 4"');
   });
 
   it('leaves an image without bytes to its placeholder', async () => {

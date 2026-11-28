@@ -34,7 +34,8 @@ function backdropRank(el: Element): number {
   if (el.type !== 'shape') return 2;
   if (el.shape === 'grass') return 0;
   if (el.shape === 'window') return 3;
-  return el.shape === 'garden-path' ? 1 : 2;
+  // A Road lies with the paths (docs/specs/009-elements/road.md): over the lawn, under everything else.
+  return el.shape === 'garden-path' || el.shape === 'road' ? 1 : 2;
 }
 
 // A stable sort by tier. Returns the SAME array when it is already in tier

@@ -4,7 +4,7 @@
 // colours (packages/document office*.ts), round things built smooth (cylinders, turned shapes, leafy balls).
 import { shade, type Rgb } from '../mesh-builder';
 import type { Builder } from './kit';
-import { KIND_HEIGHT, METAL_DARK, mix, WOOD_DARK, type ModelTable } from './kit';
+import { KIND_HEIGHT, METAL_DARK, mix, RISE, WOOD_DARK, type ModelTable } from './kit';
 
 // The drawings' named colours.
 const LEAF_DARK = 0x2f6e38;
@@ -13,8 +13,6 @@ const LEAF_LIGHT = 0x63ad5c;
 const TERRACOTTA = 0xc96a3f;
 const TERRACOTTA_DARK = 0xa3522e;
 const SOIL = 0x5b3a1f;
-const BARK = 0x8a5a32;
-const BARK_DARK = 0x5f3d22;
 const OAK = 0xc2894b;
 const OAK_DARK = 0x86431a;
 const LOG = 0x8e5f1a;
@@ -33,12 +31,17 @@ const FLAME_CORE = 0xdcba33;
 const CURTAIN = 0xb02525;
 const CURTAIN_DARK = 0x7f1d1d;
 const CURTAIN_GOLD = 0xcea424;
+const CLOCK_RIM = 0x4a2c17;
+const CLOCK_CREAM = 0xf7efdc;
+
+/** Where the Clock's middle hangs on its wall, as built (risen by RISE): above a character's head. */
+export const CLOCK_Z = 82;
 
 /** A cell's paint, by where its middle sits in the grid: u across, v along, each -1..1. */
 type Paint = (u: number, v: number) => Rgb | null;
 
 /** A repeatable 0..1 from a point, for the ragged edge of a canopy. */
-function hash(u: number, v: number, seed: number): number {
+export function hash(u: number, v: number, seed: number): number {
   const s = Math.sin(u * 127.1 + v * 311.7 + seed * 74.7) * 43758.5453;
   return s - Math.floor(s);
 }
@@ -155,7 +158,7 @@ function disc(
  * A tier of foliage: a clump of leafy balls round an oval, `z0..z1` high, the upper balls a lighter leaf where the
  * sun catches them. Placed by `seed`, so each tree is the same for everyone.
  */
-function foliage(
+export function foliage(
   m: Builder,
   cx: number,
   cy: number,
@@ -269,40 +272,6 @@ export const OUTDOOR_MODELS: ModelTable = {
     for (const [x, y, z, c] of flowers) m.c(x, y, 3, 3, z, z + 3, c, { bare: true });
   },
 
-  tree: (m, { f }) => {
-    // A trunk on its roots, and a big leafy crown (dark underneath, lit leaf on top) you can walk under.
-    const { y0, y1 } = f.foot;
-    const cy = (y0 + y1) / 2;
-    // A trunk flaring into its roots, tapering up into the crown.
-    m.lathe(
-      0,
-      cy,
-      [
-        { r: 11, z: 0 },
-        { r: 7.5, z: 3 },
-        { r: 5.6, z: 12 },
-        { r: 4.6, z: 50 },
-        { r: 3.6, z: 74 },
-      ],
-      BARK,
-      { segments: 14, colours: [BARK_DARK, BARK, BARK, BARK] },
-    );
-    for (const x of [-2.5, 2]) {
-      onFace(m, cy + 5, x, 8, x + 1.2, 58, BARK_DARK);
-      onFace(m, cy - 5.8, x, 8, x + 1.2, 58, BARK_DARK);
-    }
-    // Two boughs into the canopy.
-    m.tube([0, cy, 52], [-14, cy, 68], 2.4, BARK, { r1: 1.4 });
-    m.tube([0, cy, 48], [14, cy - 2, 64], 2.4, BARK, { r1: 1.4 });
-    m.sphere(0, cy, 72, 32, 27, 8, LEAF_DARK, { segments: 20, rings: 8 });
-    foliage(m, 0, cy, 52, 44, 70, 94, LEAF_DARK, LEAF, 3);
-    foliage(m, 0, cy, 46, 39, 94, 116, LEAF, LEAF_LIGHT, 4);
-    foliage(m, 0, cy, 34, 29, 116, 134, LEAF, LEAF_LIGHT, 5);
-    // The two lobes on top, as in the drawing.
-    m.sphere(-12, cy, 138, 16, 15, 12, LEAF_LIGHT, { segments: 16, rings: 8 });
-    m.sphere(13, cy - 2, 136, 14, 13, 10, LEAF_LIGHT, { segments: 16, rings: 8 });
-  },
-
   'notice-board': (m, { f }) => {
     // A cork board in a wooden frame with a brass plate on top, a few pinned notes.
     const y = wallY(f.D);
@@ -323,37 +292,61 @@ export const OUTDOOR_MODELS: ModelTable = {
     }
   },
 
-  'world-clock': (m, { f }) => {
-    // A long wooden plaque with a dark inset panel, hung from a brass nail on a wire, three clock faces across it.
+  'world-clock': (m, { f, clock }) => {
+    // The Clock (social-pieces.md "Clock"): a classic round wall clock hung flat on its wall (scene-pieces.ts
+    // hungFrame), a dark wooden rim round a cream face, twelve marks, the hour and minute hands at the viewer's own
+    // time and a brass pin, hung from a nail. Round as seen: its height in z is built under RISE. Its size is the box's
+    // smaller side less a margin, kept between 16 and 48 px, so a box saved at the old World Clock's 168 x 72 still
+    // shows one round clock.
     const y = wallY(f.D);
-    const hw = f.W / 2 - 4;
-    const z0 = 56;
-    const z1 = z0 + KIND_HEIGHT['world-clock']!;
-    const zc = (z0 + z1) / 2;
-    const yb = y + BOARD;
-    m.b(-hw, y, z0, hw, yb, z1, OAK);
-    m.b(-hw + 5, yb, z0 + 5, hw - 5, yb + 0.6, z1 - 4, OAK_DARK, { bare: true });
-    for (const x of [-hw * 0.6, 0, hw * 0.6]) {
-      pixels(m, {
-        cx: x,
-        cy: zc,
-        rx: 11,
-        ry: 11,
-        cell: 3,
-        w0: yb + 0.6,
-        w1: yb + 1.6,
-        wall: true,
-        paint: oval(0xf5e6c8),
-      });
-      onFace(m, yb + 1.6, x - 0.6, zc, x + 0.6, zc + 8, INK, 0.5);
-      onFace(m, yb + 1.6, x, zc - 0.6, x + 6, zc + 0.6, INK, 0.5);
+    const r = Math.max(8, Math.min(24, (Math.min(f.W, f.D) - 8) / 2));
+    const k = 1 / RISE;
+    const zc = CLOCK_Z;
+    const rimDepth = 3;
+    const face = y + rimDepth + 0.4;
+    const n: [number, number, number] = [0, 1, 0];
+    const disc = (rx: number, w0: number, w1: number, c: Rgb) =>
+      pixels(m, { cx: 0, cy: zc, rx, ry: rx * k, cell: 3, w0, w1, wall: true, paint: oval(c) });
+    disc(r, y, y + rimDepth, CLOCK_RIM);
+    disc(r * 0.9, y + rimDepth, y + rimDepth + 0.2, OAK_DARK);
+    disc(r * 0.84, y + rimDepth + 0.2, face, CLOCK_CREAM);
+    // The twelve marks: the twelve, three, six and nine longer, all on the face's ring, round as seen.
+    const ring = r * 0.72;
+    for (let h = 0; h < 12; h++) {
+      const a = (h / 12) * Math.PI * 2;
+      const x = Math.sin(a) * ring;
+      const z = zc + Math.cos(a) * ring * k;
+      const big = h % 3 === 0;
+      const along = (big ? r * 0.16 : r * 0.07) / 2;
+      const across = (big ? r * 0.06 : r * 0.05) / 2;
+      // A quarter mark lies along its radius: tall at twelve and six, wide at three and nine.
+      const [hx, hz] =
+        h % 6 === 0 ? [across, along] : h % 3 === 0 ? [along, across] : [across, across];
+      onFace(m, face, x - hx, z - hz * k, x + hx, z + hz * k, INK, 0.3);
     }
-    // The wire up to the nail.
-    for (let k = 0; k < 3; k++) {
-      onFace(m, y + 0.5, -12 + k * 4, z1 + k * 2, -8 + k * 4, z1 + k * 2 + 2, 0x475569, 1);
-      onFace(m, y + 0.5, 8 - k * 4, z1 + k * 2, 12 - k * 4, z1 + k * 2 + 2, 0x475569, 1);
+    // A hand from the middle, `len` long and `w` wide (as seen), turned `a` clockwise from twelve.
+    const hand = (a: number, len: number, w: number, lift: number) => {
+      const dx = Math.sin(a);
+      const dz = Math.cos(a) * k;
+      const px = (Math.cos(a) * w) / 2;
+      const pz = ((-Math.sin(a) * w) / 2) * k;
+      const yy = face + lift;
+      const tail = r * 0.12;
+      const bl: [number, number, number] = [-px - dx * tail, yy, zc - pz - dz * tail];
+      const br: [number, number, number] = [px - dx * tail, yy, zc + pz - dz * tail];
+      const tr: [number, number, number] = [px + dx * len, yy, zc + pz + dz * len];
+      const tl: [number, number, number] = [-px + dx * len, yy, zc - pz + dz * len];
+      m.tri(bl, br, tr, n, n, n, shade(INK, 1));
+      m.tri(bl, tr, tl, n, n, n, shade(INK, 1));
+    };
+    if (clock) {
+      hand((((clock.hour % 12) + clock.minute / 60) / 12) * Math.PI * 2, r * 0.46, r * 0.11, 0.3);
+      hand((clock.minute / 60) * Math.PI * 2, r * 0.7, r * 0.07, 0.5);
     }
-    m.b(-2, y, z1 + 6, 2, y + 2, z1 + 9, GOLD, { bare: true });
+    const pin = r * 0.06;
+    onFace(m, face + 0.6, -pin, zc - pin * k, pin, zc + pin * k, GOLD, 0.4);
+    // Its nail, just over the rim.
+    m.b(-1.2, y, zc + r * k + 0.5, 1.2, y + 1.5, zc + r * k + 2.5, GOLD, { bare: true });
   },
 
   dartboard: (m, { f }) => {

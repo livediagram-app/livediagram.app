@@ -1,16 +1,15 @@
 // The Doors standing on a rectangular Room's back wall (docs/specs/009-elements/room-builder.md "On a back wall"):
 // that wall is drawn as a tall band, its top and the face standing up from the floor, so a Door's own gap (a wall's
 // thickness either side of the wall's centre line) left most of it standing across the doorway and an open door did
-// not look open (Work Tracker 1042). The room breaks its band where an open one stands and draws a shut one in its face;
-// the Door then draws only what moves. Both renderers read this: the canvas (RoomView, DoorView) and the export
+// not look open (Work Tracker 1042). The room breaks its band where one stands; the Door then draws only what moves. Both renderers read this: the canvas (RoomView, DoorView) and the export
 // (svg-render.ts). Pure: no React, no DOM.
 
 import { ROOM_BACK_FACE, ROOM_WALL } from '@livehuddle/avatar/office-geometry';
 import { doorLine, doorSpanOnWall } from '@livehuddle/avatar/room-outline';
 import type { Element, ShapeElement } from './index';
 
-/** One Door on a back wall: its span along the wall in the room's own px (0..width, left to right), and whether shut. */
-export type BackWallDoor = { from: number; to: number; closed: boolean };
+/** One Door on a back wall: its span along the wall in the room's own px (0..width, left to right). */
+export type BackWallDoor = { from: number; to: number };
 
 /** Every rectangular room's back-wall Doors by room id, and the ids of the Doors standing on one. */
 export type BackWallDoors = {
@@ -68,7 +67,7 @@ export function backWallDoors(elements: readonly Element[]): BackWallDoors {
         if (Math.abs(cy - y) > 2 || cx < room.x || cx > room.x + room.width) continue;
         const span = doorSpanOnWall(wall, line);
         if (!span) continue;
-        spans.push({ from: span[0], to: span[1], closed: door.doorClosed === true });
+        spans.push({ from: span[0], to: span[1] });
         onBack.add(door.id);
       }
       if (spans.length > 0)
@@ -83,13 +82,13 @@ export function backWallDoors(elements: readonly Element[]): BackWallDoors {
   return out;
 }
 
-/** A room's runs of back wall between its open doorways (and an older room's own top doorway, `builtIn`), left to right. */
+/** A room's runs of back wall between its doorways (and an older room's own top doorway, `builtIn`), left to right. */
 export function backWallRuns(
   width: number,
   doors: readonly BackWallDoor[],
   builtIn: [number, number] | null = null,
 ): [number, number][] {
-  const gaps = doors.filter((d) => !d.closed).map((d): [number, number] => [d.from, d.to]);
+  const gaps = doors.map((d): [number, number] => [d.from, d.to]);
   if (builtIn) gaps.push(builtIn);
   gaps.sort((p, q) => p[0] - q[0]);
   const runs: [number, number][] = [];
@@ -100,28 +99,4 @@ export function backWallRuns(
   }
   if (from < width) runs.push([from, width]);
   return runs;
-}
-
-/** A Door's jamb, as its own drawing has it (room-builder.ts `doorParts`). */
-export function doorJamb(width: number): number {
-  return Math.min(6, width / 4);
-}
-
-/**
- * A shut Door drawn in a back wall's face, in the room's own px: its leaf standing in the doorway between its jambs,
- * from just under the wall's top to the floor, and the knob on its leading side.
- */
-export function backWallDoorLeaf(door: BackWallDoor): {
-  leaf: { x: number; y: number; w: number; h: number };
-  knob: { cx: number; cy: number; r: number };
-} {
-  const jamb = doorJamb(door.to - door.from);
-  const x = door.from + jamb;
-  const w = Math.max(0, door.to - door.from - 2 * jamb);
-  const y = ROOM_WALL + 2;
-  const h = ROOM_BACK_FACE - ROOM_WALL / 2 - y;
-  return {
-    leaf: { x, y, w, h },
-    knob: { cx: x + w - Math.min(8, w / 4), cy: y + h * 0.55, r: 2.25 },
-  };
 }

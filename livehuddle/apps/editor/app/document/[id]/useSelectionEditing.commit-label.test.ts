@@ -39,8 +39,6 @@ function setup(el: Element, editingId: string | null = null, documentName = 'My 
     useSelectionEditing({
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
       isReadOnly: false,
-      formatSourceId: null,
-      formatToolActive: false,
       documentName,
       tabs: [tab],
       activeTab: tab,
@@ -50,10 +48,8 @@ function setup(el: Element, editingId: string | null = null, documentName = 'My 
       },
       discardLastStep: vi.fn(),
       tickTabs,
-      applyFormatFromSource: vi.fn(),
       lockedByOther: () => false,
       set: {
-        setFormatSourceId: vi.fn(),
         setSelectedId,
         setEditingId,
         setEditCursorAtEnd: vi.fn(),

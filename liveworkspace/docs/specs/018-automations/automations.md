@@ -372,7 +372,7 @@ rule's author** ([blueprint](blueprints/cross-app.md)):
 - **Grouped in Add a Step**: the item's own steps, **In Other Apps** (marked New), AI, Send Out. The footer says
   "Every step acts as you, and only on items you can edit." A step's card in the builder shows its target app's icon
   and colour under the eyebrow "Then · <app>".
-- **livehuddle has no chat**: Post in a Space posts a note on a tab (the design's Notes). Chat comes with a Space's
+- **livehuddle has no chat**: Post in a Space pins a note on the tab's first Notice Board (a tab with none refuses the step). Chat comes with a Space's
   chat, which is not built.
 
 ### Who a step acts as

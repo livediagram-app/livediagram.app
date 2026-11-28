@@ -71,6 +71,42 @@ export class MeshBuilder {
   /** Each corner's normal (for the lights), alongside `positions` and `glassPositions`. */
   readonly normals: number[] = [];
   readonly glassNormals: number[] = [];
+  /** Screens that light while someone sits at them: [from, to) corner ranges of `positions`, two numbers each. */
+  readonly glows: number[] = [];
+
+  /**
+   * A Poster's picture place (docs/specs/009-elements/poster.md): four corners (bottom left, bottom right, top right,
+   * top left as you face it) of an upright rectangle facing +y, twelve numbers, drawn by the 3D layer as a textured
+   * quad of its own rather than into this geometry.
+   */
+  readonly pictures: number[] = [];
+
+  /** Marks an upright picture place from (x0, z0) to (x1, z1) at depth `y`, facing +y. */
+  picture(x0: number, y: number, z0: number, x1: number, z1: number): void {
+    this.pictures.push(x0, y, z0, x1, y, z0, x1, y, z1, x0, y, z1);
+  }
+
+  /** Builds a screen (whatever `draw` adds to `positions`), marked to light while someone sits at it. */
+  screen(draw: () => void): void {
+    const from = this.positions.length / 3;
+    draw();
+    this.glows.push(from, this.positions.length / 3);
+  }
+
+  /** Stretches everything built so far `k` times taller (z), its normals turned to match. */
+  rise(k: number): this {
+    for (const arr of [this.positions, this.glassPositions, this.lines, this.pictures])
+      for (let i = 2; i < arr.length; i += 3) arr[i]! *= k;
+    for (const arr of [this.normals, this.glassNormals])
+      for (let i = 0; i < arr.length; i += 3) {
+        const z = arr[i + 2]! / k;
+        const l = Math.hypot(arr[i]!, arr[i + 1]!, z) || 1;
+        arr[i]! /= l;
+        arr[i + 1]! /= l;
+        arr[i + 2] = z / l;
+      }
+    return this;
+  }
 
   /** A quad, corners in order round it; lit flat, facing the way its corners wind (counter-clockwise outside). */
   quad(a: Vec3, b: Vec3, c: Vec3, d: Vec3, rgb: [number, number, number], glass = false): void {

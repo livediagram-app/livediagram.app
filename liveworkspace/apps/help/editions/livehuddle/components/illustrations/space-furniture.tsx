@@ -1,7 +1,7 @@
 // What a livehuddle Space is built from, drawn from above the way the canvas draws it in Edit (the Virtual Office
 // template is the reference): rooms with a cream floor, pale walls and the room's name on its top wall, desks with a
 // monitor and an office chair, a meeting table ringed by chairs, sofas, rugs, plants in terracotta pots, bookshelves,
-// sticky notes and the Avatar Pad people arrive on. The pieces keep their own colours in dark mode too, as the
+// Notice Boards and the Avatar Pad people arrive on. The pieces keep their own colours in dark mode too, as the
 // canvas's furniture does (help-art-as-drawn). Every piece takes its top-left corner, or its centre where it is round.
 
 import { Label } from '@liveworkspace/help-site/art/primitives';
@@ -287,8 +287,8 @@ export function AvatarPad({ cx, cy, r = 14 }: { cx: number; cy: number; r?: numb
   );
 }
 
-export type StickyTone = 'amber' | 'emerald' | 'sky' | 'rose' | 'violet';
-const STICKY: Record<StickyTone, string> = {
+export type NoteTone = 'amber' | 'emerald' | 'sky' | 'rose' | 'violet';
+const NOTE: Record<NoteTone, string> = {
   amber: 'fill-amber-100',
   emerald: 'fill-emerald-100',
   sky: 'fill-sky-100',
@@ -296,45 +296,69 @@ const STICKY: Record<StickyTone, string> = {
   violet: 'fill-violet-100',
 };
 
-/** A sticky note: a square of coloured paper with a soft shadow and its words. */
-export function Sticky({
+/** A Notice Board on the wall: a framed cork board, its title, and the notes pinned on it (`lines` of them, in
+ *  `tone`), the way a Space keeps its words now it has no sticky notes. */
+export function NoticeBoard({
   x,
   y,
   w = 54,
   h = 46,
   tone = 'amber',
   label,
-  lines = 0,
+  lines = 2,
 }: {
   x: number;
   y: number;
   w?: number;
   h?: number;
-  tone?: StickyTone;
+  tone?: NoteTone;
   label?: string;
-  /** Grey lines of writing under the label. */
+  /** How many notes are pinned on it. */
   lines?: number;
 }) {
+  const top = label ? 18 : 6;
+  // A board too short for a note under its title shows the title alone.
+  const notes = h - top - 6 < 10 ? 0 : Math.max(1, Math.min(lines, 4));
+  const cols = Math.max(1, notes > 2 ? 2 : notes);
+  const rows = Math.ceil(notes / cols);
+  const gap = 4;
+  const nw = (w - 12 - gap * (cols - 1)) / cols;
+  const nh = Math.min(16, (h - top - 6 - gap * (rows - 1)) / rows);
   return (
     <g className={DRAWN}>
-      <rect x={x + 1} y={y + 2.5} width={w} height={h} className="fill-slate-900/10" />
-      <rect x={x} y={y} width={w} height={h} className={STICKY[tone]} />
+      <rect x={x + 1} y={y + 2.5} width={w} height={h} rx={2} className="fill-slate-900/10" />
+      <rect x={x} y={y} width={w} height={h} rx={2} className="fill-amber-800" />
+      <rect
+        x={x + 2.5}
+        y={y + 2.5}
+        width={w - 5}
+        height={h - 5}
+        rx={1}
+        className="fill-amber-300"
+      />
       {label && (
-        <Label x={x + 6} y={y + 12} size={9} weight={600} className="fill-slate-800">
+        <Label x={x + 7} y={y + 11} size={8.5} weight={600} className="fill-amber-950">
           {label}
         </Label>
       )}
-      {Array.from({ length: lines }, (_, i) => (
-        <rect
-          key={i}
-          x={x + 6}
-          y={y + 20 + i * 7}
-          width={(w - 12) * (i % 2 ? 0.6 : 0.85)}
-          height={2.5}
-          rx={1.25}
-          className="fill-slate-900/20"
-        />
-      ))}
+      {Array.from({ length: notes }, (_, i) => {
+        const nx = x + 6 + (i % cols) * (nw + gap);
+        const ny = y + top + Math.floor(i / cols) * (nh + gap);
+        return (
+          <g key={i}>
+            <rect x={nx} y={ny} width={nw} height={nh} className={NOTE[tone]} />
+            <rect
+              x={nx + 3}
+              y={ny + nh / 2}
+              width={nw * (i % 2 ? 0.45 : 0.65)}
+              height={2}
+              rx={1}
+              className="fill-slate-900/20"
+            />
+            <circle cx={nx + nw / 2} cy={ny + 1.5} r={1.6} className="fill-rose-500" />
+          </g>
+        );
+      })}
     </g>
   );
 }

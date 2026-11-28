@@ -22,7 +22,6 @@ function deps(overrides: Overrides = {}) {
     undo: vi.fn(),
   };
   const target: Record<string, unknown> = {
-    formatSourceId: null,
     pendingDraw: null,
     selectedId: 'a',
     multiSelectedIds: new Set<string>(),
@@ -111,16 +110,10 @@ describe('a canvas chord a role may not run', () => {
 // add keys at all.
 describe('add keys', () => {
   it("are not a read-only session's, a Participant's included", () => {
-    const addSticky = vi.fn();
-    const addText = vi.fn();
-    const { bag } = deps({ selectedId: null, isReadOnly: true, addSticky, addText });
+    const { bag } = deps({ selectedId: null, isReadOnly: true });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     expect(press('n').defaultPrevented).toBe(false);
-    press('t');
-    press('8');
-    press('Delete');
-    expect(addSticky).not.toHaveBeenCalled();
-    expect(addText).not.toHaveBeenCalled();
+    expect(press('t').defaultPrevented).toBe(false);
   });
 });
 

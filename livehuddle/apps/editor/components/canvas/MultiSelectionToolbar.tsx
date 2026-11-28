@@ -1,8 +1,6 @@
 import type { Element } from '@livehuddle/document';
-import { SendToPlanButton } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanButton';
 import { DuplicateIcon, EllipsisIcon, TrashIcon, HoverCard, Glyph } from '@livehuddle/ui';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
-import { TurnButtons } from '@livehuddle/avatar/components/TurnButtons';
 import { TOOLBAR_BTN } from '@liveworkspace/workbench/components/canvas/toolbar-buttons';
 
 type MultiSelectionToolbarProps = {
@@ -19,10 +17,6 @@ type MultiSelectionToolbarProps = {
   // Opens the selection-wide context menu (anchored under the ⋯ button).
   // Omitted for view-role, where there's no context menu.
   onOpenContextMenu?: (screenX: number, screenY: number) => void;
-  // A quarter turn of each piece of furniture in the selection, about its own centre
-  // (docs/specs/009-elements/furniture-facing.md "Several pieces at once"). Passed when the selection holds a piece
-  // that turns.
-  onTurn?: (quarters: 1 | -1) => void;
 };
 
 // The marquee multi-selection action buttons. Rendered bare (no shell) so the
@@ -35,7 +29,6 @@ export function MultiSelectionToolbar({
   onFilter,
   onExport,
   onOpenContextMenu,
-  onTurn,
 }: MultiSelectionToolbarProps) {
   // SelectionFilterMenu renders nothing for a single-kind selection, so its
   // trailing divider must share the SAME predicate — gating on `onFilter`
@@ -70,12 +63,6 @@ export function MultiSelectionToolbar({
           <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
         </>
       ) : null}
-      {onTurn ? (
-        <>
-          <TurnButtons onTurn={onTurn} plural size="compact" />
-          <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-        </>
-      ) : null}
       <HoverCard title="Duplicate" description="Duplicate the selection, arrows included.">
         <button
           type="button"
@@ -90,7 +77,6 @@ export function MultiSelectionToolbar({
           (export, then delete); the divider marks that boundary, same as
           the one after More above. */}
       <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-      <SendToPlanButton elements={selectedElements} className={TOOLBAR_BTN} />
       <HoverCard title="Export" description="Export just these elements.">
         <button
           type="button"

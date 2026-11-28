@@ -32,7 +32,8 @@ function open(target: Element) {
 }
 
 describe('an image’s element menu', () => {
-  it('offers Appearance, where its Shadow lives', () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Element looks, layers, opacity and rotation".
+  it('offers Size and no Arrange, Rotation or Appearance', () => {
     open({
       id: 'img',
       type: 'image',
@@ -42,8 +43,8 @@ describe('an image’s element menu', () => {
       height: 80,
       imageId: null,
     });
-    expect(
-      screen.queryAllByRole('button').some((b) => b.textContent?.trim() === 'Appearance'),
-    ).toBe(true);
+    const names = screen.queryAllByRole('button').map((b) => b.textContent?.trim());
+    expect(names).toContain('Size');
+    for (const gone of ['Arrange', 'Rotation', 'Appearance']) expect(names).not.toContain(gone);
   });
 });

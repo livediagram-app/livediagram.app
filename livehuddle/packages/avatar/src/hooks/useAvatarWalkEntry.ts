@@ -1,7 +1,7 @@
 // Entering and leaving Avatar mode (useAvatarWalk.ts, docs/specs/008-canvas/avatar-mode.md): where the character
 // appears, what leaving resets, and the route grid built ahead in idle time. Called by useAvatarWalk in its place.
 
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { mergePose, type AvatarPose } from '../pose';
 import type { DrinkKind } from '../office-geometry';
 import type { AvatarSceneElement } from '../scene';
@@ -21,6 +21,13 @@ import type { AvatarSnapshot, HeldDrink, PlayingReaction, WalkRects } from './av
 /** How long a travel's landing stays the entry's start (a tab switch re-entering the walk soon after). */
 const ARRIVAL_FRESH_MS = 4000;
 
+/**
+ * How long after landing on the pad the character waves hello (docs/specs/009-elements/avatar-pad.md "A wave on
+ * arrival"): once the 3D arrival's overview has held and its zoom is settling on the character (arrival-intro.ts,
+ * 500 ms hold and 1400 ms zoom), so the wave is seen close up.
+ */
+export const PAD_WAVE_DELAY_MS = 1600;
+
 export function useAvatarWalkEntry<E extends AvatarSceneElement>({
   active,
   setSeatedOn,
@@ -34,6 +41,7 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
   jumpVyRef,
   waveStartRef,
   reactionRef,
+  wakeRef,
   publishedLookRef,
   onPresence,
   seatedRef,
@@ -67,6 +75,8 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
   jumpVyRef: RefObject<number>;
   waveStartRef: RefObject<number | null>;
   reactionRef: RefObject<PlayingReaction | null>;
+  /** Wakes the walk loop, so a reaction started from here plays. */
+  wakeRef?: RefObject<() => void>;
   publishedLookRef: RefObject<string | null>;
   onPresence?: (snapshot: AvatarSnapshot | null) => void;
   seatedRef: RefObject<string | null>;
@@ -99,6 +109,25 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
   // vacates the chair, like disconnecting does. What render shows of that is
   // reset while rendering, keyed on `active`; the loop's refs and the
   // publish to peers are reset by the effect below.
+  // The hello wave waiting to play after landing on the pad, cancelled by leaving the mode.
+  const waveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelWave = () => {
+    if (waveTimerRef.current !== null) clearTimeout(waveTimerRef.current);
+    waveTimerRef.current = null;
+  };
+  // Waves hello once the view has come to it, unless it has already set off, sat down or started another move.
+  const waveOnLanding = (at: AvatarPoint) => {
+    cancelWave();
+    waveTimerRef.current = setTimeout(() => {
+      waveTimerRef.current = null;
+      const now = posRef.current;
+      if (!activeRef.current || reactionRef.current || seatedRef.current) return;
+      if (!now || now.x !== at.x || now.y !== at.y) return;
+      reactionRef.current = { kind: 'wave', startedAt: performance.now() };
+      wakeRef?.current();
+    }, PAD_WAVE_DELAY_MS);
+  };
+  useEffect(() => cancelWave, []);
   const [wasActive, setWasActive] = useState(active);
   if (active !== wasActive) {
     setWasActive(active);
@@ -110,6 +139,7 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
   }
   const enterOrLeave = useEffectEvent((isActive: boolean) => {
     if (!isActive) {
+      cancelWave();
       // Nothing drawn: the walk, hop, wave and reaction end with the mode, and the spot stays in the ref.
       poseStore.set((prev) =>
         mergePose(prev, { pos: null, walking: false, lift: 0, wave: null, pose: null }),
@@ -165,6 +195,7 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
       if (spawnAtRef) spawnAtRef.current = null;
       posRef.current = arrival.at;
       setPos(arrival.at);
+      waveOnLanding(arrival.at);
       return;
     }
     // An Avatar Pad on the tab (docs/specs/009-elements/avatar-pad.md "Starting on the pad") is the board's
@@ -184,6 +215,7 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
           ),
         );
       }
+      waveOnLanding(posRef.current!);
       avatarBindings.track('Canvas', 'Used', 'AvatarPadArrival');
       return;
     }

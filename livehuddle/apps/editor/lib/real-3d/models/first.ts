@@ -1,4 +1,5 @@
 // Real 3D's first models (docs/specs/008-canvas/3d-engine.md "Block models"), kept as the kit's worked examples.
+import { faceText } from '../text-mesh';
 import {
   chairAt,
   KIND_HEIGHT,
@@ -12,22 +13,120 @@ import {
 
 export const FIRST_MODELS: ModelTable = {
   screen: (m, { f }) => {
-    // The meeting Screen, hung on the wall at its back: a dark bezel, the panel, a small camera on top.
+    // The meeting Screen (screen-and-room-sign.md "Sizes"; 3d-engine.md "The Screen scales with its size"): a 16 by 9
+    // panel as wide as the Screen, its bezel and depth growing with it. Up to a wall's height it hangs on its wall on
+    // a slim bracket, its middle at eye height; a big one stands against its wall on a wide stand of splayed feet.
     const { x0, x1 } = f.foot;
-    const y = -f.D / 2;
-    m.b(x0, y, 40, x1, y + 4, 96, 0x1f2430, { top: 0x2b3040 });
-    m.b(x0 + 3, y + 4, 44, x1 - 3, y + 4.6, 92, 0x24324a, { bare: true });
-    m.b(x0 + 6, y + 4.7, 66, x0 + 16, y + 5, 68, 0x3a4a66, { bare: true });
-    m.b(-3, y + 2, 96, 3, y + 5, 99, 0x111111, { bare: true });
+    const W = x1 - x0;
+    const cx = (x0 + x1) / 2;
+    const back = -f.D / 2;
+    const p = screenPanel(W);
+    const { bezel, depth, z0, z1 } = p;
+    const frame = 0x1f2430;
+    const metal = 0x2b3040;
+    let y: number;
+    if (p.stand) {
+      // Two posts behind the panel up to its middle, each on a foot splayed out toward the room.
+      const foot = Math.max(16, W * 0.06);
+      for (const s of [-1, 1] as const) {
+        const px = cx + s * W * 0.3;
+        m.b(px - 1.8, back + 0.5, 0, px + 1.8, back + 4.1, z0 + (z1 - z0) * 0.5, metal);
+        m.b(px - 2.6, back + 0.5, 0, px + 2.6, back + foot, 2.4, metal, { top: 0x3a4152 });
+      }
+      y = back + 4.1;
+    } else {
+      // A slim bracket on the wall behind the panel's middle.
+      m.b(
+        cx - W * 0.14,
+        back,
+        (z0 + z1) / 2 - 6,
+        cx + W * 0.14,
+        back + 1.4,
+        (z0 + z1) / 2 + 6,
+        metal,
+        {
+          bare: true,
+        },
+      );
+      y = back + 1.4;
+    }
+    // The body and its bezel, then the dark glass set in it and a soft glint across its top corner.
+    m.b(x0, y, z0, x1, y + depth, z1, frame, { top: 0x2b3040 });
+    const face = y + depth;
+    m.b(x0 + bezel, face, z0 + bezel, x1 - bezel, face + 0.5, z1 - bezel, 0x24324a, { bare: true });
+    // The glass's place, just proud of it: an idle Screen's logo is drawn there (idle-screens.ts), never in this
+    // geometry, so the logo's turn never rebuilds the pieces.
+    m.picture(x0 + bezel, face + 0.55, z0 + bezel, x1 - bezel, z1 - bezel);
+    const gx = x0 + bezel + W * 0.05;
+    m.b(
+      gx,
+      face + 0.5,
+      z1 - bezel - (z1 - z0) * 0.22,
+      gx + W * 0.07,
+      face + 0.7,
+      z1 - bezel - (z1 - z0) * 0.19,
+      0x3a4a66,
+      {
+        bare: true,
+      },
+    );
+    // A camera bar on top, and the status light on its lower edge (screen-and-room-sign.md "Screen").
+    const cam = Math.max(4, Math.min(W * 0.06, 24));
+    m.b(
+      cx - cam,
+      y + depth * 0.3,
+      z1,
+      cx + cam,
+      y + depth + 0.6,
+      z1 + Math.max(1.6, bezel * 0.6),
+      0x111111,
+      {
+        bare: true,
+      },
+    );
+    const led = Math.max(0.8, bezel * 0.35);
+    m.b(
+      x1 - bezel - led * 4,
+      face,
+      z0 + bezel * 0.5 - led / 2,
+      x1 - bezel - led * 2,
+      face + 0.4,
+      z0 + bezel * 0.5 + led / 2,
+      0x22c55e,
+      {
+        bare: true,
+        sharp: true,
+      },
+    );
   },
 
-  'room-sign': (m, { f, t }) => {
-    // A Room Sign by the door: a small board at eye height with its lamp.
+  'room-sign': (m, { f, label }) => {
+    // A Room Sign by the door: a walnut-framed cream plaque at eye height, its room's name across it in dark ink,
+    // crisp at any zoom (text-mesh.ts), and its status lamp under the name (screen-and-room-sign.md "Room Sign").
     const { x0, x1 } = f.foot;
     const y = -f.D / 2;
-    m.b(x0, y, 52, x1, y + 3, 76, 0xf8f4e8, { top: 0xffffff });
-    m.b(x0 + 4, y + 3, 58, x1 - 4, y + 3.5, 62, mix(t.stroke, 0xffffff, 0.4), { bare: true });
-    m.b(x0 + 4, y + 3, 66, x0 + 9, y + 4, 71, 0x22c55e, { bare: true });
+    const walnut = 0x5b3a24;
+    m.b(x0, y, 50, x1, y + 2.5, 78, walnut, { top: 0x6e4a30 });
+    m.b(x0 + 2, y + 2.5, 52, x1 - 2, y + 3.3, 76, 0xf8f4e8, { bare: true });
+    m.b(x0 + 2, y + 3.3, 52, x0 + 4, y + 3.6, 76, 0x22c55e, { bare: true });
+    m.sphere(x0 + 9, y + 3.4, 57, 1.9, 1.3, 1.9, 0x22c55e, { segments: 14, rings: 7 });
+    for (const [sx, sz] of [
+      [x0 + 1.2, 51.2],
+      [x1 - 1.2, 51.2],
+      [x0 + 1.2, 76.8],
+      [x1 - 1.2, 76.8],
+    ] as const)
+      m.b(sx - 0.6, y + 2.5, sz - 0.6, sx + 0.6, y + 3, sz + 0.6, 0xc9a24a, { bare: true });
+    faceText(m, label ?? 'Room', {
+      at: [(x0 + x1) / 2 + 1, y + 3.45, 67],
+      right: [1, 0, 0],
+      up: [0, 0, 1],
+      normal: [0, 1, 0],
+      // Its capitals as big as the plaque allows (a wider sign, bigger letters), a long name shrunk to fit.
+      height: Math.min(11, (x1 - x0) * 0.1),
+      maxWidth: x1 - x0 - 14,
+      colour: 0x1f2430,
+    });
   },
 
   portal: (m, { f, t }) => {
@@ -128,7 +227,10 @@ export const FIRST_MODELS: ModelTable = {
     // The monitor on the far side, its screen toward the sitter.
     const cx = (x0 + x1) / 2;
     m.c(cx, y0 + 5, 6, 4, H, H + 8, METAL_DARK);
-    m.c(cx, y0 + 6, (x1 - x0) * 0.42, 3, H + 6, H + 26, 0x1e293b, { front: 0x60a5fa });
+    m.c(cx, y0 + 6, (x1 - x0) * 0.42, 3, H + 6, H + 26, 0x1e293b);
+    m.screen(() =>
+      m.c(cx, y0 + 7.8, (x1 - x0) * 0.42 - 3, 0.6, H + 7.5, H + 24.5, 0x24324a, { bare: true }),
+    );
     m.c(cx, y0 + (y1 - y0) * 0.6, (x1 - x0) * 0.32, 8, H, H + 1.5, 0x334155);
     for (const s of seats) chairAt(m, s.x, s.y + 4, 22, t);
   },
@@ -219,3 +321,34 @@ export const FIRST_MODELS: ModelTable = {
     m.c(midX + 6, midY, 4, 4, 29, 34, 0xf8fafc);
   },
 };
+
+/** The tallest a Screen hung on its wall stands, and where its middle hangs (eye height), as built. */
+const SCREEN_HUNG_MAX = 96;
+const SCREEN_EYE = 66;
+/** A Screen this wide or wider stands on its own stand; the tallest one stands at a cinema's 280. */
+export const SCREEN_STAND_FROM = 260;
+
+/**
+ * A Screen `width` wide's panel as built (3d-engine.md "The Screen scales with its size"): 16 by 9, its bezel and depth
+ * 2 to 8, hung at eye height up to SCREEN_HUNG_MAX tall; a wide one on a stand from just off the floor, as tall as 112
+ * (under the walls) up to 400 wide, growing to 280 by 700.
+ */
+export function screenPanel(width: number): {
+  stand: boolean;
+  bezel: number;
+  depth: number;
+  z0: number;
+  z1: number;
+} {
+  const bezel = Math.min(8, Math.max(2, width * 0.02));
+  const depth = Math.min(8, Math.max(3, width * 0.02));
+  const want = (width * 9) / 16;
+  if (width < SCREEN_STAND_FROM) {
+    const h = Math.min(want, SCREEN_HUNG_MAX);
+    const z0 = Math.max(14, SCREEN_EYE - h / 2);
+    return { stand: false, bezel, depth, z0, z1: z0 + h };
+  }
+  const cap = 112 + Math.min(1, Math.max(0, (width - 400) / 300)) * 168;
+  const z0 = 16;
+  return { stand: true, bezel, depth, z0, z1: z0 + Math.min(want, cap) };
+}

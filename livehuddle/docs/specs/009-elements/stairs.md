@@ -26,6 +26,10 @@ link.
   face away), the newel caps at the far foot, the sign over the landing. Turned to face left, the flight climbs to the
   right: its foot on the left, each step a rise higher than the last, the landing at the top on the right, the near
   side wall's face rising with it and its handrail along it; facing right, mirrored, it climbs to the left.
+- **In 3D it stands up** (the owner, 2026-11-27: "stairs aren't 3d"): a stone flight of eight steps rising away
+  from its front to a landing at its back, about two thirds of a wall high, between two side walls that step up with
+  it, a wooden handrail on each and a newel post at the foot, and the green up and down sign over the landing. It
+  turns with the piece. It still never blocks: you walk onto its foot to take it.
 - **It carries no name.** Its hover card and panel say where it leads. No settings `…`. Proportions locked.
 - **It never blocks**: walking onto it is how you take it.
 - Otherwise an ordinary element: move, resize, turn, copy, delete, export.

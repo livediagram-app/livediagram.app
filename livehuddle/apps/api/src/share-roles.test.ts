@@ -54,8 +54,7 @@ const BOARD = {
     shape('col', 'signpost', { label: 'Column' }),
     sticky('theirs'),
     sticky('mine', { addedBy: ADDER }),
-    shape('door', 'door', { doorClosed: true }),
-    shape('locked-door', 'door', { doorClosed: true, locked: true }),
+    shape('door', 'door'),
   ],
 } as unknown as Tab;
 const stored = (id: string) => BOARD.elements.find((e) => e.id === id)! as Record<string, unknown>;
@@ -291,19 +290,17 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     });
   });
 
-  // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): the one field a Participant
-  // writes on a door, one saved locked too (not-in-livehuddle.md "Element and Tab Locking").
-  describe('Swing a door', () => {
+  // A Door opens on its own (docs/specs/009-elements/room-builder.md "Opening on their own"): nothing of it is a
+  // Participant's to write.
+  describe('A door', () => {
     it('edit: relayed', () => {
-      expect(roomDoes(update('door', { doorClosed: false }), 'edit')).toBe('relayed');
+      expect(roomDoes(update('door', { x: 400 }), 'edit')).toBe('relayed');
     });
-    it('participate: any door written, one saved locked too, nothing else of it changed', () => {
-      expect(roomDoes(update('door', { doorClosed: false }), 'participate')).toBe('written');
-      expect(roomDoes(update('locked-door', { doorClosed: false }), 'participate')).toBe('written');
+    it('participate: nothing of it written', () => {
       expect(roomDoes(update('door', { x: 400 }), 'participate')).toBe('held');
     });
     it('view: dropped', () => {
-      expect(roomDoes(update('door', { doorClosed: false }), 'view')).toBe('dropped');
+      expect(roomDoes(update('door', { x: 400 }), 'view')).toBe('dropped');
     });
   });
 

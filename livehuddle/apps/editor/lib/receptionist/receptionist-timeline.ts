@@ -4,8 +4,11 @@
 // holds the detour and passes `now`.
 
 import { reactionDuration, type AvatarReactionKind } from '@livehuddle/avatar/reactions';
-import type { DrinkKind } from '@livehuddle/avatar/office-geometry';
 import type { AvatarFacing } from '@livehuddle/avatar/walk';
+import { findWalkPath } from '@livehuddle/avatar/pathing';
+import { segmentsIntersect } from '@livehuddle/avatar/collision';
+import { officeFootprint, type DrinkKind } from '@livehuddle/avatar/office-geometry';
+import type { SeatFacing } from '@livehuddle/avatar/facing';
 import {
   RECEPTIONIST_GREET_MS,
   RECEPTIONIST_LEG_MS,
@@ -74,7 +77,10 @@ export function receptionistDayPose(
   const resumes = resume !== null && receptionistLegAt(resume.from) === n && resume.from <= now;
   const from = resumes ? resume.at : receptionistStop(world, n - 1).at;
   const setOff = resumes ? resume.from : n * RECEPTIONIST_LEG_MS;
-  const route = receptionistRoute(world.grid, from, stop.at) ?? [stop.at];
+  // A stop he cannot reach from here (a detour left him walled off from it) has him as near as he can get, never
+  // walking through the walls.
+  const route =
+    receptionistRoute(world.grid, from, stop.at) ?? findWalkPath(world.grid, from, stop.at);
   const walk = alongRoute(from, route, now - setOff);
   const stepFrame = Math.floor(walk.travelled / STRIDE_PX) % 4;
   if (walk.walking)
@@ -95,7 +101,7 @@ export function receptionistDayPose(
         ? encore('wave', since)
         : null;
   const pose: ReceptionistPose = {
-    at: stop.at,
+    at: walk.at,
     facing: stop.face,
     walking: false,
     stepFrame: 0,
@@ -158,7 +164,8 @@ function detourTo(
   holdMs: number | null,
 ): ReceptionistDetour {
   const from = receptionistPose(world, now, current).at;
-  const route = receptionistRoute(world.grid, from, to) ?? [to];
+  // A spot he cannot reach (beside you in a piece's footprint, behind a wall) has him walk as near as he can get.
+  const route = receptionistRoute(world.grid, from, to) ?? findWalkPath(world.grid, from, to);
   const until = holdMs === null ? null : now + routeMs(from, route) + holdMs;
   return { kind, startAt: now, from, route, face, until };
 }
@@ -207,25 +214,85 @@ export function deskBehind<D extends DeskBox>(desks: readonly D[], at: Point): D
   );
 }
 
+/** How far in from the back edge's end each spot behind a desk is tried, as a share of that edge: a quarter in from
+ * its left first, clear of the Welcome bubble over its middle, then the other quarter, then its middle. */
+const BEHIND_ALONG = [0.25, 0.75, 0.5];
+/** How far behind the desk's back edge he stands, tried in turn: his bell spot, then nearer for a wall close behind. */
+const BEHIND_DEPTHS = [BEHIND_DESK, BEHIND_DESK / 2 + 4];
+
+/**
+ * The spots behind a desk he may stand at, best first, facing its front: its back is the side away from the way its
+ * counter faces (docs/specs/009-elements/furniture-facing.md; a desk facing `n`, the default, has its back at the top).
+ * Past its back edge first, then, for a desk whose back is against a wall or a piece, the floor inside its box between
+ * that edge and the counter's footprint (officeFootprint, the 3D model's while that view draws), halfway across it.
+ */
+export function behindDeskSpots(desk: DeskBox & { chairFacing?: SeatFacing }): {
+  at: Point;
+  face: AvatarFacing;
+  // The counter's back, level with the spot: no wall may stand between them.
+  back: Point;
+}[] {
+  const facing = desk.chairFacing ?? 'n';
+  const c = officeFootprint({ ...desk, shape: 'reception-desk', chairFacing: facing });
+  // How far in from the back edge the counter starts.
+  const gap = !c
+    ? 0
+    : facing === 'n'
+      ? c.y - desk.y
+      : facing === 's'
+        ? desk.y + desk.height - (c.y + c.height)
+        : facing === 'e'
+          ? desk.x + desk.width - (c.x + c.width)
+          : c.x - desk.x;
+  const depths = gap > 0 ? [...BEHIND_DEPTHS, -gap / 2] : BEHIND_DEPTHS;
+  const out: { at: Point; face: AvatarFacing; back: Point }[] = [];
+  for (const depth of depths)
+    for (const t of BEHIND_ALONG) {
+      const x = desk.x + desk.width * t;
+      const y = desk.y + desk.height * t;
+      if (facing === 'n')
+        out.push({ at: { x, y: desk.y - depth }, face: 'down', back: { x, y: desk.y + gap } });
+      else if (facing === 's')
+        out.push({
+          at: { x, y: desk.y + desk.height + depth },
+          face: 'up',
+          back: { x, y: desk.y + desk.height - gap },
+        });
+      else if (facing === 'e')
+        out.push({
+          at: { x: desk.x + desk.width + depth, y },
+          face: 'left',
+          back: { x: desk.x + desk.width - gap, y },
+        });
+      else out.push({ at: { x: desk.x - depth, y }, face: 'right', back: { x: desk.x + gap, y } });
+    }
+  return out;
+}
+
 /**
  * Somebody rang a reception bell: he walks round behind that desk, faces whoever rang, waves, and stays
- * RECEPTIONIST_GREET_MS (until his bubble closes, when it was you). Behind the desk when he can get there, else
- * beside its front. Null when he cannot reach it at all (walled off).
+ * RECEPTIONIST_GREET_MS (until his bubble closes, when it was you). Behind the desk on free floor he can get to (a
+ * wall or a piece close behind it passes a spot over for the next, behindDeskSpots), else beside its front. Null
+ * when he cannot reach it at all (walled off). A spot counts only when the route ends there, so he never stands in a
+ * piece's footprint or a wall.
  */
 export function bellDetour(
   world: ReceptionistWorld,
   now: number,
   current: ReceptionistDetour | null,
-  desk: { x: number; y: number; width: number; height: number },
+  desk: DeskBox & { chairFacing?: SeatFacing },
   // Finds a route to a spot (tests stand in for the walls).
   routeTo?: (to: Point) => Point[] | null,
 ): ReceptionistDetour | null {
   const from = receptionistPose(world, now, current).at;
   const route = routeTo ?? ((to: Point) => receptionistRoute(world.grid, from, to));
-  // A quarter in from its left, clear of the Welcome bubble over its middle.
-  const behind = desk.x + desk.width / 4;
+  // A wall between a spot and the counter's back has that spot on the wall's far side, outside the room: passed over
+  // even when a route round through a door gets there.
+  const walls = (world.grid?.fences ?? []).filter((f) => !f.solid);
+  const walledOff = (at: Point, back: Point) =>
+    walls.some((w) => segmentsIntersect({ a: at, b: back }, w));
   const spots: { at: Point; face: AvatarFacing }[] = [
-    { at: { x: behind, y: desk.y - BEHIND_DESK }, face: 'down' },
+    ...behindDeskSpots(desk).filter((spot) => !walledOff(spot.at, spot.back)),
     {
       at: { x: desk.x + desk.width + BESIDE_PAD, y: desk.y + desk.height + BESIDE_PAD },
       face: 'left',

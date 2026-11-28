@@ -40,14 +40,14 @@ import {
   type Element,
 } from '@livehuddle/document';
 import type { TemplateKind } from './templates';
-import { roomier } from './template-roomy';
+import { roomierFor } from './template-roomy';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
   // Opened out to roomier rooms, one rule for every Space (template-roomy.ts). Last, every sign and caption is as
   // wide as its words (docs/specs/008-canvas/canvas-and-palette.md "Text sized to its words").
-  return fitTextWidths(floorsFirst(onWalls(roomier(buildElements(kind, cx, cy), cx, cy))));
+  return fitTextWidths(floorsFirst(onWalls(roomierFor(kind, buildElements(kind, cx, cy), cx, cy))));
 }
 
 /**

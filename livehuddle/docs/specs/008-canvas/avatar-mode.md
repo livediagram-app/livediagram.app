@@ -30,7 +30,7 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 - **Habbo style**: a chunky, flat-coloured pixel figure with hard edges, no gradients and no anti-aliased curves: inline SVG on a coarse pixel grid, ~40x56 canvas px, big head, small body, two-tone shading for depth.
 - Its **position is its feet**, not its centre, so it stands _on_ the point you clicked. A soft elliptical contact shadow sits under the feet.
 - **Four facings** (down / up / left / right; right mirrors left), picked from the direction of travel and held when it stops.
-- **Customisable** via the [avatar palette](#the-avatar-palette) (below): gender, clothing, hair and hair colour (no size in livehuddle: see Size below), all costumes on the SAME skeleton so the walk / hop / flag animations are shared across every combination. **Right-clicking the character toggles gender**: the one choice reachable without the palette (a right-click anywhere else on the canvas does nothing; the context menu stays shut in this mode). None of it carries meaning beyond which sprite is drawn.
+- **Customisable** via the [avatar palette](#the-avatar-palette) (below): gender, clothing, hair, hair colour and build (no size in livehuddle: see Size below), all costumes on the SAME skeleton so the walk / hop / flag animations are shared across every combination. **Right-clicking the character toggles gender**: the one choice reachable without the palette (a right-click anywhere else on the canvas does nothing; the context menu stays shut in this mode). None of it carries meaning beyond which sprite is drawn.
 - **The shirt is the participant's presence colour**: the same colour as your cursor, your name chip, and your tab-bar dot, so on a shared document you can tell at a glance which character is whose. Falls back to the brand cyan when there is no participant colour. **The shirt colour is deliberately not customisable**: it is the one thing on the character that carries information. Hair colour is a look like any other ([Hair Colour](#the-avatar-palette)) and says nothing about who is who.
 - **A still character asks for no frames** (Work Tracker 1257, [Canvas performance](canvas-performance.md#a-still-space-does-nothing)):
   the walk's animation loop runs only while it has something to do (an arrow held, a walk to a point, a hop, a wave,
@@ -63,8 +63,8 @@ replaced both the Selection Mode picker and the bottom-right cluster's Walk butt
   touch screen a drag on empty canvas pans, as it always has). Pressing the side already on does nothing.
 - **There are no other modes.** Edit is plain selecting. Hand, Eraser and Format left as modes with the picker:
   panning is Space-drag, the trackpad, the middle button or (touch) a drag on empty canvas; Delete or Backspace
-  removes what the Eraser rubbed out; the Format Painter is a button on the selection toolbar
-  ([Format panel](format-panel.md)).
+  removes what the Eraser rubbed out; the Format Painter left later
+  ([Format Painter and Clear Styles](../002-project-scope/not-in-livehuddle.md#format-painter-and-clear-styles)).
 - **How it reads.** Two segments on the segmented track (`SEGMENT_TRACK`), the side that is on carrying the solid
   brand pill (`ACTIVE_SEGMENT`) that slides between them (`SegmentSlider`). Edit is the pointer glyph, Walk the
   footprints glyph of Avatar mode, each named beside its glyph on a desktop and glyphs alone on a phone (44px wide
@@ -106,9 +106,15 @@ place, top centre, built from the same parts as the [category bar](../007-editor
 reads as one surface rather than a widget on top of the editor. It replaced the Avatar panel, a popover over an Avatar
 button in the bottom-right cluster; that button and panel are gone.
 
+Every flyout tile (a look's picture tile, a status, a Behaviour or a Reaction card, a hair colour swatch, Randomise) is
+**named by its label** for assistive tech: "Mohawk", "Out to Lunch", "Wave", never the picture alone nor the label run
+on into its key cap and blurb. A flyout **opens like every other**: the card's own quick opening, its contents at full
+contrast at once, with no second fade of the body inside it (that one started late on a first open, behind the
+preview card's 3D character, and held the Status flyout at low contrast for about a second; QA 2026-11-27).
+
 ```
- [Edit|Walk] │ Gender Clothes Hair Status │ Actions React │ [Say]         (top centre)
-                 the look                      the actions     speak
+ [Edit|Walk] │ Gender Clothes Hair Build Status │ Actions React │ [Say]   (top centre)
+                 the look                            the actions     speak
 
                   [Mic] [Camera] [Share]                               (bottom centre: the Call dock)
 ```
@@ -122,18 +128,22 @@ button in the bottom-right cluster; that button and panel are gone.
 - **An Editor's starts with the [Edit | Walk toggle](#the-edit--walk-toggle)**, Walk on, a divider after it, ahead
   of the look: the way back to building. A Participant's and a Viewer's has no toggle: they never leave. Who gets which palette is one pure rule
   read from the session's `can` (`stripPaletteFor` in `apps/editor/lib/avatar-palette.ts`).
-- **The look**, one category per choice, each opening a flyout of picture tiles drawn by the same sprite the
-  canvas uses, each tile wearing that choice on **your** character in **your** colour, so you pick by sight:
+- **The look**, one category per choice, each opening a flyout of picture tiles showing the 3D character the
+  scene draws, rendered from the same model ([Palette portraits](3d-engine.md#palette-portraits)), each tile wearing that choice on **your** character in **your** colour, so you pick by sight:
   - **Gender** (owner, 2026-11-06: "Character -> Gender"; the category id stays `character`): your portrait, large,
-    with **Randomise** beside it (rolls gender, clothes, hair and a natural hair colour, keeping the size), then
+    with **Randomise** beside it (rolls gender, clothes, hair and a natural hair colour, keeping the size and the build), then
     **Gender** (Male, Female) as two portraits. Its tagline: "Your portrait, male or female, or a new look at
     random." Where a product offers Size (livediagram), its three tiles follow; livehuddle has none (below).
   - **Clothes**: the sixteen outfits, four to a row.
-  - **Hair**: the fourteen styles, each tile cropped to the head so the hair is the picture, drawn in your hair
+  - **Hair**: the fourteen styles (in livehuddle the six each gender's 3D character draws as its own,
+    [3d-engine.md](3d-engine.md#characters); a stored style it lacks shows as its nearest), each tile cropped to the head so the hair is the picture, drawn in your hair
     colour. At the bottom (owner, 2026-11-06: "Let me change hair color in the hair menu - at the bottom"), a titled
     **Hair Colour** group, as Status's Sound: one wrapping row of round swatches, one per [hair colour](#hair-colour),
     each a button named by its colour (its `aria-label` and its tooltip), pressed while it is yours, with the pointer
     cursor. A press applies at once like a tile; pointing at one or focusing it tries it on in the preview card.
+  - **Build** (owner, 2026-11-27: "a category in walk palette for size, like Skinny to Large etc, to make my character
+    model more like me"): the five [builds](#build), Skinny to Large, five to a row, each tile your whole character
+    in that build. Its tagline: "How broad your character is, from Skinny to Large."
   - **Status**: cards four to a row (two on a phone), **None** then the statuses in three named groups, **Availability**,
     **Activity** and **Mood**, each card its dot before its name, and its short line under them ([Status](#status)). Under
     them, **Sound** holds the **Jukebox Music** switch (your own switch for every jukebox,
@@ -142,17 +152,17 @@ button in the bottom-right cluster; that button and panel are gone.
   character on the canvas changes as you press, and the flyout stays open so you can try the next. It is saved and
   sent to peers exactly as before ([Persistence](#persistence), [Realtime](#realtime)).
 - **Then, on the right, the actions**, after a divider: **Actions** and **React** (owner, 2026-11-06: "Reactions -> React, Behaviour -> Actions"; the
-  ids stay `behaviour` and `reactions`), cards two to a row. An Actions card shows your character mid-move (arms up for Cheer, splayed for Jumping Jacks) and a Reaction card its
+  ids stay `behaviour` and `reactions`), cards two to a row. An Actions card shows your 3D character mid-move (arms up for Cheer, splayed for Jumping Jacks) and a Reaction card its
   emoji, each with its key cap on a desktop ([Keyboard actions](#keyboard-actions)). Using one plays it and keeps the
   flyout open, as a pick of the look does, so you can play the next; a press outside or Escape closes it.
 - **The preview, beside the flyout (desktop only).** Owner, 2026-11-06: "have a panel to the right, not attached
   ... that shows a preview of your character, but larger, and when I hover an option ... the preview shows me what
-  it would look like before I click it". While any of the six flyouts is open, a second card floats to its right,
+  it would look like before I click it". While any of the seven flyouts is open, a second card floats to its right,
   8 px clear of it and level with its top: the flyout's own surface (radius, border, shadow, dark fill), your
-  character standing large in your colour, drawn by the canvas's sprite with hard pixel edges, and a caption under
-  it.
+  character standing large in your colour, the 3D game character the scene draws
+  ([Palette portraits](3d-engine.md#palette-portraits)), and a caption under it.
   - **Pointing at an option tries it on** without applying it, and so does focusing it from the keyboard: an outfit,
-    a hairstyle, a hair colour or a gender shows the character wearing it; a status shows its dot and name under the character
+    a hairstyle, a hair colour, a build or a gender shows the character wearing it; a status shows its dot and name under the character
     and its signature on it, moving as it does on the canvas (Focusing with the headphones on, Angry with the steam
     puffing from the ears); a Behaviour plays that move on a loop; a Reaction throws its burst round the
     preview, again and again. Leaving the option (or blurring it) brings back your current look. Randomise has
@@ -190,18 +200,42 @@ The choices themselves:
 - **Clothes**: T-shirt / Stripes / Jumper / Hoodie / Vest / Suit / Dress / Skirt / Polo / Flannel / Overalls / Lab coat / Hawaiian / Varsity / Turtleneck / Apron. Each is a change on the same body, told apart by shape and detail rather than colour, since the shirt is always the participant's colour: every outfit has a signature that reads at palette-tile size in the front, back and profile views, walking and in every pose, in any shirt colour and both builds. The **T-shirt** is the plain baseline with short sleeves. **Stripes**: three bold horizontal bands across the body and two on each long sleeve. **Jumper**: a crew collar, ribbed cuffs and a deep ribbed hem that hangs over the trousers. **Hoodie**: a hood lying around the neck (and hanging to a point down the back), white drawstrings, a kangaroo pocket. **Vest**: a sleeveless waistcoat over a white shirt (white sleeves and a white V, buttons and hem points at the front, a darker satin back with a strap). **Suit**: a dark jacket, sleeves and trousers cut from one deep shade of the shirt colour, lapels, a white shirt V and cuffs, a red tie. **Dress**: one colour from a scoop neck to a flared hem past the knees, with short sleeves and bare legs. **Skirt**: a top in a second tone (paler than a dark shirt, deeper than a light one) over a short pleated skirt with a waistband, bare legs. **Polo**: a spread collar with points, a buttoned placket, tipped short sleeves. **Flannel**: a check (crossing lines over the body, a line on each sleeve) and a pointed collar. **Overalls**: a denim bib on light-denim straps with brass buckles over a short-sleeved shirt, the straps crossing on the back, denim legs. **Lab coat**: a long white coat with white sleeves, worn open over the shirt colour, tails past the hips, a pocket with a pen; closed with a half belt and a vent at the back. **Hawaiian**: an open neck, short sleeves and a bold print of blooms with leaves (white on a dark shirt, pink on a light one). **Varsity**: contrasting white sleeves, a block letter on the chest and lettering across the back, a striped collar, cuffs and hem. **Turtleneck**: a tall ribbed collar rolled up to the jaw (drawn over the chin, the mouth left clear), long sleeves. **Apron**: a long apron on a neck strap, with a pocket and its waist ties showing at the sides, a bow at the back, standing proud of the chest in profile. Secondary tones are derived from the shirt (darker and lighter shades, and trims that go darker on a light shirt and lighter on a dark one, so they keep contrast in light and dark themes) or are fixed neutrals (white, denim, the coat, the apron, brass). Bare legs under the dress and skirt travel as one set (`BARE_LEG_CLOTHING`); the sleeves (short, long, white) and the cloth of the body and legs are one per-outfit look in the sprite, so the front, back, and profile views can't disagree about what an outfit implies.
 - **Hair**: Short / Buzz / Curly / Long / Ponytail / Bun / Mohawk / Bald / Pigtails / Afro / Spiky / Bob / Braid / Top knot, each drawn per view (the bun, the plait, and the tail read from behind; the mohawk shaves the sides to stubble; the afro sits proud of the head on every side).
 - <a id="hair-colour"></a>**Hair Colour**: nine natural colours, Black / Dark Brown / Brown / Auburn / Ginger / Blonde / Platinum / Grey / White, then four bold ones, Blue / Pink / Purple / Green (`AVATAR_HAIR_COLOURS` in `packages/avatar/src/config.ts`, each a token and a hex). **Brown** is today's hair, `AVATAR_PALETTE.hair` and its own `hairDark`, and the default; every other colour's shaded side is the colour darkened by the bound colour maths (`shade`, 32%), so a hairstyle keeps its two-tone volume in any colour. A config without the field (stored by an older build, or a packet from one) draws Brown, exactly as before; an older build reading a newer config or packet ignores the field and draws Brown. Randomise and the first-use roll pick one of the nine natural colours, never a bold one.
+- <a id="build"></a>**Build**: Skinny / Slim / Regular / Broad / Large (`AVATAR_BUILDS` in
+  `packages/avatar/src/config.ts`), how broad the 3D character is across and front to back, never its height: a
+  scale of **0.82 / 0.91 / 1 / 1.1 / 1.22** on the body's width and depth, the head kept at its own proportions, the
+  feet on the floor and a drink in the hand. **Regular** is the character as it was before the choice existed, and
+  the default for everyone; a config without the field (an older build's store or packet) or with a token this build
+  does not know draws Regular, and an older build ignores it. It is a look, not a size: it changes nothing a walk,
+  a seat, a door or a call measures (the Size reach stays the same). It is the 3D character's
+  alone: the small head-and-shoulders faces (the mini view, wayfinding) show no build. Randomise and the first-use roll leave it as it is (Regular at first),
+  like Size: it is a deliberate choice about yourself.
 - **Size is not offered in livehuddle.** Everyone's character, yours and every peer's (whatever an older build
   stored), draws and collides at **Regular**, so a room's seats, doorways and calls read the same for everybody
   (`sizes: false` in the editor's `bindAvatar`, read by `avatarScale` and the palette; livediagram keeps the choice).
-  For the shared code: Small / Regular / Tall, a scale on the whole sprite (**1.15 / 1.5 / 1.95**).
-- **Actions** (the `behaviour` category) holds five short one-shot performances, each a Behaviour:
+  For the shared code: Small / Regular / Tall, a scale on the whole sprite (**1.45 / 1.9 / 2.45**; the owner,
+  2026-11-27, found the characters too small beside the furniture: it was 1.15 / 1.5 / 1.95). A Regular character
+  stands about 106 canvas px, so a 96 px doorway and a 120 px desk read at a person's size.
+- **Actions** (the `behaviour` category) holds nine Behaviours: five for fun and four that say something in a meeting
+  without unmuting (the owner, 2026-11-27: "Think of a few other useful actions to add and support them"):
   - **Jumping Jacks**: five hops, arms out and legs splayed at the top of each.
   - **Wave**: a raised hand crossing back and forth for about a second and a half.
   - **Spin**: two full turns on the spot through all four facings.
   - **Cheer**: both arms up and two bounces.
   - **Dance**: a side-to-side sway with the arms alternating.
+  - **Raise Hand**: the right arm straight up, held, so a meeting sees who wants to speak next. Unlike the others it
+    is not a timed performance but a state: it stays up until you press it again (its card shows pressed while it is
+    up), play another Behaviour, or two minutes pass (`AVATAR_HAND_UP_MS`), and it goes down when you leave the mode.
+    It rides presence as its own field (`handUp`, below), sent once when it goes up or down, never per frame.
+  - **Clap**: both hands in front of the chest, meeting six times in about two seconds: applause everyone sees (the
+    React row's Applause is a burst on your own screen only).
+  - **Thumbs Up**: the forearm raised in front, the fist closed and the thumb up, for about two seconds: "sounds
+    good" without a word.
+  - **Point**: the right arm straight out ahead, the index finger pointing, for about two and a half seconds: "look
+    there" while presenting.
 
-  A Behaviour performance plays **on the spot**: starting one drops any walk in progress (sliding through a routine reads as a bug) and pressing again restarts it rather than queueing. Peers see it: the presence packet carries the **kind plus how far into it the sender is**, and each receiver derives the pose with the same pure `reactionPose` function: a kind and a clock on the wire rather than a pose.
+  A Behaviour performance plays **on the spot**: starting one drops any walk in progress (sliding through a routine reads as a bug) and pressing again restarts it rather than queueing. Peers see it: the presence packet carries the **kind plus how far into it the sender is**, and each receiver derives the pose with the same pure `reactionPose` function: a kind and a clock on the wire rather than a pose. A receiver that does not know a kind (an older client meeting Clap) draws the character standing, never an error: `reactionPose` answers the standing pose for any unknown kind.
+
+  A raised hand is presence, like a drink: `handUp: true` on the packet while it is up (absent otherwise, so a lean packet stays lean and an older client ignores it), parsed as exactly `true`. Raising or lowering it is sent at once as an idle packet; the heartbeat keeps it for a newcomer.
 
 - **React** (the `reactions` category) holds five bursts (Confetti, Sparkles, Hearts, Applause, Fireworks), played around the character instead of around a pad. Unlike a Behaviour performance, a Reactions burst plays **on your own screen only**: the room's `reaction` op is keyed to a pad's element id (the character has none), and the avatar presence packet carries no burst. Showing it to peers would mean a burst field on `AvatarPresence` and a peer-side burst layer; it is not built.
 
@@ -227,12 +261,11 @@ their home moved (`components/calls/CallDock.tsx`).
   (`clusterRowLayout`, `components/calls/call-dock-row.ts`), the dock in the middle one, centred on the canvas while
   there is room, and the cluster's buttons, unwrapped, in the right one. The buttons take the room they need first, so
   in a narrow window, on a narrow phone, or with Collaborate beside Fit, the dock moves left rather than covering
-  them; the dock's column never squeezes the card below its content, so every button stays inside its border. It
-  **stands clear of the bottom-left panels** (the Map, open; Work Tracker 1041, at 640 to 700 px the centred dock
-  covered the Map's right half): the left column is at least as wide as they reach, plus 8 px, so the dock starts past
-  them (`useCallDockFit`, `callDockRowFit`). Where the panels, the dock and the buttons cannot share the bottom line,
-  the dock stands on a line of its own just above the buttons, at the right, still clear of the Map. Panels ending
-  above the row's line leave it free. It
+  them; the dock's column never squeezes the card below its content, so every button stays inside its border. Nothing
+  sits in the bottom-left corner (the Map that once did left livehuddle,
+  [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-map)), so the row's left column takes no least
+  width. Where the dock and the buttons cannot share the bottom line, the dock stands on a line of its own just above
+  the buttons, at the right (`useCallDockFit`, `callDockRowFit`). It
   keeps the toolbar's UI scale (the row is drawn at the corner buttons', so the dock takes the difference; a phone
   draws both at 100%).
 - **What.** There is **no Join and no Leave** (owner, 2026-11-07: "Currently we have this concept of Joining audio and
@@ -365,7 +398,7 @@ palette popover:
 
 Every Behaviour and every Reaction on the avatar palette is also **one key**, so a presenter mid-walk can wave or throw confetti without opening a flyout:
 
-- **Behaviour on its initial**: `J` Jumping jacks, `W` Wave, `S` Spin, `C` Cheer, `D` Dance.
+- **Behaviour on its initial**: `J` Jumping jacks, `W` Wave, `S` Spin, `C` Cheer, `D` Dance, `H` Raise Hand, `T` Thumbs Up, `P` Point; Clap takes `K` (its `C` is Cheer's). None of them is `E` or `V` (the ways out) or a digit.
 - **Reactions on `1` to `5`**, in the palette's order: Confetti, Sparkles, Hearts, Applause, Fireworks.
 - A key plays exactly what its palette card plays (the same `playReaction` and burst handlers), the flyout open or not. Pressing it again restarts the performance or replays the burst, as a second click does.
 - **Plain presses only**: any modifier (Cmd+C copies) and an autorepeat from a held key do nothing, so holding a key never machine-guns a burst.
@@ -378,7 +411,7 @@ Every Behaviour and every Reaction on the avatar palette is also **one key**, so
 
 **First use rolls a random character.** A browser with nothing stored gets a random gender, clothing, hair and natural hair colour rather than the same default figure everyone else starts as: two people walking onto a canvas shouldn't arrive as twins. **Size is not rolled**: it changes how much of the canvas the character covers, so it starts Regular and stays a deliberate choice. The roll is **pinned to storage the first time the mode is actually entered** (not on editor mount), so it becomes _your_ character rather than re-rolling every time, and a user who never opens Avatar mode never has one written for them. `Reset position`'s sibling behaviour follows: resetting the character rolls a new random one rather than returning the plain default.
 
-The choices (hair colour as the optional `hairColour` token) are then **remembered per browser** under `livehuddle:v2:avatar-config`, so the character you built is the one waiting next time you enter the mode. Device-local by design, like the panel placements ([Panel corner docking](../007-editor/panel-docking.md)): which character you walk around as is a personal / ergonomic choice, not document data, so it never reaches the api, its storage, or the synced preferences blob, and guests get it for free.
+The choices (hair colour as the optional `hairColour` token, the build as the optional `build` token) are then **remembered per browser** under `livehuddle:v2:avatar-config`, so the character you built is the one waiting next time you enter the mode. Device-local by design, like the panel placements ([Panel corner docking](../007-editor/panel-docking.md)): which character you walk around as is a personal / ergonomic choice, not document data, so it never reaches the api, its storage, or the synced preferences blob, and guests get it for free.
 
 Parsing is **field by field with per-field fallbacks**: a value this build doesn't recognise (an option retired in a later release, a hand-edited key) costs only that one choice rather than resetting the whole character, and a config written by an older build loads with the new fields defaulted. Position of the avatar itself is still never persisted; only the costume.
 
@@ -390,9 +423,7 @@ for as long as the mode is on, for every role, and come back the moment it ends:
 - **Undo and Redo** leave the bottom-right cluster, and their shortcuts (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z, Ctrl+Y) do
   nothing, so a stray key never changes the Space behind you. The browser's own undo is held back too. The command
   palette leaves out Undo and Redo while walking.
-- **Tab Style** (the cluster's Theme & Canvas brush, [Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md))
-  leaves the cluster, and so do its other ways in, the command palette's **Open Theme** and **Open Canvas Options**.
-  It has no shortcut.
+- **Tab Style** has no way in at all in livehuddle ([Tab style](../002-project-scope/not-in-livehuddle.md#tab-style)), walking or not.
 - What stays in the cluster is Collaborate (while the tab has a thread) and the zoom controls; the way back to
   building is the toggle at the strip's start. The call buttons are on the [Call dock](#the-call-dock). On a phone the cluster is shorter,
   still one row.
@@ -418,18 +449,17 @@ A click-walk goes **round** walls rather than into them: clicking inside a room 
 through it, and on to the point you clicked.
 
 - **What it routes round** is exactly what blocks a step: every Fence and Garden Fence, every room's walls (a box
-  room's and a Room Builder room's, broken at its doorway and at each **open** Door; a closed Door is wall), an Office
+  room's and a Room Builder room's, broken at its doorway and at every Door, which is always a way through), an Office
   Pod's walls, and each piece of scenery's footprint. Seats, peers and ordinary elements are walked over, as before.
-- **The route** keeps the character's own reach clear of every wall (its Size's, the same reach a step keeps), so it
+- **The route** keeps the character's own reach clear of every wall (its Size's, the same reach a step keeps, a wall's
+  grown by its pad: [Fence](../009-elements/fence.md) "A wall keeps the whole body out of it"), so it
   never asks for a gap the character cannot fit through. It is drawn as straight legs between corners, never a
   staircase, and a walk with nothing in the way is the plain straight line it always was.
-- **A place it cannot reach.** A click inside a room whose Doors are all shut walks you to the **outside of the
-  nearest shut Door** of that room (nearest you), within a click's reach of it, so your next click opens it
-  ([Room Builder and Door](../009-elements/room-builder.md) "Opening and closing"). Where
-  the place has no door to open (a doorless room, a pond, inside a piece of scenery), the walk goes to the nearest
+- **A place it cannot reach** (a doorless room, a pond, inside a piece of scenery): the walk goes to the nearest
   point it can reach, just outside the walls nearest the click. Either way it stops there; it never freezes, jitters
   or walks into the wall. Whatever was waiting on the arrival (a push) happens only when that point is within two
-  reaches of where you clicked. (`shutDoorLines` in collision.ts; `shutDoorCell` in pathing.ts.)
+  reaches of where you clicked. A Door never makes a place unreachable: it opens on its own as you come
+  ([Room Builder and Door](../009-elements/room-builder.md#opening-on-their-own)).
 - **Every walk to a point routes**: a click or a tap, Walk There's legs ([Directory](../009-elements/directory.md)
   "Walk There"), and a call's walk to someone. Arrow-key steering and a push stay direct (collision only, no route):
   steering is you choosing the way.
@@ -477,39 +507,39 @@ frame) and acts on its intent. A text box is often far wider than its words (a t
 board's width with a short line at its left), so a text counts as hit only on its painted lines, read from the
 rendered text (`onPaintedText`, within 6 screen px); a click on the empty run past the words goes to what is under
 it, usually the floor. A press that lands on a face's own pressable part is that part's, as before. Peers'
-characters are hit first (a click on one walks over and pushes), then a Door (below), then the element.
+characters are hit first (a click on one walks over and pushes), then the element.
 
 A piece's own controls (the Notice Board's Notes, the Jukebox's Play: `pieceControlProps`) act in place on every
 kind.
 
-| Kind                                                                                                                                                               | Click                          | Why                                                                                                    |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| Directory                                                                                                                                                          | Use                            | Opens the room list; its Walk There and Go rows do the moving, so walking to the stand is a detour     |
-| Elevator                                                                                                                                                           | Use                            | Opens the floor panel; a ride is a teleport (walking in still opens it)                                |
-| Stairs                                                                                                                                                             | Use                            | Opens the Up / Down panel; taking them climbs the flight and changes floor (walking on still opens it) |
-| Portal                                                                                                                                                             | Use                            | Pressing it travels at once; a walk as well would race the travel                                      |
-| Selection Mode button (`mode-button`), Bring Focus button (`focus-button`)                                                                                         | Use                            | Buttons: the press is the point (Leave Avatar is the way out)                                          |
-| Notice Board, World Clock                                                                                                                                          | Use                            | Open large in the reader                                                                               |
-| Calendar Wall, Suggestion Box (team-pieces.md)                                                                                                                     | Use                            | Open large in the reader                                                                               |
-| Signpost (team-pieces.md)                                                                                                                                          | Use                            | Walk to its top arrow's place; nothing with no places yet                                              |
-| Screen                                                                                                                                                             | Use                            | A live Screen opens large; an idle one opens the reader, which says how a Screen fills                 |
-| Room Sign                                                                                                                                                          | Use                            | Knock, from anywhere on the plaque, while you may knock; otherwise the sign opens in the reader        |
-| Timer, Stopwatch                                                                                                                                                   | Use                            | Start or Pause from anywhere on the face; its own buttons keep their own presses                       |
-| Jukebox                                                                                                                                                            | Use                            | Play or Mute; you hear it by being near anyway, so walking to it adds nothing                          |
-| Link card (`link-card`), Video (`video`)                                                                                                                           | Use                            | Follow the link; play the video where it is                                                            |
-| Door                                                                                                                                                               | Walk, or swing when next to it | Next to it a click opens or shuts it; farther away it walks you to its near side (below)               |
-| Avatar Pad, Stage                                                                                                                                                  | Walk                           | Standing on it is the point                                                                            |
-| Room, Office Pod, Rug, Grass, Garden Path                                                                                                                          | Walk                           | Floor and places you go into                                                                           |
-| Chair, Desk, Sofa, Meeting Table, Bar Stool, Bench, Picnic Table, Hammock, Ping-Pong Table, Bean Bag, Reading Nook                                                 | Walk                           | Seats: arriving sits you                                                                               |
-| Water Cooler, Coffee Machine, Drinks Cabinet, Drinks Fridge                                                                                                        | Walk                           | Arriving gives you a drink                                                                             |
-| Arcade Machine                                                                                                                                                     | Walk                           | Proximity is the point: walking up to it says Insert Coin                                              |
-| Dartboard                                                                                                                                                          | Walk                           | A wall piece: a click walks you to the floor in front of it, and standing there rings nothing          |
-| Team Photo Wall (team-pieces.md)                                                                                                                                   | Walk                           | Walk up to it                                                                                          |
-| Plant, Bookshelf, Outdoor Plant, Tree, Fence, Garden Fence, Bar, Fireplace, Campfire, Fountain, Pond, Garden Umbrella, Pool Table, Foosball Table, Vending Machine | Walk                           | Scenery: you go and stand by it (beside a solid one, on a flat one), the way you go to a fire          |
-| Lane, Boundary                                                                                                                                                     | Walk                           | Areas drawn round other things: a click inside one is a click on the floor it covers                   |
-| Arrow, freehand drawing (`freehand`), path, Sticker, Icon                                                                                                          | Walk                           | Lines and marks with nothing to read: a click on one is a click on the floor beside it                 |
-| Sticky, Text, Image                                                                                                                                                | Read                           | Their own reader bodies: the words at reading size, the picture as large as the screen allows          |
-| Table, Checklist, Code Block, the charts, Callout, Speech Bubble, Card, Banner, Page, every other shape and web component, Annotation                              | Read                           | The element's own drawing, scaled up in the reader (below)                                             |
+| Kind                                                                                                                                                               | Click | Why                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------------ |
+| Directory                                                                                                                                                          | Use   | Opens the room list; its Walk There and Go rows do the moving, so walking to the stand is a detour     |
+| Elevator                                                                                                                                                           | Use   | Opens the floor panel; a ride is a teleport (walking in still opens it)                                |
+| Stairs                                                                                                                                                             | Use   | Opens the Up / Down panel; taking them climbs the flight and changes floor (walking on still opens it) |
+| Portal                                                                                                                                                             | Use   | Pressing it travels at once; a walk as well would race the travel                                      |
+| Selection Mode button (`mode-button`), Bring Focus button (`focus-button`)                                                                                         | Use   | Buttons: the press is the point (Leave Avatar is the way out)                                          |
+| Notice Board                                                                                                                                                       | Use   | Open large in the reader                                                                               |
+| Calendar Wall, Suggestion Box (team-pieces.md)                                                                                                                     | Use   | Open large in the reader                                                                               |
+| Signpost (team-pieces.md)                                                                                                                                          | Use   | Walk to its top arrow's place; nothing with no places yet                                              |
+| Screen                                                                                                                                                             | Use   | A live Screen opens large; an idle one opens the reader, which says how a Screen fills                 |
+| Room Sign                                                                                                                                                          | Use   | Knock, from anywhere on the plaque, while you may knock; otherwise the sign opens in the reader        |
+| Timer, Stopwatch                                                                                                                                                   | Use   | Start or Pause from anywhere on the face; its own buttons keep their own presses                       |
+| Jukebox                                                                                                                                                            | Use   | Play or Mute; you hear it by being near anyway, so walking to it adds nothing                          |
+| Link card (`link-card`), Video (`video`)                                                                                                                           | Use   | Follow the link; play the video where it is                                                            |
+| Door                                                                                                                                                               | Walk  | It opens on its own as you come; nobody opens or shuts it by hand (below)                              |
+| Avatar Pad, Stage                                                                                                                                                  | Walk  | Standing on it is the point                                                                            |
+| Room, Office Pod, Rug, Grass, Garden Path                                                                                                                          | Walk  | Floor and places you go into                                                                           |
+| Chair, Desk, Sofa, Meeting Table, Bar Stool, Bench, Picnic Table, Hammock, Ping-Pong Table, Bean Bag, Reading Nook                                                 | Walk  | Seats: arriving sits you                                                                               |
+| Water Cooler, Coffee Machine, Drinks Cabinet, Drinks Fridge                                                                                                        | Walk  | Arriving gives you a drink                                                                             |
+| Arcade Machine                                                                                                                                                     | Walk  | Proximity is the point: walking up to it says Insert Coin                                              |
+| Dartboard, Clock                                                                                                                                                   | Walk  | A wall piece: a click walks you to the floor in front of it, and standing there rings nothing          |
+| Team Photo Wall (team-pieces.md)                                                                                                                                   | Walk  | Walk up to it                                                                                          |
+| Plant, Bookshelf, Outdoor Plant, Tree, Fence, Garden Fence, Bar, Fireplace, Campfire, Fountain, Pond, Garden Umbrella, Pool Table, Foosball Table, Vending Machine | Walk  | Scenery: you go and stand by it (beside a solid one, on a flat one), the way you go to a fire          |
+| Lane, Boundary                                                                                                                                                     | Walk  | Areas drawn round other things: a click inside one is a click on the floor it covers                   |
+| Arrow, freehand drawing (`freehand`), path, Sticker, Icon                                                                                                          | Walk  | Lines and marks with nothing to read: a click on one is a click on the floor beside it                 |
+| Sticky, Text, Image                                                                                                                                                | Read  | Their own reader bodies: the words at reading size, the picture as large as the screen allows          |
+| Table, Checklist, Code Block, the charts, Callout, Speech Bubble, Card, Banner, Page, every other shape and web component, Annotation                              | Read  | The element's own drawing, scaled up in the reader (below)                                             |
 
 - **A control that is not yours to press does nothing.** A Bring Focus button, a Selection Mode button, a Timer,
   a Stopwatch and a Signpost with no places yet are only controls: with no press of yours right now (a Participant or a Viewer, who always walk; an
@@ -517,26 +547,18 @@ kind.
   whose still copy would show the same face larger and still not pressable (owner, 2026-11-06; `avatarPressOutcome`
   and `NO_READER_KINDS` in `apps/editor/lib/avatar-click-intent.ts`). Every other Use piece with no main action right
   now opens in the reader, as below.
-- **Door**: when your character's feet are next to a Door (within `DOOR_REACH`, `isNextToDoor`), a click on it opens
-  or shuts it in place (`toggleDoor`), with no walk and no selection. Farther away the click walks you to its **near
-  side** (just outside the opening, on the side you stand) and does not swing it. A Viewer, who may not swing doors
-  (`can.swingDoor`), always walks. A door is drawn pointer-inert while walking, so the door under a click is found
-  from the click's canvas point, by what it **paints** rather than its thin wall box: the opening across the wall, padded to at least 32 screen px
-  across (16 either side, scaled by the camera's zoom), and while it stands open the quarter circle its leaf sweeps
-  from the hinge (the leaf and its dashed arc). Shut, the leaf lies along the wall and the opening alone is the door.
-  That shape wins over the room's floor under it, so a click on the arc inside the room swings the door rather than
-  walking in, and a click just past the arc walks (`onDoor`, `avatarDoorPress` in
-  `apps/editor/lib/avatar-door-press.ts`). `avatarClickIntent` keeps `door` as Walk and the gesture adds the
-  adjacency check. The open and closed state is [Room Builder](../009-elements/room-builder.md)'s.
+- **Door**: a click on a Door walks you there, as a click on the floor does; it never opens, shuts or selects it.
+  Doors open on their own for whoever walks through them ([Room Builder and Door](../009-elements/room-builder.md#opening-on-their-own),
+  the owner, 2026-11-27).
 - **A moment piece beside you**: a click on a Walk piece that plays a [piece moment](../009-elements/piece-moments.md)
   (a tree, a kettle, a Window; never a seat such as the Hammock or the Podium) while your feet stand beside it (within
   `DOOR_REACH` of its box, or in its moment's reach) replays its moment where you stand, with no walk
-  (`avatarMomentPress` in `apps/editor/lib/avatar-moment-press.ts`, checked after the Door). Farther away it walks, as
+  (`avatarMomentPress` in `apps/editor/lib/avatar-moment-press.ts`). Farther away it walks, as
   before ([Piece moments](../009-elements/piece-moments.md#a-press-beside-it)).
 
 ### The reader
 
-Clicking a **Notice Board**, a **World Clock**, an idle **Screen**, a **Room Sign** you may not knock on, or any
+Clicking a **Notice Board**, an idle **Screen**, a **Room Sign** you may not knock on, or any
 **Read** kind while walking opens it in the **reader**: a dialog centred on the
 screen (up to 720 px wide on a desktop, the full width less a small margin on a phone, its height capped to the
 viewport and scrolling inside) over a dimmed backdrop. Its type is the screen's, not the canvas's, so it reads at any
@@ -549,8 +571,6 @@ backdrop dismisses it, and focus stays inside it while it is open. Nothing walks
   buttons by the same [share roles](../013-workspace/share-roles.md) as the board's popover
   ([Social pieces](../009-elements/social-pieces.md#notice-board)). A press anywhere on the board, or on its Notes
   button, opens the reader while walking; outside Avatar mode the Notes button keeps its small popover.
-- **World Clock**: one row per city (every zone, not only the three the face has room for): its name, its time
-  large, and the day against yours (`+1`, `-1`).
 - **Sticky** and **Text**: the words, read-only, at 20 px (a sticky on its paper colour), wrapping at the reader's
   width. **Image**: the picture as large as the reader allows, its own aspect kept.
 - **Screen, idle**: an empty state saying what fills a Screen (a share from someone in its room, else its file or
@@ -587,10 +607,12 @@ the pointer).
 
 - **Leaving frames the tab.** Switching to Edit glides out to the whole tab
   ([Edit frames the whole tab](#the-edit--walk-toggle)).
-- **Entering centres you at 100%.** However the mode is entered (the toggle, `W`, Search, a mode button, a pad, opening walking), once the
-  character is placed the view goes to 100% with the character in the middle of the screen. Switching to Walk on the
-  same tab glides there beside the strip's morph, as Edit glides out (owner, 2026-11-06); a load, opening walking and
-  travel to another tab land at once, and reduced motion always does.
+- **Entering centres you at 180%.** However the mode is entered (the toggle, `W`, Search, a mode button, a pad, opening walking), once the
+  character is placed the view goes to 180% (the 3D view's walking zoom, [3D view](3d-view.md) "Always on": the
+  characters were made larger to read, 2026-11-27) with the character in the middle of the screen. Switching to Walk on the
+  same tab glides there beside the strip's morph, as Edit glides out (owner, 2026-11-06); a load, opening walking, a
+  change of tab and travel to another tab start from the whole tab and zoom in to it
+  ([3D view](3d-view.md) "Arriving"), and reduced motion always lands at once.
 - **Walking keeps you in the middle.** While the view is centred on the character, every step moves the view with it:
   the character holds still on screen and the canvas moves under it.
 - **You can look away, and walking brings you back.** A hand pan moves the view off the character as usual. The view
@@ -610,8 +632,8 @@ the pointer).
   you zoomed while seated (that zoom holds). No Screen in your room ahead of you: the view stays as it is. Your room is
   the Screen's room as the Screen itself works it out (who is inside, from presence). `seatedScreenFrame` and
   `screenAhead` (lib/office/seated-screen-frame.ts), run by `useSeatedScreenFrame`.
-- **Fit centres you at 100%.** Fit (clicking the zoom percentage, the zoom menu's Fit to screen, the command palette's
-  Fit) goes back to 100% with the character in the middle, instead of framing the whole tab.
+- **Fit centres you at 180%.** Fit (clicking the zoom percentage, the zoom menu's Fit to screen, the command palette's
+  Fit) goes back to 180% (`SPACE_3D_ZOOM`) with the character in the middle, instead of framing the whole tab.
 - **In the [3D view](3d-view.md)** the camera tilts back about the middle of the screen, so a centred character stays centred and a step moves the tilted floor under it.
 - **Leaving the mode leaves the view where it is.**
 - Implementation: the shared walk hook takes `camera: 'centred'` (livehuddle) or keeps the edge follow
@@ -643,7 +665,7 @@ the pointer).
 
 **Everyone sees everyone.** The character rides the presence channel as an `avatar` `RoomOp` (alongside `cursor` / `select` / `laser` / `tab-focus` in `@livehuddle/api-schema`), so a whole room can walk around one canvas at once.
 
-- The packet is deliberately tiny: feet position (to a hundredth of a canvas px), facing, walking flag and step frame, the hop height, wave frame, seat, drink, status and reaction only while they are set, and the costume tokens (with the optional `hairColour`) only when a peer may not have them yet ([A busy room](#a-busy-room), "The costume rides only when it is needed"). It goes out at the **same ~30 Hz throttle as the cursor**, stepped down in a room of more than 10 ([A busy room](#a-busy-room)) (a packet a window holds back is sent as the window ends, so the last one said, a status picked or the step a walk ends on, is never the one dropped), from the same gates (hydrated, a document id, and either a share link or a team document). The costume is **optional on the wire**: a receiver keeps the last costume it saw for each peer, runs it through the same field-by-field parser as storage, and falls back to the default character only for a peer whose costume it has never been sent.
+- The packet is deliberately tiny: feet position (to a hundredth of a canvas px), facing, walking flag and step frame, the hop height, wave frame, seat, drink, status and reaction only while they are set, and the costume tokens (with the optional `hairColour` and `build`) only when a peer may not have them yet ([A busy room](#a-busy-room), "The costume rides only when it is needed"). It goes out at the **same ~30 Hz throttle as the cursor**, stepped down in a room of more than 10 ([A busy room](#a-busy-room)) (a packet a window holds back is sent as the window ends, so the last one said, a status picked or the step a walk ends on, is never the one dropped), from the same gates (hydrated, a document id, and either a share link or a team document). The costume is **optional on the wire**: a receiver keeps the last costume it saw for each peer, runs it through the same field-by-field parser as storage, and falls back to the default character only for a peer whose costume it has never been sent.
 - It is **ephemeral presence, not a mutation**: `avatar` is in the room's `PRESENCE_OP_KINDS`, so it relays unordered, from any role (**including view-role**: an audience member walking around a canvas someone linked them to is as harmless as their cursor), is never persisted, and is never replayed to a reconnecting client.
 - **Leaving the mode publishes `avatar: null`**, which deletes the entry on every peer, and a peer who disconnects is pruned with the rest of their presence, so nobody is left standing on a canvas after they've gone.
 - **Cursors while walking** (Work Tracker 706, #708): a peer who has a character on the tab shows **no mouse cursor
@@ -737,40 +759,44 @@ Your character can say **how you are** without a word: a status set from the ava
 the tab while you are in the mode. It is what makes a virtual office read at a glance:
 who is free to talk, who is heads-down, who has stepped away.
 
-Every status has a dot, a short line (shown under its name in the flyout) and a **signature on the character**,
-drawn in the sprite's own pixels in the spirit of Focusing's headphones (owner, 2026-11-06: "Add more statuses like
-Angry, which causes steam to come out of the avatars ears, I love the headphones while focusing, maybe we can do more
-of that for other statuses"). They come in three groups, **Availability** (can people come over?), **Activity**
-(what you are busy with) and **Mood** (how you feel), purely cosmetic apart from Do Not Disturb.
+Every status has a dot, a short line (shown under its name in the flyout) and a **signature on the character**: a
+small prop on the 3D game character ([Characters](3d-engine.md#characters)), life-sized and low-poly in the scene's
+look like a held drink (owner, 2026-11-06: "Add more statuses like Angry, which causes steam to come out of the avatars
+ears, I love the headphones while focusing"; owner, 2026-11-27: "Statuses used to affect my character, IE Sandwich in
+my hand or headphones on etc, put those back for the status or reimplement with the current models"). They come in
+three groups, **Availability** (can people come over?), **Activity** (what you are busy with) and **Mood** (how you
+feel), purely cosmetic apart from Do Not Disturb.
 
-| Group        | Status             | Token         | Dot    | Signature on the character                                                 |
-| ------------ | ------------------ | ------------- | ------ | -------------------------------------------------------------------------- |
-| Availability | **Available**      | `available`   | green  | A green sparkle by the head, twinkling                                     |
-| Availability | **Need Help**      | `help`        | amber  | A pixel "?" over the head, bobbing                                         |
-| Availability | **Away**           | `away`        | slate  | The character fades to half and a slow "Zz" rises above it                 |
-| Availability | **Busy**           | `busy`        | brown  | A phone held to the ear; still                                             |
-| Availability | **Do Not Disturb** | `dnd`         | rose   | A red no-entry sign beside the head (the dot has the white bar too); still |
-| Activity     | **Focusing**       | `focus`       | violet | Headphones (violet ear cups); still                                        |
-| Activity     | **In a Meeting**   | `meeting`     | red    | A slim headset with a mic boom and a red live tip; still                   |
-| Activity     | **Out to Lunch**   | `lunch`       | teal   | A sandwich in the hand, lifted for a bite every few seconds                |
-| Activity     | **On a Break**     | `break`       | blue   | A water bottle in the hand; still                                          |
-| Mood         | **Angry**          | `angry`       | orange | Steam puffing from both ears, a flushed face and furrowed brows            |
-| Mood         | **Celebrating**    | `celebrating` | pink   | A striped party hat, confetti falling round the head                       |
-| Mood         | **Thinking**       | `thinking`    | sky    | A thought bubble over the head, its three dots lighting in turn            |
-| Mood         | **Feeling Sick**   | `sick`        | lime   | A green-tinged face, an ice pack on the head and a bead of sweat; still    |
+| Group        | Status             | Token         | Dot    | Signature on the character                                                     |
+| ------------ | ------------------ | ------------- | ------ | ------------------------------------------------------------------------------ |
+| Availability | **Available**      | `available`   | green  | A green four-point sparkle beside the head, twinkling                          |
+| Availability | **Need Help**      | `help`        | amber  | An amber "?" over the head, bobbing                                            |
+| Availability | **Away**           | `away`        | slate  | A slow "Zz" rising above the head (drawn over the scene, as the chips are)     |
+| Availability | **Busy**           | `busy`        | brown  | A phone held to the ear, the arm raised to it                                  |
+| Availability | **Do Not Disturb** | `dnd`         | rose   | A red no-entry sign floating beside the head (the dot has the white bar too)   |
+| Activity     | **Focusing**       | `focus`       | violet | Over-ear headphones: a dark band over the head, violet cups on the ears        |
+| Activity     | **In a Meeting**   | `meeting`     | red    | A slim headset: one ear cup and a mic boom to the mouth with a red live tip    |
+| Activity     | **Out to Lunch**   | `lunch`       | teal   | A sandwich in the hand, carried at the waist and lifted for a bite every few s |
+| Activity     | **On a Break**     | `break`       | blue   | A water bottle in the hand, carried at the waist                               |
+| Mood         | **Angry**          | `angry`       | orange | Puffs of steam rising from both ears and fading                                |
+| Mood         | **Celebrating**    | `celebrating` | pink   | A striped party hat on the head, confetti falling round it                     |
+| Mood         | **Thinking**       | `thinking`    | sky    | A thought bubble up beside the head, its three dots lighting in turn           |
+| Mood         | **Feeling Sick**   | `sick`        | lime   | An ice pack on the head and a bead of sweat at the temple                      |
 
-- **Every view**: each signature is drawn front on, from behind and in profile (mirrored for the right), wherever it
-  would be seen: the face's parts (the flush, the brows, the tint) only where the face is, the headset's cups and band
-  from behind, the steam from the one ear in profile. A signature rides the
-  figure: it bobs with the walk, rises with a hop and drops with a sitter. Over the head, the hat, the ice pack, the "?" and the
-  bubble sit on the hair (taller styles lift them), and the name chip rises clear of them.
-- **Hands**: the sandwich (and the water bottle) is in the hand only while nothing else is: a drink, a Behaviour or the flag takes the hand
-  and the sandwich waits. Everything else stays on through a Behaviour.
-- **Motion**, flat however busy the room ([A busy room](#a-busy-room)): each loop is a CSS keyframe on a few SVG rects, stepped so the pixels move
-  whole (`packages/avatar/src/status-effects.css`, imported by each editor's stylesheet), never a timer per
-  character; a status with no loop draws still and costs nothing. Under reduced motion (the system's or the
-  in-app preference) every loop holds its resting frame: the puffs, the sparkle, the "?", the confetti, the three
-  dots and the sandwich stay where they are drawn.
+- **Added, never changed**: a signature is extra meshes on the character's head or in its hand, and a hand pose while
+  it holds one. It never changes the character's model, its parts, materials, colours, face or animations, so a
+  character with no status draws exactly as before (the owner, 2026-11-27, after the models changed under him
+  twice). The sprite's flushed face (Angry) and green tinge (Sick) and Away's fade are therefore not drawn in 3D:
+  they would recolour the model.
+- **On the head**: the head props ride the head bone, so they turn and bob with it through the idle, a walk, a hop
+  and a seat, in every facing; they are sized to the head and sit on the hair (the hat, the ice pack, the band).
+- **In the hand**: the sandwich, the bottle and the phone are in the hand only while nothing else is: a drink, a
+  Behaviour or a raised hand takes the hand and the prop waits (a drink's carry pose stays the drink's). The others
+  stay on through a Behaviour.
+- **Motion**: the twinkle, the bob, the steam, the confetti, the thought dots and the bite are a few transforms a
+  frame on the props alone; the "?" and the no-entry sign also turn slowly about the up axis, so neither is only ever
+  seen edge on, reading true from the front at rest, worked from the frame's clock (no timer per character). Under reduced motion (the
+  system's or the in-app preference) every one holds its resting frame.
 - **Set from the palette**: the **Status** flyout is a wide one (36rem), its statuses as cards four to a row in the
   three named groups (**Availability**, **Activity**, **Mood**; owner, 2026-11-06: "The status
   menu is long, why not a wider menu like other categories, with subcategories"), **None** leading the first, each
@@ -917,8 +943,7 @@ walker rules), and livehuddle behaves exactly as it did before; only the imports
   `seatFor`, which also says which way the sitter faces), so a character sits in a chair, desk, sofa or meeting table
   without the package importing this product's document package. The five bursts a pad or a walker throws are
   `@liveworkspace/model-core/reaction-bursts`, shared with livediagram's Reaction Pad.
-- **Furniture turning**: the Rotate Left and Rotate Right buttons (`@livehuddle/avatar/components/TurnButtons`), the
-  placing facing (`/placing-facing`) and its Space key (`/hooks/usePlacingTurnKeys`), each bound by this editor
+- **Furniture turning**: the placing facing (`/placing-facing`) and its Space key (`/hooks/usePlacingTurnKeys`), each bound by this editor
   ([Furniture facing](../009-elements/furniture-facing.md)).
 - **The wire shapes** (`AvatarPresence`, the statuses, the costume vocabulary, and the `avatar`, `avatar-push` and
   `avatar-say` ops with `parseAvatarSay`) are `@livehuddle/avatar/wire` and `@livehuddle/avatar/wire-say`.
@@ -945,17 +970,17 @@ among them, are this product's):
 
 - **`packages/avatar/src/walk.ts`**: the pure geometry: one frame's step toward a target, the arrow-key direction vector, the facing from a delta, the camera-follow correction, the view centring (`viewportOffsetCentredOn`, which portal travel re-exports), and the element-under-the-feet lookup. Unit-tested (`walk.test.ts`; this product's kinds under the feet in `apps/editor/lib/avatar-walk.test.ts`); no React, no DOM.
 - **`packages/avatar/src/walk.ts`** also holds the jump integration (`jumpStep`), the flag-wave frame clock (`waveFrame`), and the sprite hit-test (`hitTestAvatar`) the right-click look toggle uses.
-- **`packages/avatar/src/wire.ts`** (`@livehuddle/avatar/wire`): the costume vocabulary itself: the choices as closed sets of preset tokens (`hairColour` optional, so an older packet or store still parses), the statuses, the presence packet with its lean form (`leanAvatarPacket`, `expandAvatarPacket`) and the `avatar` / `avatar-push` ops. One module the editor and the room both read (the room through `@livehuddle/api-schema`'s re-export), because the presence packet carries a costume to peers, so both ends must agree on the tokens; it was written out twice (named types in the editor, inline in the presence message) until they were unified.
+- **`packages/avatar/src/wire.ts`** (`@livehuddle/avatar/wire`): the costume vocabulary itself: the choices as closed sets of preset tokens (`hairColour` and `build` optional, so an older packet or store still parses), the statuses, the presence packet with its lean form (`leanAvatarPacket`, `expandAvatarPacket`) and the `avatar` / `avatar-push` ops. One module the editor and the room both read (the room through `@livehuddle/api-schema`'s re-export), because the presence packet carries a costume to peers, so both ends must agree on the tokens; it was written out twice (named types in the editor, inline in the presence message) until they were unified.
 - **`packages/avatar/src/config.ts`**: everything the editor does with that vocabulary: the option catalogues (one source for the panel's rows AND the parser's validation, with their ids typed against the shared unions), the silhouette sets, the size scale, the random first-use roll, the field-by-field parser, and the localStorage read / write under the bound prefix. Re-exports the types so its importers keep one path. Unit-tested (including that every rolled value parses back, so the catalogues and the roll can't drift); no React.
 - **`../packages/workbench/src/components/primitives/AccordionSection.tsx`**: the shared single-open accordion row (header + chevron + grid-rows body), now used by the Avatar Panel and the Settings dialog (including its Keyboard category's shortcut groups).
-- **`packages/avatar/src/reactions.ts`**: the five reactions, their durations, and `reactionPose(kind, elapsedMs)`: a pure timeline that turns "this reaction, this far in" into the pose inputs the sprite already draws (hop height, facing, arms, stance, lean). Unit-tested (five jack reps, two spin turns, no arms-up-two-ways-at-once, everything back to standing when done), and pure precisely so a peer can replay a performance from a kind + a clock.
+- **`packages/avatar/src/reactions.ts`**: the Behaviours (`AVATAR_REACTIONS`; Raise Hand's held state is `AVATAR_HAND_UP_MS` there too), their durations, and `reactionPose(kind, elapsedMs)`: a pure timeline that turns "this reaction, this far in" into the pose inputs the sprite already draws (hop height, facing, arms, stance, lean). Unit-tested (five jack reps, two spin turns, no arms-up-two-ways-at-once, everything back to standing when done), and pure precisely so a peer can replay a performance from a kind + a clock.
 - **`packages/avatar/src/hooks/useAvatarConfig.ts`**: the costume state slice: load on mount, persist + report telemetry on each pick, and the gender toggle the right-click uses.
 - **Hair colour in the sprite**: `hairTones` in `packages/avatar/src/components/avatar-sprite-palette.ts` turns the token into its two tones (cached, as the outfit tones are), and `avatar-sprite-head.tsx` paints every hairstyle with them.
 - **`apps/editor/components/palette/AvatarPalette.tsx`**: the [avatar palette](#the-avatar-palette), the strip while walking: the [Call dock](#the-call-dock) (`components/calls/CallDock.tsx`, with `CallStripGroup.tsx`), the look and action buttons (the category bar's `CategoryBarButtons` and `useCategoryBar`) and Say. **`AvatarPaletteFlyouts.tsx`** draws each category's flyout (the category bar's `FlyoutHeader`, `PictureTile` and `CardTile`), and **`apps/editor/lib/avatar-palette.ts`** holds its pure parts: the categories, `stripPaletteFor` (which strip, from `can`), Title Case labels and each Behaviour's still pose. **`AvatarPalettePreview.tsx`** is the [preview card](#the-avatar-palette) beside a flyout (its place and fit, `previewFits`, in `avatar-palette-widths.ts`), and **`apps/editor/lib/avatar-preview.ts`** the option being tried on (a module store the tiles write through `previewHandlers`) and what the card draws for it (`previewView`, pure). livediagram keeps its Avatar Panel, whose body and cluster button moved into livediagram's editor when livehuddle stopped drawing them.
 - **Speech**: **`packages/avatar/src/wire-say.ts`** (the `avatar-say` op, its limits and its field-by-field parser, shared by the room and the editor); **`packages/avatar/src/speech-store.ts`** (the bubbles on screen, a module store the room connection writes to and the layer reads); **`packages/avatar/src/speech.ts`** (pure: word counting and the limits, the flight time, the bubble's rise, sway and fade at a moment, the per-person cap; unit-tested); **`packages/avatar/src/hooks/useAvatarSpeech.ts`** (the composer's open state, the cooldown, the floating bubbles, own and peers', sending and receiving); **`packages/avatar/src/components/AvatarSpeechLayer.tsx`** (the composer and the floating bubbles, drawn in canvas space at reading size, loaded the first time somebody speaks); **`packages/avatar/src/components/AvatarSpeechBubble.tsx`** (the bubble's look and the draft field, shared with the message popover); **`packages/avatar/src/components/AvatarMessagePopover.tsx`** (the message popover, hung from the palette's Say).
 - **`packages/avatar/src/hooks/useAvatarWalk.ts`**: the state slice: position / target / facing / hop / wave, the `requestAnimationFrame` loop, the camera nudge, and the presence publisher. Generic over the product's element, so its arrival callbacks get this product's `ShapeElement`. The pose that changes every frame (feet, facing, walking, step, hop, wave, reaction pose) is written to its `poseStore` (**`packages/avatar/src/pose.ts`**), never to React state, so a step renders only what subscribes to it ([Canvas performance](canvas-performance.md) "Walking renders the characters, not the canvas"); the hook renders its host only for facts that change rarely (placed or not, the element under the feet, the seat, the drink), and hands out `readPos` for handlers. **`AvatarSelfWalker`** (beside `AvatarWalker`) is your character subscribed to that store, and `useAvatarPose` any other reader's by-value slice of it.
 - **`packages/avatar/src/hooks/useAvatarKeys.ts`**: the keyboard slice (held arrows + the Space jump), split out so the hook above keeps to state + loop.
-- **`packages/avatar/src/components/AvatarWalker.tsx`**: placement: the canvas-coords box (placed by a `translate3d` transform, which a peer's glide transitions), the standing-on ring, the peer name chip. The pixel art itself is three files beside it: **`avatar-sprite.tsx`** draws the body and assembles the whole figure (the walk cycle, the hop, the flag), **`avatar-sprite-head.tsx`** everything above the neck (where the eight-hairstyles-by-three-facings combinations live, which is most of what the sprite draws), and **`avatar-sprite-palette.ts`** the colours both halves have to agree on (the tones from `packages/avatar/src/palette.ts`, the shirt's shade through the bound colour maths).
+- **`packages/avatar/src/components/AvatarWalker.tsx`**: placement: the canvas-coords box (placed by a `translate3d` transform, which a peer's glide transitions), the standing-on ring, the peer name chip, and the pose the 3D scene builds the figure from (`data-figure`); it draws no figure itself, since the Space is always 3D ([3D engine](3d-engine.md)). The pixel art, which the avatar palette and the Photo Wall still draw, is three files beside it: **`avatar-sprite.tsx`** draws the body and assembles the whole figure (the walk cycle, the hop, the flag), **`avatar-sprite-head.tsx`** everything above the neck (where the eight-hairstyles-by-three-facings combinations live, which is most of what the sprite draws), and **`avatar-sprite-palette.ts`** the colours both halves have to agree on (the tones from `packages/avatar/src/palette.ts`, the shirt's shade through the bound colour maths).
 - **Statuses**: **`packages/avatar/src/status.ts`** (the two groups, each status's label, dot colour and short line, and the wire parser) and **`packages/avatar/src/components/avatar-status-effects.tsx`** (each status's signature in the sprite's pixels, per view, and the headroom the name chip keeps over it), whose loops are **`packages/avatar/src/status-effects.css`**, imported once by each editor's `globals.css`. The sprite draws the effect with one line; the headphones stay in `avatar-sprite.tsx`.
 - **`packages/avatar/src/bindings.ts`** and **`apps/editor/lib/avatar-bindings.ts`**: the product's facts (telemetry, storage prefix, colour maths) and where this editor hands them over.
 - **`packages/avatar/src/scene.ts`**: what the package reads of a board's elements (`AvatarSceneElement`, `isSceneShape`, `hasSceneBox`).
@@ -964,7 +989,7 @@ among them, are this product's):
 
 ## Telemetry
 
-Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on a chosen entry (the toggle, `W`, Search or a button on the board; [opening walking](#opening-walking) is not counted), emitted from `selectCanvasTool` beside the Format line. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarHairColour' | 'AvatarSize')`, and the dice button fires `AvatarRandomised`: which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. Opening one of the avatar palette's flyouts counts as the building strip's does, `track('UI', 'Changed', 'ToolbarCategory')` (which category is not recorded). Sending a message fires `track('Canvas', 'Used', 'AvatarMessage')` from the composer and `track('Canvas', 'Used', 'AvatarMessagePanel')` from the palette's Say popover: that somebody spoke and by which door, **never the text** and never its length. [the Receptionist](receptionist.md) has his own events. No per-step, per-click, or per-reaction events (chatty, no signal).
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on a chosen entry (the toggle, `W`, Search or a button on the board; [opening walking](#opening-walking) is not counted), emitted from `selectCanvasTool` beside the Format line. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarHairColour' | 'AvatarBuild' | 'AvatarSize')`, and the dice button fires `AvatarRandomised`: which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. Opening one of the avatar palette's flyouts counts as the building strip's does, `track('UI', 'Changed', 'ToolbarCategory')` (which category is not recorded). Sending a message fires `track('Canvas', 'Used', 'AvatarMessage')` from the composer and `track('Canvas', 'Used', 'AvatarMessagePanel')` from the palette's Say popover: that somebody spoke and by which door, **never the text** and never its length. [the Receptionist](receptionist.md) has his own events. No per-step, per-click, or per-reaction events (chatty, no signal).
 
 A move from the Avatar palette's **Actions** (or its key) fires `track('Canvas', 'Used', 'AvatarAction')` from `useAvatarWalk`'s `playReaction`, and a burst from **React** (or its key) fires `track('Canvas', 'Used', 'AvatarReaction')` from the editor's `playAvatarBurst`: that one was played, never which. Each press counts, a restart included. Sitting down is the [Chair](../009-elements/chair.md#telemetry)'s.
 

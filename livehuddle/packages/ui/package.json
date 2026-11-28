@@ -9,6 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./site": "./src/site.ts",
+    "./brand": "./src/brand-app.ts",
     "./seo": "./src/seo.ts",
     "./trusted-types": "./src/trusted-types.ts",
     "./hero-band.css": "./hero-band.css"

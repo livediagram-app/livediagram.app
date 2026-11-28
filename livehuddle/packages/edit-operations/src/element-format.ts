@@ -132,8 +132,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   // And its walls (office.md "Glass walls"): Solid or Glass.
   // And its floor (office.md "Floors"): its type.
   room: ['roomDoor', 'variant', 'floor'],
-  // docs/specs/009-elements/room-builder.md "Opening and closing": whether a door is shut.
-  door: ['doorClosed', 'variant'],
+  // docs/specs/009-elements/room-builder.md "Door types": a door's type.
+  door: ['variant'],
   // docs/specs/009-elements/office.md "Rug types", corridor.md: a rug's pattern and a corridor's shape.
   rug: ['variant'],
   // office.md "Long Table": a Meeting Table's type.
@@ -143,13 +143,14 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   stage: ['stageSpeakers', 'stageCameras'],
   // docs/specs/008-canvas/receptionist.md "Asking him to leave": whether the pad's Receptionist was asked to leave.
   'avatar-pad': ['receptionistLeft'],
-  // docs/specs/009-elements/social-pieces.md: a world clock's zones and a jukebox's source.
-  'world-clock': ['clockZones'],
+  // docs/specs/009-elements/social-pieces.md: a jukebox's source (the Clock has nothing to set).
   jukebox: ['jukeboxSource', 'chairFacing'],
   portal: ['portalTarget'],
   // docs/specs/009-elements/screen-and-room-sign.md "Screen": its Video Link, or the file it shows (read as stored; a
   // file is chosen in the editor, where the person's own access is at hand).
   screen: ['screenUrl', 'liveItem', 'liveName', 'liveTab'],
+  // docs/specs/009-elements/poster.md: the gallery picture it frames.
+  poster: ['imageId'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {

@@ -130,7 +130,9 @@ These meet WCAG 2.2 AA, including 1.4.13 Content on Hover or Focus.
 - **Persistent.** A hint stays open while the pointer is over the control or the hint, or while the
   control has keyboard focus. It has no timeout.
 - **Pressing closes it.** A press on the control closes its hint and cancels a pending one, so a click
-  never leaves a name hanging over the menu it opened.
+  never leaves a name hanging over the menu it opened. It stays closed until the pointer moves on, even
+  where the press remounts the control under a still pointer (a toggle that hands itself to another strip): a hint
+  never reopens on the spot it was pressed shut.
 - **One at a time.** Opening a hint closes any other.
 - **No layout shift.** A hint floats in a layer above the page. Showing it moves nothing.
 - **Placement.** Above the control by preference; below, right or left when there is no room, kept

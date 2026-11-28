@@ -1,5 +1,7 @@
 # Element menu quick bar
 
+> **Gone from livehuddle** (owner, 2026-11-27: [Format Painter and Clear Styles](../002-project-scope/not-in-livehuddle.md#format-painter-and-clear-styles)). livediagram keeps it; what follows is a record.
+
 The other four products open the element menu (a right-click, a long-press, or a toolbar's More) on a **quick bar**:
 one row of glyph buttons above its first category, holding Assign Action, Add Comment, Add Link, Add Note and Clear
 Styles. livehuddle's quick bar holds Clear Styles alone (its four attachment buttons left). It was a menu row for a

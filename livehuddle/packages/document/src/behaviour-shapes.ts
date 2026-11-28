@@ -46,6 +46,7 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'outdoor-plant',
   'tree',
   'garden-path',
+  'road',
   'grass',
   'garden-fence',
   // The social pieces (docs/specs/009-elements/social-pieces.md). Walked to, round, sat at or used.
@@ -81,6 +82,9 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'toilet-cubicle',
   'washbasin',
   'hand-dryer',
+  'floor-lamp',
+  'table-lamp',
+  'desk-lamp',
   'pillar',
   'column',
   'car-park',
@@ -102,6 +106,7 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'suggestion-box',
   'signpost',
   'photo-wall',
+  'poster',
   // The Door (docs/specs/009-elements/room-builder.md): walked through.
   'door',
   // The Window (docs/specs/009-elements/room-builder.md "Window"): walked past.

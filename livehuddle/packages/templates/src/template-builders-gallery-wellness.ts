@@ -1,8 +1,9 @@
 // Two Spaces unlike the rest of the set (docs/specs/012-collaboration/virtual-office-template.md "Art Gallery and
 // Wellness Studio", the owner 2026-11-18: "add any missing templates that would be valuable"): an Art Gallery for a
 // show, a launch or a portfolio review, and a Wellness Studio for a team's yoga, meditation and quiet time. Each is a
-// building of closed rooms off an open floor, as the Interview Suite is (`campusPlan` with indoor rooms): every room
-// has a Door and a Room Sign, and a Directory stands by the entrance.
+// building of closed rooms off a foyer or lobby, a room of its own sharing their walls (`campusPlan` with indoor
+// rooms): every room has a Door and a Room Sign inside it, and a Directory stands by the entrance. Drawn at their
+// final size for the 3D view (virtual-office-template.md "Laid out for the 3D view").
 //
 // Each builder is pure apart from the Notice Board's pin time (template-notes.ts): it takes a centre (cx, cy) and
 // returns a fresh Element[], floors first.
@@ -11,17 +12,25 @@ import type { Element } from '@livehuddle/document';
 import { campusPlan, type IndoorRoom } from './template-campus-parts';
 import type { TemplateNote } from './template-notes';
 import type { OfficePiece } from './template-office-parts';
+import { against, besideX, belowY, standAt, withSigns } from './template-3d-place';
 
-const bench = (x: number, y: number): OfficePiece => ({ kind: 'bench', x, y });
+// A row of chairs facing up the room, models centred on `y`.
 const chairRow = (xs: readonly number[], y: number): OfficePiece[] =>
-  xs.map((x) => ({ kind: 'chair' as const, x, y, facing: 's' as const }));
-const stools = (xs: readonly number[], y: number): OfficePiece[] =>
-  xs.map((x) => ({ kind: 'bar-stool' as const, x, y }));
+  xs.map((x) => standAt('chair', x, y, 's'));
+
+// The arrival's offset from the plan's centre for a site point (campusPlan centres the site under its old heading's band).
+const padAt = (width: number, height: number, x: number, y: number) => ({
+  dx: x - width / 2,
+  dy: 96 + y - (96 + height + 120) / 2,
+});
+
+// Three Bean Bags side by side along the bottom of a round rug, its top left at (x, y), facing up across it.
+const beanBags = (x: number, y: number): OfficePiece[] => [
+  { kind: 'rug', x, y, variant: 'round' },
+  ...[10, 80, 150].map((dx) => standAt('bean-bag', x + dx, y + 140, 's')),
+];
 
 // --- Art Gallery -------------------------------------------------------------------
-
-const GALLERY_W = 2200;
-const GALLERY_H = 1320;
 
 const GALLERY_NOTES: readonly TemplateNote[] = [
   {
@@ -41,118 +50,112 @@ const GALLERY_NOTES: readonly TemplateNote[] = [
   },
 ];
 
-const GALLERY_ROOMS: IndoorRoom[] = [
+const MAIN = { x: 75, y: 75, w: 1075, h: 800 };
+const SCULPTURE = { x: besideX(MAIN), y: 75, w: 875, h: 800 };
+const TALK = { x: besideX(SCULPTURE), y: 75, w: 500, h: 800 };
+const FOYER = { x: 75, y: belowY(MAIN), w: TALK.x + TALK.w - 75, h: 640 };
+const GALLERY_W = FOYER.x + FOYER.w + 75;
+const GALLERY_H = FOYER.y + FOYER.h + 75;
+
+const galleryRooms = (): IndoorRoom[] => [
   {
-    // Photo Walls along the back wall, benches to sit and look, pillars framing the room.
+    // Photo Walls along the back wall, benches to sit and look at them, pillars framing the room.
     name: 'Main Gallery',
-    x: 60,
-    y: 60,
-    w: 860,
-    h: 640,
+    ...MAIN,
     indoor: true,
-    door: { side: 's', at: 430, sign: 1 },
-    windows: [{ side: 'w', at: 320 }],
+    door: { side: 's', at: 537, sign: 1 },
+    windows: [{ side: 'w', at: 400 }],
     pieces: [
-      { kind: 'photo-wall', x: 60, y: 4 },
-      { kind: 'photo-wall', x: 342, y: 4 },
-      { kind: 'photo-wall', x: 624, y: 4 },
-      bench(240, 330),
-      bench(484, 330),
-      { kind: 'pillar', x: 40, y: 260 },
-      { kind: 'pillar', x: 772, y: 260 },
-      { kind: 'plant', x: 24, y: 560 },
-      { kind: 'plant', x: 772, y: 560 },
+      // A runner along the wall of pictures, the benches looking over it at them.
+      { kind: 'rug', x: 150, y: 200, variant: 'runner', w: 775, h: 120 },
+      against('photo-wall', 'n', 200, MAIN),
+      against('photo-wall', 'n', 537, MAIN),
+      against('photo-wall', 'n', 875, MAIN),
+      standAt('bench', 330, 430, 's'),
+      standAt('bench', 745, 430, 's'),
+      standAt('pillar', 110, 330),
+      standAt('pillar', 965, 330),
+      against('plant', 's', 60, MAIN),
+      against('plant', 's', 1015, MAIN),
     ],
   },
   {
     // Columns as plinths down the middle, a long runner to walk between them, Photo Walls on the back wall.
     name: 'Sculpture Hall',
-    x: 980,
-    y: 60,
-    w: 700,
-    h: 640,
+    ...SCULPTURE,
     indoor: true,
-    door: { side: 's', at: 350, sign: 1 },
-    windows: [{ side: 'n', at: 350 }],
+    door: { side: 's', at: 437, sign: 1 },
+    windows: [{ side: 'n', at: 437 }],
     pieces: [
-      { kind: 'photo-wall', x: 80, y: 4 },
-      { kind: 'photo-wall', x: 444, y: 4 },
-      { kind: 'rug', x: 290, y: 220, variant: 'runner', w: 120, h: 300 },
-      { kind: 'column', x: 180, y: 180 },
-      { kind: 'column', x: 456, y: 180 },
-      { kind: 'column', x: 180, y: 370 },
-      { kind: 'column', x: 456, y: 370 },
-      bench(40, 540),
-      bench(524, 540),
+      against('photo-wall', 'n', 180, SCULPTURE),
+      against('photo-wall', 'n', 695, SCULPTURE),
+      { kind: 'rug', x: 377, y: 240, variant: 'runner', w: 120, h: 400 },
+      standAt('column', 230, 320),
+      standAt('column', 645, 320),
+      standAt('column', 230, 560),
+      standAt('column', 645, 560),
+      // Benches by the front wall looking up the hall.
+      against('bench', 's', 150, SCULPTURE),
+      against('bench', 's', 725, SCULPTURE),
     ],
   },
   {
     // The artist talk: a Podium under a Screen, two rows of seats facing it.
     name: 'Talk Room',
-    x: 1740,
-    y: 60,
-    w: 400,
-    h: 640,
+    ...TALK,
     indoor: true,
-    door: { side: 's', at: 200, sign: -1 },
-    windows: [{ side: 'e', at: 320 }],
+    door: { side: 's', at: 250, sign: -1 },
+    windows: [{ side: 'e', at: 400 }],
     pieces: [
-      { kind: 'screen', x: 140, y: 4, w: 120 },
-      { kind: 'podium', x: 168, y: 120 },
-      ...chairRow([74, 162, 250], 260),
-      ...chairRow([74, 162, 250], 480),
+      against('screen', 'n', 250, TALK),
+      standAt('podium', 250, 190),
+      ...chairRow([170, 250, 330], 370),
+      ...chairRow([170, 250, 330], 580),
     ],
   },
-];
-
-const GALLERY_FLOOR: OfficePiece[] = [
-  // The foyer: the front desk, the visitors' board, and a café corner to talk the show over.
-  { kind: 'reception-desk', x: 160, y: 860 },
-  { kind: 'notice-board', x: 60, y: 1080, notes: GALLERY_NOTES },
-  { kind: 'coat-rack', x: 480, y: 1080 },
-  { kind: 'umbrella-stand', x: 560, y: 1120 },
-  { kind: 'bar', x: 1500, y: 860 },
-  ...stools([1520, 1580, 1640, 1700], 990),
-  { kind: 'coffee-machine', x: 1780, y: 860 },
-  { kind: 'drinks-fridge', x: 1880, y: 840 },
-  { kind: 'rug', x: 1600, y: 1110, variant: 'round' },
-  { kind: 'bean-bag', x: 1640, y: 1140 },
-  { kind: 'bean-bag', x: 1706, y: 1140 },
-  { kind: 'directory', x: GALLERY_W / 2 + 80, y: 1180 },
-  { kind: 'plant', x: 40, y: 1220 },
-  { kind: 'plant', x: 2100, y: 1220 },
+  {
+    // The foyer: the front desk, the visitors' board, and a café corner to talk the show over.
+    name: 'Foyer',
+    ...FOYER,
+    indoor: true,
+    door: { side: 's', at: FOYER.w / 2, sign: 1 },
+    pieces: [
+      standAt('reception-desk', 350, 300),
+      against('notice-board', 'w', 300, FOYER, { notes: GALLERY_NOTES }),
+      against('coat-rack', 's', 1000, FOYER),
+      against('umbrella-stand', 's', 1070, FOYER),
+      // The café: a bar along the right wall with its stools, coffee beside it, the drinks fridge on the front wall,
+      // and Bean Bags to sit on.
+      against('bar', 'e', 300, FOYER),
+      ...[204, 268, 332, 396].map((y) => standAt('bar-stool', FOYER.w - 86, y, 'w')),
+      against('coffee-machine', 'e', 520, FOYER),
+      against('drinks-fridge', 's', 2280, FOYER),
+      ...beanBags(1860, 300),
+      standAt('directory', FOYER.w / 2 + 200, 540),
+      against('plant', 'n', 60, FOYER),
+      against('plant', 's', 60, FOYER),
+    ],
+  },
 ];
 
 export function buildArtGallery(cx: number, cy: number): Element[] {
   return campusPlan(cx, cy, {
     width: GALLERY_W,
     height: GALLERY_H,
-    rooms: GALLERY_ROOMS,
-    open: GALLERY_FLOOR,
-    title: {
-      text: 'Art Gallery',
-      width: 280,
-      sticker: 'emoji-gem',
-      subtitle:
-        'Walk the show together: pictures in the galleries, sculpture in the hall, a talk from the artist, coffee in the foyer.',
-    },
-    arrival: {
-      dx: -260,
-      dy: 360,
-      hint: 'You arrive on the Avatar Pad in the foyer. Walk into the Main Gallery, or find a seat for the talk.',
-    },
+    rooms: withSigns(galleryRooms()),
+    // Each room's sign hangs inside it by its Door, as every Door opens onto the Foyer.
+    signs: false,
+    open: [],
+    arrival: padAt(GALLERY_W, GALLERY_H, FOYER.x + FOYER.w / 2 - 120, FOYER.y + 320),
   });
 }
 
 // --- Wellness Studio ---------------------------------------------------------------
 
-const WELL_W = 2100;
-const WELL_H = 1340;
-
 const WELL_NOTES: readonly TemplateNote[] = [
   {
     title: 'Class times',
-    text: 'Yoga at the top of every hour in the Yoga Studio. The teacher starts the Timer and presses Bring Focus.',
+    text: 'Yoga at the top of every hour in the Yoga Studio. The teacher starts the Timer.',
     color: 'green',
   },
   {
@@ -177,121 +180,113 @@ const mat = (x: number, y: number): OfficePiece => ({
   h: 200,
 });
 
-const WELL_ROOMS: IndoorRoom[] = [
+const YOGA = { x: 75, y: 75, w: 1125, h: 800 };
+const MEDITATION = { x: besideX(YOGA), y: 75, w: 700, h: 800 };
+const GYM = { x: besideX(MEDITATION), y: 75, w: 500, h: 800 };
+const NAP = { x: 75, y: belowY(YOGA), w: 515, h: 600 };
+const LOBBY = { x: besideX(NAP), y: NAP.y, w: GYM.x + GYM.w - besideX(NAP), h: 600 };
+const WELL_W = LOBBY.x + LOBBY.w + 75;
+const WELL_H = LOBBY.y + LOBBY.h + 75;
+
+const wellRooms = (): IndoorRoom[] => [
   {
-    // Six mats facing the teacher's, a Screen to follow, a Timer for the class and Bring Focus to gather everyone.
+    // Four mats facing the teacher's, a Screen to follow, and a Timer for the class.
     name: 'Yoga Studio',
-    x: 60,
-    y: 60,
-    w: 900,
-    h: 640,
+    ...YOGA,
     indoor: true,
-    door: { side: 's', at: 450, sign: 1 },
+    door: { side: 's', at: 680, sign: 1 },
     windows: [
-      { side: 'w', at: 320 },
-      { side: 'n', at: 200 },
+      { side: 'w', at: 400 },
+      { side: 'n', at: 250 },
     ],
     pieces: [
-      { kind: 'screen', x: 390, y: 4, w: 120 },
-      mat(406, 100),
-      ...[140, 300, 460, 620].map((x) => mat(x, 360)),
-      { kind: 'timer', x: 700, y: 60 },
-      { kind: 'focus-button', x: 120, y: 60 },
-      { kind: 'plant', x: 24, y: 560 },
-      { kind: 'plant', x: 812, y: 560 },
+      against('screen', 'n', 562, YOGA),
+      mat(518, 130),
+      ...[200, 420, 640, 860].map((x) => mat(x, 420)),
+      { kind: 'timer', x: 880, y: 60 },
+      against('plant', 's', 60, YOGA),
+      against('plant', 's', 1065, YOGA),
     ],
   },
   {
-    // A fountain to listen to, bean bags round it, plants all round.
+    // A fountain to listen to, bean bags round it facing in, plants in the corners.
     name: 'Meditation Room',
-    x: 1020,
-    y: 60,
-    w: 560,
-    h: 640,
+    ...MEDITATION,
     indoor: true,
-    door: { side: 's', at: 280, sign: 1 },
-    windows: [{ side: 'n', at: 280 }],
+    door: { side: 's', at: 350, sign: 1 },
+    windows: [{ side: 'n', at: 350 }],
     pieces: [
-      { kind: 'rug', x: 140, y: 220, variant: 'round', w: 280, h: 280 },
-      { kind: 'fountain', x: 212, y: 300 },
-      { kind: 'bean-bag', x: 130, y: 230 },
-      { kind: 'bean-bag', x: 366, y: 230 },
-      { kind: 'bean-bag', x: 130, y: 440 },
-      { kind: 'bean-bag', x: 366, y: 440 },
-      { kind: 'plant', x: 24, y: 52 },
-      { kind: 'plant', x: 476, y: 52 },
-      { kind: 'plant', x: 24, y: 560 },
-      { kind: 'plant', x: 476, y: 560 },
+      { kind: 'rug', x: 190, y: 260, variant: 'round', w: 320, h: 320 },
+      standAt('fountain', 350, 420),
+      standAt('bean-bag', 230, 330, 'w'),
+      standAt('bean-bag', 470, 330, 'e'),
+      standAt('bean-bag', 230, 510, 'w'),
+      standAt('bean-bag', 470, 510, 'e'),
+      against('plant', 'n', 60, MEDITATION),
+      against('plant', 'n', 640, MEDITATION),
+      against('plant', 's', 60, MEDITATION),
+      against('plant', 's', 640, MEDITATION),
     ],
   },
   {
-    // Treadmills along the back wall, lockers by the door, water on the side.
+    // Treadmills facing the back wall, lockers on the side wall, water by the door.
     name: 'Gym',
-    x: 1640,
-    y: 60,
-    w: 400,
-    h: 640,
+    ...GYM,
     indoor: true,
-    door: { side: 's', at: 200, sign: -1 },
-    windows: [{ side: 'e', at: 320 }],
+    door: { side: 's', at: 250, sign: -1 },
+    windows: [{ side: 'e', at: 400 }],
     pieces: [
-      { kind: 'treadmill', x: 80, y: 40 },
-      { kind: 'treadmill', x: 164, y: 40 },
-      { kind: 'treadmill', x: 248, y: 40 },
-      { kind: 'lockers', x: 300, y: 380 },
-      { kind: 'water-cooler', x: 24, y: 400 },
+      // Three treadmills side by side along the back wall.
+      ...[170, 250, 330].map((x) => standAt('treadmill', x, 150, 's')),
+      against('lockers', 'e', 560, GYM),
+      against('water-cooler', 'w', 560, GYM),
     ],
   },
   {
     // Two Nap Pods and a reading nook, each a quiet place of its own.
     name: 'Nap Room',
-    x: 1460,
-    y: 880,
-    w: 580,
-    h: 400,
+    ...NAP,
     indoor: true,
-    door: { side: 'w', at: 220, sign: 1 },
-    windows: [{ side: 'e', at: 220 }],
+    door: { side: 'e', at: 300, sign: 1 },
+    windows: [{ side: 'w', at: 300 }],
     pieces: [
-      { kind: 'nap-pod', x: 120, y: 60 },
-      { kind: 'nap-pod', x: 360, y: 60 },
-      { kind: 'reading-nook', x: 300, y: 250 },
-      { kind: 'plant', x: 40, y: 300 },
+      standAt('nap-pod', 130, 140),
+      standAt('nap-pod', 380, 140),
+      { kind: 'rug', x: 120, y: 380 },
+      against('reading-nook', 's', 220, NAP),
+      against('plant', 's', 440, NAP),
     ],
   },
-];
-
-const WELL_FLOOR: OfficePiece[] = [
-  // The lobby: the front desk, the class board, and a juice bar.
-  { kind: 'reception-desk', x: 120, y: 860 },
-  { kind: 'notice-board', x: 60, y: 1100, notes: WELL_NOTES },
-  { kind: 'bar', x: 760, y: 860 },
-  ...stools([780, 840, 900, 960], 990),
-  { kind: 'drinks-fridge', x: 1040, y: 840 },
-  { kind: 'water-cooler', x: 1136, y: 856 },
-  { kind: 'hammock', x: 1180, y: 1060 },
-  { kind: 'directory', x: WELL_W / 2 - 200, y: 1200 },
-  { kind: 'plant', x: 40, y: 1240 },
-  { kind: 'plant', x: 1360, y: 1240 },
+  {
+    // The lobby: the front desk, the class board, and a juice bar.
+    name: 'Lobby',
+    ...LOBBY,
+    indoor: true,
+    door: { side: 's', at: 900, sign: 1 },
+    pieces: [
+      standAt('reception-desk', 400, 320),
+      against('notice-board', 'w', 470, LOBBY, { notes: WELL_NOTES }),
+      // Clear of the corner where the Yoga Studio's and the Meditation Room's walls meet the lobby's.
+      against('bar', 'n', 460, LOBBY),
+      ...[380, 440, 500, 560].map((x) => standAt('bar-stool', x, 126, 's')),
+      against('drinks-fridge', 'n', 780, LOBBY),
+      against('water-cooler', 'e', 200, LOBBY),
+      standAt('hammock', 1300, 420),
+      standAt('directory', 760, 520),
+      against('plant', 's', 60, LOBBY),
+      against('plant', 's', LOBBY.w - 60, LOBBY),
+    ],
+  },
 ];
 
 export function buildWellnessStudio(cx: number, cy: number): Element[] {
   return campusPlan(cx, cy, {
     width: WELL_W,
     height: WELL_H,
-    rooms: WELL_ROOMS,
-    open: WELL_FLOOR,
-    title: {
-      text: 'Wellness Studio',
-      width: 320,
-      sticker: 'emoji-herb',
-      subtitle:
-        'Time out together: a yoga class, a quiet room to meditate, a gym, a nap room and a juice bar in the lobby.',
-    },
-    arrival: {
-      dx: -340,
-      dy: 380,
-      hint: 'You arrive on the Avatar Pad in the lobby. Join a class in the Yoga Studio, or find somewhere quiet.',
-    },
+    rooms: withSigns(wellRooms()),
+    // Each room's sign hangs inside it by its Door, as every Door opens onto the Lobby.
+    signs: false,
+    open: [],
+    arrival: padAt(WELL_W, WELL_H, LOBBY.x + 900, LOBBY.y + 300),
   });
 }

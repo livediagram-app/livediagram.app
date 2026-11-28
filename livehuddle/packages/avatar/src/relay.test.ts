@@ -104,6 +104,14 @@ describe('createAvatarPacker', () => {
     expect(carries('t1', walking(1, costume))).toBe(true);
   });
 
+  // The Build menu: a new build reaches everyone at once too.
+  it('carries it again when only the build changes', () => {
+    const { carries } = setup();
+    carries();
+    expect(carries('t1', walking(1, { ...costume, build: 'broad' }))).toBe(true);
+    expect(carries('t1', walking(1, { ...costume, build: 'broad' }))).toBe(false);
+  });
+
   it('carries it every refresh interval while walking', () => {
     const { carries, tick } = setup();
     carries();

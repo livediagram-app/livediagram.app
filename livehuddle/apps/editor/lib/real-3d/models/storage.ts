@@ -9,9 +9,11 @@ const BLACK = 0x000000;
 /** Where a counter's worktop is: what a microwave or kettle stands on. */
 const COUNTER_Z = KIND_HEIGHT['kitchen-counter']!;
 
+/** How high a Printer's stand lifts it (its shelf of paper under it). */
+const PRINTER_STAND_Z = 16;
+
 /** Heights this file sets for its own kinds, where the drawing asks for a different one than the kit's. */
 const H = {
-  'coffee-machine': 46,
   'umbrella-stand': 30,
   washbasin: 62,
 } as const;
@@ -148,13 +150,17 @@ export const STORAGE_MODELS: ModelTable = {
   'coffee-machine': (m, c) => {
     // A cupboard under a worktop, and the machine on it: a screen, a button, the cup under its spout, a water tank.
     const { x0, y0, x1, y1 } = c.f.foot;
-    const top = H['coffee-machine'];
+    // The cupboard's worktop is at counter height (3d-engine.md "Stands at a real height"), the machine on it.
+    const top = KIND_HEIGHT['coffee-machine']!;
     const g = grid(c, 72, 88, 8, top);
-    const cz = 27;
+    const cz = COUNTER_Z;
     m.b(x0 + 1, y0 + 1, 0, x1 - 1, y1 - 1, cz - 3, c.t.face);
     m.b(x0, y0, cz - 3, x1, y1, cz, c.t.seat);
-    m.b(g.x(8), y1 - 1, 12, g.x(64), y1 - 0.5, 12.8, dark(c.t.face, 0.3), { bare: true });
-    m.b(-1, y1 - 1, 6, 1, y1 - 0.2, 10, dark(c.t.face, 0.3));
+    // Two doors: their meeting line, a handle each, and a kick plate.
+    m.b(-0.3, y1 - 1, 3, 0.3, y1 - 0.5, cz - 5, dark(c.t.face, 0.3), { bare: true });
+    m.b(-4, y1 - 1, cz - 11, -2.5, y1 - 0.2, cz - 7, dark(c.t.face, 0.35));
+    m.b(2.5, y1 - 1, cz - 11, 4, y1 - 0.2, cz - 7, dark(c.t.face, 0.35));
+    m.b(x0 + 1, y1 - 1.2, 0, x1 - 1, y1 - 1, 2.5, dark(c.t.face, 0.25), { bare: true });
     const by0 = y0 + 2;
     const yf = by0 + 20;
     m.b(g.x(14), by0, cz, g.x(58), yf, top - 4, c.t.face);
@@ -284,9 +290,17 @@ export const STORAGE_MODELS: ModelTable = {
 
   printer: (m, c) => {
     // A desktop printer on its paper drawer: the page coming out of the top, the output slot, the control panel.
+    // On a low stand with a shelf of paper, so its top is at a hand's height (3d-engine.md "Stands at a real height").
     const { x0, y0, x1, y1 } = c.f.foot;
-    const g = grid(c, 72, 75, 4, KIND_HEIGHT.printer!);
-    m.b(g.x(10), y0, 0, g.x(62), y1, g.z(44), c.t.face);
+    const stand = PRINTER_STAND_Z;
+    const g0 = grid(c, 72, 75, 4, KIND_HEIGHT.printer! - stand);
+    const g: Grid = { ...g0, z: (ay) => stand + g0.z(ay) };
+    const leg = dark(c.t.stroke, 0.1);
+    m.legs(g.x(8), y0 + 0.5, g.x(64), y1 - 0.5, stand - 2, 2.5, leg);
+    m.b(g.x(6), y0, stand - 2, g.x(66), y1, stand, c.t.seat, { top: light(c.t.seat, 0.08) });
+    m.b(g.x(9), y0 + 1, 4, g.x(63), y1 - 1, 5.5, c.t.seat, { top: light(c.t.seat, 0.08) });
+    m.b(g.x(14), y0 + 3, 5.5, g.x(40), y1 - 4, 9.5, WHITE, { top: 0xf8fafc });
+    m.b(g.x(10), y0, stand, g.x(62), y1, g.z(44), c.t.face);
     plate(m, g, 14, 59, 44, 1, y1, 0.4, dark(c.t.face, 0.3), { bare: true });
     plate(m, g, 30, 50, 12, 2.5, y1, 0.8, 0x334155, { bare: true });
     plate(m, g, 30, 65, 12, 2.5, y1, 0.8, 0x334155, { bare: true });
@@ -637,10 +651,13 @@ export const STORAGE_MODELS: ModelTable = {
     const body = 0x4338ca;
     const trim = 0x7173e3;
     const yf = y1 - 4;
+    // The cabinet's base runs its whole depth; above the control deck its back steps in a little, as a real
+    // cabinet's top is shallower than its foot.
+    const top0 = y0 + (y1 - y0) * 0.18;
     m.b(g.x(6), y0, 0, g.x(58), yf, g.z(20), body);
-    m.b(g.x(14), y0, g.z(20), g.x(50), yf, h, body, { top: light(body, 0.1) });
-    m.b(g.x(8), y0 + 2, g.z(20), g.x(14), yf, g.z(10), body);
-    m.b(g.x(50), y0 + 2, g.z(20), g.x(56), yf, g.z(10), body);
+    m.b(g.x(14), top0, g.z(20), g.x(50), yf, h, body, { top: light(body, 0.1) });
+    m.b(g.x(8), top0 + 2, g.z(20), g.x(14), yf, g.z(10), body);
+    m.b(g.x(50), top0 + 2, g.z(20), g.x(56), yf, g.z(10), body);
     plate(m, g, 10, 8, 44, 12, yf, 0.8, 0xdeb241);
     plate(m, g, 14, 12, 18, 2, yf + 0.8, 0.3, light(0xdeb241, 0.4), { bare: true });
     plate(m, g, 10, 24, 44, 34, yf, 0.8, trim);
@@ -659,24 +676,28 @@ export const STORAGE_MODELS: ModelTable = {
   },
 
   'suggestion-box': (m, c) => {
-    // A wooden box on a post: a slot in its lid with a note going in, the lightbulb poster on its front.
+    // A wooden box on a tall turned post, its slot at chest height (3d-engine.md "Stands at a real height"): a slot
+    // in its lid with a note going in, the lightbulb poster on its front, a round foot.
     const { y0, y1 } = c.f.foot;
     const g = grid(c, 64, 108, 6, KIND_HEIGHT['suggestion-box']!);
     const yc = (y0 + y1) / 2;
     const wood = 0xc2894b;
     const deep = 0x86431a;
-    m.b(g.x(14), y0, 0, g.x(50), y1, g.z(100), deep);
-    m.c(0, yc, 8 * g.s, 6, g.z(100), g.z(62), wood);
     const half = 10;
-    m.b(g.x(6), yc - half, g.z(66), g.x(58), yc + half, g.z(24), wood);
-    m.b(g.x(2), yc - half - 2, g.z(26), g.x(62), yc + half + 2, g.z(16), deep, {
-      top: light(deep, 0.1),
-    });
-    m.b(g.x(18), yc - 1.5, g.z(16), g.x(46), yc + 1.5, g.z(16) + 0.2, 0x292524, { bare: true });
-    m.b(g.x(27), yc - 0.5, g.z(16), g.x(39), yc + 0.5, g.z(6), WHITE);
-    plate(m, g, 14, 33, 36, 26, yc + half, 0.6, 0xfef3c7);
-    plate(m, g, 27, 40, 10, 9, yc + half + 0.6, 0.5, 0xdcba33, { bare: true });
-    plate(m, g, 29, 49, 6, 5, yc + half + 0.6, 0.5, 0x8e5f1a, { bare: true });
+    const bz = 31;
+    const lz = 43;
+    m.cylinder(0, yc, 0, 2.6, 11, 10, deep, { segments: 32, top: light(deep, 0.1) });
+    m.cylinder(0, yc, 2.6, 4, 5, 3.4, deep, { segments: 24 });
+    m.cylinder(0, yc, 4, bz - 1.5, 2.8, 2.3, wood, { segments: 20, caps: false });
+    m.cylinder(0, yc, bz - 1.5, bz, 4.5, 5.5, deep, { segments: 24 });
+    m.b(g.x(6), yc - half, bz, g.x(58), yc + half, lz, wood);
+    m.b(g.x(2), yc - half - 2, lz, g.x(62), yc + half + 2, lz + 3, deep, { top: light(deep, 0.1) });
+    m.b(g.x(18), yc - 1.5, lz + 3, g.x(46), yc + 1.5, lz + 3.2, 0x292524, { bare: true });
+    m.b(g.x(27), yc - 0.5, lz + 3, g.x(39), yc + 0.5, lz + 7, WHITE);
+    const front = yc + half;
+    m.b(g.x(14), front, bz + 1.5, g.x(50), front + 0.6, lz - 1.5, 0xfef3c7, { bare: true });
+    m.b(g.x(27), front + 0.6, bz + 5.5, g.x(37), front + 1.1, bz + 9, 0xdcba33, { bare: true });
+    m.b(g.x(29), front + 0.6, bz + 3.6, g.x(35), front + 1.1, bz + 5.5, 0x8e5f1a, { bare: true });
   },
 
   directory: (m, c) => {

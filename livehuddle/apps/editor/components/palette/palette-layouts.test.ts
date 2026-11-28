@@ -36,10 +36,9 @@ describe('palette layouts', () => {
     }
   });
 
-  it('is Popular; Write; the Space categories, Travel last (no Icons, no Media; Stickers search-only)', () => {
+  it('is Popular, then the Space categories, Travel last (no Write, no Icons, no Media; Stickers search-only)', () => {
     expect(ids()).toEqual([
       'popular',
-      'write',
       'collab-rooms',
       'collab-seating',
       'collab-amenities',
@@ -51,40 +50,31 @@ describe('palette layouts', () => {
     expect(paletteLandingCategory()).toBe('popular');
   });
 
-  it('lands on Popular: the light content, then the pieces a meeting place is built from', () => {
+  it('lands on Popular: the pieces a meeting place is built from', () => {
     expect(tileIds('popular')).toEqual([
-      'tools:sticky',
-      'tools:text',
       'tools:room',
       'tools:meeting-table',
       'tools:chair',
-      'tools:focus-button',
       'tools:avatar-pad',
     ]);
-    const popular = paletteCategories().find((c) => c.id === 'popular')!;
-    expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual(['tools:text']);
   });
 
-  // not-in-livehuddle.md "Media" and "Images are back": the Image is Write's alone, and no Link card anywhere.
-  it('holds the light content in Write, the Image after the words, and no Media or Link card anywhere', () => {
-    expect(tileIds('write')).toEqual(['tools:text', 'tools:sticky', 'tools:image']);
-    const write = paletteCategories().find((c) => c.id === 'write')!;
-    expect(write.description).toBe('Text, sticky notes and images.');
-    // One block: no divider, so no half-named groups in its flyout.
-    expect(write.tiles!.some((t) => t.dividerAfter)).toBe(false);
+  // not-in-livehuddle.md "The Write category" and "Media": no Text, Sticky note, Image or Link card anywhere.
+  it('offers no Write, no Media, and no text, note, image or link card tile anywhere', () => {
+    expect(paletteCategoryOffered('write')).toBe(false);
     expect(paletteCategoryOffered('media')).toBe(false);
-    for (const c of paletteCategories()) {
-      for (const t of c.tiles ?? []) expect(t.id, c.id).not.toBe('tools:link-card');
-      if (c.id !== 'write')
-        expect(c.tiles?.map((t) => t.id) ?? [], c.id).not.toContain('tools:image');
-    }
+    for (const c of paletteCategories())
+      for (const t of c.tiles ?? [])
+        expect(
+          ['tools:text', 'tools:sticky', 'tools:image', 'tools:link-card'],
+          c.id,
+        ).not.toContain(t.id);
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "The Space categories".
   it('splits the Space pieces into their categories', () => {
     expect(tileIds('collab-travel')).toEqual([
       'tools:door',
-      'tools:focus-button',
       'tools:avatar-pad',
       'tools:directory',
       'tools:signpost',
@@ -131,6 +121,9 @@ describe('palette layouts', () => {
     expect(tileIds('collab-amenities')).toEqual([
       'tools:plant',
       'tools:bookshelf',
+      'tools:floor-lamp',
+      'tools:table-lamp',
+      'tools:desk-lamp',
       'tools:printer',
       'tools:copier',
       'tools:lockers',
@@ -187,6 +180,7 @@ describe('palette layouts', () => {
       'tools:tree',
       'tools:grass',
       'tools:garden-path',
+      'tools:road',
       'tools:garden-fence',
       'tools:bench',
       'tools:picnic-table',
@@ -214,6 +208,7 @@ describe('palette layouts', () => {
       'tools:calendar-wall',
       'tools:suggestion-box',
       'tools:photo-wall',
+      'tools:poster',
       // docs/specs/009-elements/timer-and-stopwatch.md: placed in a room, not a cluster button.
       'tools:timer',
       'tools:stopwatch',
@@ -229,7 +224,10 @@ describe('palette layouts', () => {
     const offered = paletteCategories()
       .filter((c) => c.id.startsWith('collab-'))
       .flatMap((c) => (c.tiles ?? []).map((t) => t.id));
-    expect([...offered].sort()).toEqual([...pieces].sort());
+    // Bring Focus stays in the catalogue (a stored one finds its name) but no category offers it
+    // (not-in-livehuddle.md "Bring Focus").
+    expect(offered).not.toContain('tools:focus-button');
+    expect([...offered].sort()).toEqual(pieces.filter((id) => id !== 'tools:focus-button').sort());
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "Stickers in search only".

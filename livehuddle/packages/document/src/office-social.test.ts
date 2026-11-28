@@ -14,7 +14,6 @@ import {
   NOTE_TEXT_MAX,
   OFFICE_SOCIAL_ART,
   pondParts,
-  zoneCityLabel,
   type NoticeNote,
 } from './office-social';
 import { isValidElement } from './validate';
@@ -122,7 +121,8 @@ describe('notice board notes', () => {
   });
 });
 
-describe('world clock zones and the jukebox source', () => {
+describe("the old world clock's zones and the jukebox source", () => {
+  // social-pieces.md "Clock": an old document's zones still validate, so it loads, though no clock reads them.
   it('takes IANA zone names with a short label, up to six', () => {
     expect(isClockZone({ zone: 'Europe/London', label: 'London' })).toBe(true);
     expect(isClockZone({ zone: 'America/Argentina/Buenos_Aires', label: 'BA' })).toBe(true);
@@ -132,11 +132,6 @@ describe('world clock zones and the jukebox source', () => {
     const z = { zone: 'Asia/Tokyo', label: 'Tokyo' };
     expect(isClockZones(Array.from({ length: CLOCK_ZONES_MAX }, () => z))).toBe(true);
     expect(isClockZones(Array.from({ length: CLOCK_ZONES_MAX + 1 }, () => z))).toBe(false);
-  });
-
-  it('names a zone by its city', () => {
-    expect(zoneCityLabel('America/New_York')).toBe('New York');
-    expect(zoneCityLabel('UTC')).toBe('UTC');
   });
 
   it('takes only an https link as a jukebox source', () => {

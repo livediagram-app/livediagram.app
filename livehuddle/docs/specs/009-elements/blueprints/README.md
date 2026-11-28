@@ -8,9 +8,11 @@ Follow the references below only as needed; never upfront.
 - ./office.md - when implementing or changing the office pieces: their drawings, a room's walls and doorway, footprints, the meeting table's seats, drinks and the held cup
 - ./office-amenities.md - when implementing or changing the office amenities: their drawings, footprints, counter-top pieces, the Perks groups and the Restroom preset
 - ./team-pieces.md - when implementing or changing the team pieces: the calendar's note day and month grid, the suggestion store and its three routes, the signpost's nearest places, the photo wall's frames
+- ./poster.md - when implementing or changing the Poster: its picture fields, who opens the picker, the 3D frame and the picture quads and their textures
 - ./workday-pieces.md - when implementing or changing the workday pieces: their seats and standing seats, the status a piece sets, the booth's call zone, the hot desk's card, the dog's legs, and the reception bell's wire and earshot
 - ./piece-moments.md - when implementing or changing the piece moments: the moment kinds, the reach, the trigger (every arrival, not over itself), the store, the part motions, the one-shot art and its CSS
 - ./venue-pieces.md - when implementing or changing the venue pieces: their drawings, footprints, the pool's rim, the curtains as a hanging piece, the stage's boards and footlights, and their template placements
+- ./road.md - when implementing or changing the Road: its drawing, lanes, the traffic schedule, the instanced cars and their fade, and the templates' outdoor check
 - ./screen-and-room-sign.md - when implementing or changing the Screen or the Room Sign: their rooms, the live store, the faces, the Video Link and the Meet category
 - ./wayfinding.md - when implementing or changing the Directory, the Elevator or the Stairs: places, names, approach points, who is where, Walk There, Go, rides and re-entry
 - ./avatar-pad.md - when implementing or changing the Avatar Pad, its pixels, where Avatar mode starts or the arrival beam
