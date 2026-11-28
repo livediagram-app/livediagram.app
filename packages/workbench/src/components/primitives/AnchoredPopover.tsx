@@ -294,6 +294,9 @@ export function AnchoredPopover({
           left: pos?.left ?? -9999,
           ...(pos?.side === 'above' ? { bottom: pos.bottom } : { top: pos?.top ?? -9999 }),
           ...(pos ? { maxHeight: pos.maxHeight } : {}),
+          // The room inside it (less a pointer's 1px border), for content that sizes itself to fit (Tools' floor and
+          // its views, footer-tools-menu.md "Tools fits the window").
+          ...(pos ? { '--anchored-room': `${pos.maxHeight - (pointer ? 2 : 0)}px` } : {}),
         }}
       >
         {children}

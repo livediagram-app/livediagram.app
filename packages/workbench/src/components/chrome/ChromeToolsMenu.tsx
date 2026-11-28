@@ -39,7 +39,7 @@ import {
   useToolsDoorItems,
   useToolsViewRequest,
 } from './tools-door';
-import { TOOLS_HEIGHT_PX, ToolsHeader, ToolsView } from './ToolsView';
+import { TOOLS_HEIGHT_PX, ToolsHeader, ToolsView, toolsRoomCap } from './ToolsView';
 import { AnimatedHeightBox } from '../primitives/AnimatedHeightBox';
 
 /** The popover's sections, in the order they show; a section with no tool in it is left out. */
@@ -436,7 +436,8 @@ export function ChromeToolsMenu({
                   ? HERO_TOKEN_STYLE
                   : {
                       ...HERO_TOKEN_STYLE,
-                      minHeight: `min(${TOOLS_HEIGHT_PX}px, calc(100dvh - 2rem))`,
+                      // Never past the room above the button (footer-tools-menu.md "Tools fits the window").
+                      minHeight: toolsRoomCap(TOOLS_HEIGHT_PX),
                     }
               }
             >

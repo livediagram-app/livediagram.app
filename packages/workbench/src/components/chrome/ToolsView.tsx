@@ -49,6 +49,14 @@ export function ToolsHeader({
  *  floor plus three more 95 px rows. Never past the screen. */
 export const TOOLS_HEIGHT_PX = 785;
 
+/** `px`, capped by the screen and by the room the Tools popover has above its button (`--anchored-room`, set by
+ *  AnchoredPopover), so on a short window Tools and its views fit and scroll inside (footer-tools-menu.md "Tools fits
+ *  the window"). */
+export const toolsRoomCap = (px: number): string =>
+  `min(${px}px, 100dvh - 2rem, var(--anchored-room, 100dvh))`;
+// The 100 px band over a view, and the height box's 4 px pad under it.
+const BAND_AND_PAD = '104px';
+
 export function ToolsView({
   id,
   label,
@@ -99,7 +107,14 @@ export function ToolsView({
       // footer at the bottom (owner 2026-11-21: History's Take Snapshot floated mid-panel over a blank band).
       style={{
         ...(floorPx ? (sheet ? { minHeight: floorPx } : { height: floorPx }) : {}),
-        ...(sheet ? {} : { minHeight: `calc(min(${TOOLS_HEIGHT_PX}px, 100dvh - 2rem) - 104px)` }),
+        // Never past the room under the band: on a short window the tool shrinks to it and its own scroller takes the
+        // rest, its foot (Ask AI's question box, a main button) in view (Work Tracker 1531).
+        ...(sheet
+          ? {}
+          : {
+              minHeight: `calc(${toolsRoomCap(TOOLS_HEIGHT_PX)} - ${BAND_AND_PAD})`,
+              maxHeight: `calc(var(--anchored-room, 100dvh) - ${BAND_AND_PAD})`,
+            }),
       }}
     >
       {/* No breadcrumb row (the band is the way back, Work Tracker 1476): a short gap keeps the tool off its hairline. */}
