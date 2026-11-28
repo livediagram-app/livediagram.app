@@ -374,6 +374,9 @@ describe('SessionPage: Stand-up', () => {
   it('a Participant comments in the day’s thread but runs nothing; a Viewer has no comment strip', async () => {
     const f = mount({ mayEdit: false, canComment: true });
     expect(screen.getByText('Nobody is running this session')).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'Learn about stand-up sessions' }).getAttribute('href'),
+    ).toBe('/help/plan/session-tabs/stand-up/');
     expect(screen.queryByRole('button', { name: /^Done:/ })).toBeNull();
     const box = screen.getByRole('textbox', { name: 'Comment on WI-1' });
     fireEvent.change(box, { target: { value: 'Pairing on it today' } });

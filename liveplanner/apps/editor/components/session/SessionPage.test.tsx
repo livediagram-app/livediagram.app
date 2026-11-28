@@ -176,6 +176,10 @@ describe('SessionPage', () => {
     const f = mount({ mayEdit: true });
     fireEvent.click(screen.getByRole('button', { name: 'Session Settings' }));
     expect(screen.getByRole('heading', { name: 'Session Settings' })).toBeTruthy();
+    // The set-up's header links its help article.
+    expect(
+      screen.getByRole('link', { name: 'Learn about setting up a session' }).getAttribute('href'),
+    ).toBe('/help/plan/session-tabs/set-up-a-session/');
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(f.actions.changeSetup).toHaveBeenCalledWith({
       typeIds: ['work'],
@@ -201,6 +205,10 @@ describe('SessionPage', () => {
     expect(
       screen.queryByRole('button', { name: /Skip|Flag|Refined|Session Settings|Rename/ }),
     ).toBeNull();
+    // The kind's help article, for every role (session-tabs.md "Help").
+    expect(
+      screen.getByRole('link', { name: 'Learn about refinement sessions' }).getAttribute('href'),
+    ).toBe('/help/plan/session-tabs/refinement/');
     fireEvent.click(screen.getAllByRole('option')[1]!);
     expect(screen.getByText('You are looking at another card.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Back to Ali’s Card' }));

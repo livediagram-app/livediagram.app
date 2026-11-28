@@ -16,6 +16,7 @@ import { SessionHeader } from '../SessionHeader';
 import type { SessionPageProps } from '../SessionPage';
 import { SessionProgress } from '../SessionProgress';
 import { SessionSetupDialog } from '../SessionSetupDialog';
+import { SESSION_KIND_LOOKS } from '../session-kinds';
 import { setupWords } from '../session-setup';
 import { refOf, undoLabel } from '../session-words';
 import { useSessionFacilitator } from '../useSessionFacilitator';
@@ -101,6 +102,7 @@ export function StandupPage({
       count={people.length ? `${place} of ${people.length} people` : ''}
       line={timebox?.up ? 'Time’s up' : setupWords(session.setup, plan.types, plan.statusNames)}
       baton={baton}
+      help={SESSION_KIND_LOOKS[session.sessionKind].helpArticle}
       onSettings={mayEdit ? () => setSettingsOpen(true) : undefined}
     >
       <SessionProgress

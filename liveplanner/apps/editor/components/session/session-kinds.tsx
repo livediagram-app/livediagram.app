@@ -13,6 +13,7 @@ import {
   type StatusPhase,
 } from '@liveplanner/items';
 import { FLAG_COLOUR } from '@liveplanner/project';
+import type { HelpArticleKey } from '@/lib/help-articles';
 import { Glyph, lucideGlyph, type IconProps } from '@liveworkspace/ui';
 import {
   lucideCalendarCheck,
@@ -122,6 +123,8 @@ export type SessionKindLook = {
   passStages?: readonly string[];
   // Words Start Planning's search finds it by, beyond every session's.
   keywords: readonly string[];
+  // The help article the sidebar header's `?` opens (docs/specs/026-plan/session-tabs.md "Help").
+  helpArticle: HelpArticleKey;
 };
 
 // Stage names (lower case) for work ready to start: Sprint Planning starts from them, and Stand-up never counts them
@@ -139,6 +142,7 @@ const READY_STAGES: readonly string[] = [
 
 export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>> = {
   refinement: {
+    helpArticle: 'planSessionRefinement',
     name: 'Refinement',
     line: 'Work through cards one at a time, refining each, with everyone on the same card.',
     setupTitle: 'Set Up Refinement',
@@ -149,6 +153,7 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
     keywords: ['refine', 'refinement', 'grooming', 'backlog'],
   },
   planning: {
+    helpArticle: 'planSessionPlanning',
     name: 'Sprint Planning',
     line: 'Walk the top of the backlog and commit cards into the sprint, tallying estimates against capacity.',
     setupTitle: 'Set Up Sprint Planning',
@@ -169,6 +174,7 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
     ],
   },
   triage: {
+    helpArticle: 'planSessionTriage',
     // Named apart from the Bug Triage board, which Start Planning's Boards offer too.
     name: 'Bug Triage Session',
     line: 'Walk every new bug one at a time and decide: accept it, close it with a reason, skip or flag it.',
@@ -195,6 +201,7 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
     keywords: ['triage', 'bug', 'bugs', 'defect', 'issue', 'incident', 'close', 'accept'],
   },
   review: {
+    helpArticle: 'planSessionReview',
     name: 'Sprint Review',
     line: 'Walk the work finished since the last review, demo each card and keep the room’s feedback on it.',
     setupTitle: 'Set Up Sprint Review',
@@ -207,6 +214,7 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
     keywords: ['review', 'demo', 'sprint review', 'feedback', 'follow-up', 'showcase', 'done'],
   },
   standup: {
+    helpArticle: 'planSessionStandup',
     name: 'Stand-up',
     line: 'Walk the team person by person through their in-flight cards: flag what’s blocked, move what moved.',
     setupTitle: 'Set Up Stand-up',

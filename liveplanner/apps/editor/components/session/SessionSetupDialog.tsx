@@ -28,6 +28,7 @@ import { Select, ToolFooter, ToolFooterButton } from '@liveworkspace/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { ChoicePills } from '@/components/primitives/ChoicePills';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { cardsWord, stageCounts, stagesFor } from './session-setup';
 import { SESSION_KIND_LOOKS } from './session-kinds';
@@ -122,6 +123,7 @@ export function SessionSetupDialog({
         titleId={titleId}
         title={settings ? 'Session Settings' : look.setupTitle}
         subtitle={look.setupLine}
+        actions={<HelpArticleLink article="planSessionSetup" size="md" />}
         onClose={onClose}
       />
       <div className="scrollbar-slim flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6">

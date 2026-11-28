@@ -2,11 +2,13 @@
 
 // Every Session tab's sidebar header (docs/specs/026-plan/session-tabs.md "The sidebar"): the kind's name and how far
 // through it is ("4 of 9", a Stand-up's "2 of 5 people"), the set-up in words (or "Time's up"), Session Settings for
-// an Editor, the facilitator's chip, then the kind's progress bar and whatever it adds under it (Sprint Planning's
-// tally).
+// an Editor, the kind's help article for everyone (session-tabs.md "Help"), the facilitator's chip, then the kind's
+// progress bar and whatever it adds under it (Sprint Planning's tally).
 import type { ReactNode } from 'react';
 import { lucideSettings } from '@liveworkspace/icons/lucide';
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import type { HelpArticleKey } from '@/lib/help-articles';
 import { SessionFacilitatorChip } from './SessionFacilitatorChip';
 import type { SessionBaton } from './useSessionFacilitator';
 
@@ -17,6 +19,7 @@ export function SessionHeader({
   count,
   line,
   baton,
+  help,
   onSettings,
   children,
 }: {
@@ -26,6 +29,8 @@ export function SessionHeader({
   // The set-up in words, or "Time's up".
   line: string;
   baton: SessionBaton;
+  // The kind's help article, the `?` beside Session Settings.
+  help: HelpArticleKey;
   // Session Settings, an Editor's; absent for everyone else.
   onSettings?: (() => void) | undefined;
   // The progress bar and what a kind adds under it.
@@ -43,18 +48,21 @@ export function SessionHeader({
           </h2>
           <p className="truncate text-[12px] text-slate-500 dark:text-slate-400">{line}</p>
         </div>
-        {onSettings ? (
-          <Tooltip label="Session Settings">
-            <button
-              type="button"
-              aria-label="Session Settings"
-              onClick={onSettings}
-              className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <SettingsIcon aria-hidden />
-            </button>
-          </Tooltip>
-        ) : null}
+        <div className="flex shrink-0 items-center">
+          <HelpArticleLink article={help} size="md" />
+          {onSettings ? (
+            <Tooltip label="Session Settings">
+              <button
+                type="button"
+                aria-label="Session Settings"
+                onClick={onSettings}
+                className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <SettingsIcon aria-hidden />
+              </button>
+            </Tooltip>
+          ) : null}
+        </div>
       </div>
       <SessionFacilitatorChip baton={baton} />
       {children}

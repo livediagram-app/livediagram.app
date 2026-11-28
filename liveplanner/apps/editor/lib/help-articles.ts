@@ -58,6 +58,13 @@ export const HELP_ARTICLES = {
   planAi: 'plan/plan-ai',
   planCardActivity: 'plan/card-activity',
   planSelectCards: 'plan/select-cards',
+  // Session tabs (docs/specs/026-plan/session-tabs.md "Help"): the set-up dialog's header, and each kind's sidebar header.
+  planSessionSetup: 'plan/session-tabs/set-up-a-session',
+  planSessionRefinement: 'plan/session-tabs/refinement',
+  planSessionStandup: 'plan/session-tabs/stand-up',
+  planSessionPlanning: 'plan/session-tabs/sprint-planning',
+  planSessionTriage: 'plan/session-tabs/bug-triage',
+  planSessionReview: 'plan/session-tabs/sprint-review',
   planSheets: 'plan/sheets',
   planDashboards: 'plan/dashboards',
   planForms: 'plan/forms',
@@ -148,6 +155,30 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planSelectCards: {
     title: 'Learn about selecting cards',
     description: 'Change several cards at once, or drag them as one group.',
+  },
+  planSessionSetup: {
+    title: 'Learn about setting up a session',
+    description: 'Which cards a session takes, in what order, and where each one goes.',
+  },
+  planSessionRefinement: {
+    title: 'Learn about refinement sessions',
+    description: 'Sharpen the backlog one card at a time, and move each on once refined.',
+  },
+  planSessionStandup: {
+    title: 'Learn about stand-up sessions',
+    description: 'Walk the team person by person through their in-flight cards.',
+  },
+  planSessionPlanning: {
+    title: 'Learn about sprint planning sessions',
+    description: 'Commit cards into the sprint, their estimates tallied against capacity.',
+  },
+  planSessionTriage: {
+    title: 'Learn about bug triage sessions',
+    description: 'Accept or close each new bug, with a reason or as a duplicate.',
+  },
+  planSessionReview: {
+    title: 'Learn about sprint review sessions',
+    description: "Demo each finished card and keep the room's feedback on it.",
   },
   planSheets: {
     title: 'Learn about sheets',
