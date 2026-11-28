@@ -26,12 +26,14 @@ const UndoIcon = lucideGlyph(lucideUndo2, 14);
 // Undo Last's chip: the latest decision named ("Closed BUG-33"), and what pressing it does.
 export type SessionUndoLast = { label: string; onUndo: () => void };
 
-const secondary =
+export const BAR_SHELL =
+  'flex min-h-16 flex-wrap items-center gap-2 border-t max-sm:gap-x-2 max-sm:gap-y-1.5 max-sm:py-2.5 border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 xl:pr-[20rem] dark:border-slate-800 dark:bg-slate-900/95';
+export const secondary =
   'inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
 // On a phone the other outcomes are square icon buttons (their names read to a screen reader), so they and the fill
 // button share one row and the card keeps the screen.
-const compact = `${secondary} shrink-0 max-sm:w-10 max-sm:justify-center max-sm:px-0`;
-const PHONE_HIDDEN = 'max-sm:sr-only';
+export const compact = `${secondary} shrink-0 max-sm:w-10 max-sm:justify-center max-sm:px-0`;
+export const PHONE_HIDDEN = 'max-sm:sr-only';
 
 // Undo Last (docs/specs/026-plan/session-tabs.md "Undo"): the latest decision named ("Closed BUG-33") with Undo, in the
 // action bar and on Session Complete; a round icon button on a phone.
@@ -100,8 +102,7 @@ export function SessionActionBar({
   onDecide: (outcome: SessionOutcome) => void;
   onUndo: () => void;
 }) {
-  const shell =
-    'flex min-h-16 flex-wrap items-center gap-2 border-t max-sm:gap-x-2 max-sm:gap-y-1.5 max-sm:py-2.5 border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 xl:pr-[20rem] dark:border-slate-800 dark:bg-slate-900/95';
+  const shell = BAR_SHELL;
   if (decision) {
     const look = OUTCOME_LOOKS[decision.outcome];
     return (

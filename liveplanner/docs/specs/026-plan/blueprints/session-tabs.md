@@ -121,7 +121,7 @@ lastReviewAt)` answers a chip's date (`since-last`, `7`, `14`, `30` days, `all` 
   `standupPeople(cards, { order, seed })` groups the (already board-ordered, held) cards by `personKeyOf`, each group's
   cards in their given order; people in Board Order (first card's place), by name (`localeCompare`, then key) or by
   `seededRank(seed, key)` (an FNV-1a hash of `seed` and the key, ties by key), `Unassigned` last always.
-  `standupSeed(tabId, now)` is `${tabId}:${YYYY-MM-DD in UTC}`. `STANDUP_INFLIGHT_STAGES` the in-flight names the set-up
+  `standupSeed(tabId, now)` (read once as the page opens, so a session never reshuffles midway) is `${tabId}:${YYYY-MM-DD in UTC}`. `STANDUP_INFLIGHT_STAGES` the in-flight names the set-up
   starts from (with the Doing phase, `SessionKindLook.startPhase: 'doing'`).
 - Stand-up's run (`useStandupRun`): the list is `boardOrder` over the decided and to-go cards, held by `heldOrder`
   over the whole list (so a flagged or moved card keeps its place), then grouped. The room's card is `currentId` when

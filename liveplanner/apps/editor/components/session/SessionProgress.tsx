@@ -2,8 +2,8 @@
 
 // A Session tab's progress bar (docs/specs/026-plan/session-tabs.md "The progress bar"): a segment per queued card
 // (one smooth bar past SEGMENTS_MAX), a decided card's in its outcome's colour, the room's card in the accent's tint,
-// filling as its timebox runs and amber once the time is up.
-import type { Item } from '@liveplanner/items';
+// filling as its timebox runs and amber once the time is up. A kind whose unit is a person (Stand-up) passes its
+// people as the units and its Done people as decided.
 import type { SessionDecision } from '@liveplanner/project';
 import { OUTCOME_LOOKS } from './session-kinds';
 import type { SessionTimebox } from './useSessionTimebox';
@@ -17,18 +17,24 @@ export function SessionProgress({
   decided,
   currentId,
   timebox,
+  noun = 'decided',
 }: {
   // The session kind's name, for the bar's accessible name.
   label: string;
-  list: readonly Item[];
-  decided: Readonly<Record<string, SessionDecision>> | undefined;
+  // What the bar counts: the queued cards, or a Stand-up's people (by key).
+  list: readonly { id: string }[];
+  decided:
+    | Readonly<Record<string, Pick<SessionDecision, 'outcome'> & Partial<SessionDecision>>>
+    | undefined;
   currentId: string | null;
   timebox: SessionTimebox;
+  // How the accessible name counts them: "3 of 9 decided", "2 of 5 people done".
+  noun?: string;
 }) {
   const done = list.filter((i) => decided?.[i.id]).length;
   const total = list.length;
   const used = timebox ? 1 - timebox.leftMs / timebox.totalMs : 0;
-  const name = `${label} progress, ${done} of ${total} decided`;
+  const name = `${label} progress, ${done} of ${total} ${noun}`;
   const fillOf = (colour: string, share: number) => (
     <span
       className="absolute inset-y-0 left-0 rounded-[inherit] transition-[width] duration-200 ease-linear motion-reduce:transition-none"

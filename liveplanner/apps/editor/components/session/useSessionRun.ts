@@ -7,7 +7,6 @@
 // moves the room on. Undo takes all of that back. Nothing here runs for someone who is not facilitating but reading.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  beforeRank,
   holdOrder,
   isFlagged,
   itemStatus,
@@ -29,14 +28,13 @@ import {
   type SessionDecisionDetail,
   type SessionTabState,
 } from '@liveplanner/project';
-import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
-import { recordSessionOutcome } from '@/lib/api/item-history';
 import { track } from '@/lib/telemetry';
 import { OUTCOME_LOOKS, SESSION_KIND_LOOKS } from './session-kinds';
-import { duplicateLink, duplicateUnlink } from './triage/triage-duplicate';
+import { recordOutcome, undoDecision, type OutcomeExtra } from './session-writes';
+import { duplicateLink } from './triage/triage-duplicate';
 
-const TRACK_TYPES = {
+export const TRACK_TYPES = {
   refined: 'SessionRefined',
   skipped: 'SessionSkipped',
   flagged: 'SessionFlagged',
@@ -44,6 +42,7 @@ const TRACK_TYPES = {
   accepted: 'SessionAccepted',
   closed: 'SessionClosed',
   reviewed: 'SessionReviewed',
+  discussed: 'SessionDiscussed',
 } as const satisfies Record<SessionOutcome, string>;
 
 // What a Close asks: its reason, and the card it duplicates (an id) when one is linked.
@@ -149,21 +148,8 @@ export function useSessionRun({
     if (next && next.id !== current?.id) goTo(next.id);
   };
 
-  // The card's history keeps the outcome (or its undo); a failure is logged, never in the way of the session.
-  const record = (
-    itemId: string,
-    outcome: SessionOutcome,
-    extra: { reason?: string; duplicateOf?: string; undone?: true } = {},
-  ) => {
-    if (!plan.itemsScope) return;
-    recordSessionOutcome(plan.itemsScope, itemId, {
-      session: session.sessionKind,
-      outcome,
-      ...extra,
-    }).catch((error: unknown) =>
-      debugLog('[session] outcome.failed', { outcome, error: String(error) }),
-    );
-  };
+  const record = (itemId: string, outcome: SessionOutcome, extra: OutcomeExtra = {}) =>
+    recordOutcome(plan, session.sessionKind, itemId, outcome, extra);
 
   const decide = (outcome: SessionOutcome, close?: SessionCloseInput) => {
     const item = current;
@@ -215,20 +201,7 @@ export function useSessionRun({
   const undo = (itemId: string) => {
     const d = decided?.[itemId];
     if (!runs || !d) return;
-    const item = items.get(itemId);
-    if (item) {
-      if (d.from && d.to && itemStatus(item) === d.to)
-        // Back in its own place: in front of the card now ranked after where it was, else the column's end.
-        plan.moveItem(itemId, {
-          status: d.from,
-          before: d.fromRank ? beforeRank(items.values(), d.from, d.fromRank, itemId) : null,
-        });
-      if (d.flagSet && isFlagged(item)) void plan.patchItem(itemId, { clear: ['flagged'] });
-      const unlink =
-        d.linked && d.duplicateOf ? duplicateUnlink(item, d.linked, d.duplicateOf, types) : null;
-      if (unlink) void plan.patchItem(itemId, unlink);
-      record(itemId, d.outcome, { undone: true });
-    }
+    undoDecision(plan, session.sessionKind, itemId, d);
     run(tabId, (s) => withCurrent(withoutDecision(s, itemId), itemId, Date.now()));
     setPeekId(null);
     plan.announce(`${OUTCOME_LOOKS[d.outcome].done} undone`);

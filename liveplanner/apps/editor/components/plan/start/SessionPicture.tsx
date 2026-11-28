@@ -5,7 +5,8 @@
 // lit) and the card on the right with its fill button. Sprint Planning's rows carry estimate pills and its card a
 // filling capacity meter. Bug Triage's rows carry priority dots, its card a strip of priority chips and a Close button
 // beside the fill button. Sprint Review's rows carry presenter discs, its card a row of design thumbnails and a
-// Follow-up button beside the fill button.
+// Follow-up button beside the fill button. Stand-up's rows are people, each with their disc (the room's person lit),
+// and its card carries a flag beside the fill button.
 import type { SessionKindId } from '@liveplanner/items';
 import type { PlanPalette } from '../plan-palette';
 
@@ -23,6 +24,7 @@ export function SessionPicture({
   const planning = sessionKind === 'planning';
   const triage = sessionKind === 'triage';
   const review = sessionKind === 'review';
+  const standup = sessionKind === 'standup';
   // Sprint Review's rows' presenter discs.
   const people = ['#0891b2', '#d97706', '#7c3aed', '#059669', '#0891b2'];
   // Bug Triage's rows' priority dots: urgent, high, none (dashed), medium, none.
@@ -62,8 +64,8 @@ export function SessionPicture({
               <circle
                 cx="11.5"
                 cy={y + 4.5}
-                r="2"
-                fill={lit || done ? palette.focus : palette.border}
+                r={standup ? 2.6 : 2}
+                fill={standup ? people[r] : lit || done ? palette.focus : palette.border}
               />
               <rect
                 x="16"
@@ -175,6 +177,16 @@ export function SessionPicture({
               strokeOpacity="0.7"
             />
           </>
+        ) : null}
+        {standup ? (
+          <path
+            d="M71 57.5v6M71 58h6l-1.5 1.75 1.5 1.75h-6"
+            fill="none"
+            stroke="#f97316"
+            strokeWidth="0.9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         ) : null}
         <rect x="84" y="55" width="27" height="8" rx="2" fill={palette.focus} />
         <rect x="84" y="55" width="15" height="8" rx="2" fill="#fff" fillOpacity="0.3" />

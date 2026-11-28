@@ -112,6 +112,13 @@ describe('changeLine', () => {
     expect(words({ kind: 'session', session: 'triage', outcome: 'closed', undone: true })).toBe(
       'Undid Closed in a Bug Triage session',
     );
+    // Stand-up's (docs/specs/026-plan/session-tabs.md "Stand-up", "History"): Discussed, and Blocked's reason.
+    expect(words({ kind: 'session', session: 'standup', outcome: 'discussed' })).toBe(
+      'Discussed this in a Stand-up session',
+    );
+    expect(
+      words({ kind: 'session', session: 'standup', outcome: 'flagged', reason: 'Waiting on keys' }),
+    ).toBe('Flagged this in a Stand-up session: Waiting on keys');
     expect(words({ kind: 'set', field: 'title', value: 'New name' })).toBe(
       'Renamed this card to “New name”',
     );

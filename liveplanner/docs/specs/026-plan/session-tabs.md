@@ -456,8 +456,8 @@ asked that the card does not need.
 ### When everyone is done
 
 - **Session Complete** shows Discussed and Flagged, then **Blockers**: every card marked blocked in the session, each
-  with its number, title, person and reason, pressing one opening it (for the facilitator, the room goes back to it;
-  for anyone else, a peek); "No blockers today" with none. Undo Last and Start Again as in every kind.
+  with its number, title, person and reason, pressing one opening it as a look on that screen alone, with **Back to
+  Summary**; "No blockers today" with none. Undo Last and Start Again as in every kind.
 - An empty set-up says so, as in every kind.
 
 ## Real time

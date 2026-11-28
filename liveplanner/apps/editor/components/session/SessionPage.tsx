@@ -9,8 +9,7 @@
 // severity are set in the card's own Details). Sprint Review adds its parts from ./review (useReviewParts): the demo
 // strip over the card, the feedback strip above the action bar, Follow-up and its dialog, a presenter disc on each row
 // and its feedback and follow-ups on Session Complete.
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useMemo, useRef, useState } from 'react';
 import { estimateOf, itemStatus, sessionTally, typeIn, type Item } from '@liveplanner/items';
 import {
   SESSION_KINDS,
@@ -18,21 +17,15 @@ import {
   type SessionTabState,
   type Tab,
 } from '@liveplanner/project';
-import { lucideSettings } from '@liveworkspace/icons/lucide';
-import { Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { Callout } from '@liveworkspace/ui/callout';
-import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { CanvasCover } from '@/components/plan/CanvasCover';
-import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import type { SessionTabActions } from '@/hooks/plan/useSessionTabActions';
-import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { Participant } from '@/lib/identity';
 import { SessionActionBar } from './SessionActionBar';
 import { SessionCard } from './SessionCard';
 import { SessionComplete } from './SessionComplete';
-import { SessionFacilitatorChip } from './SessionFacilitatorChip';
+import { SessionFrame } from './SessionFrame';
+import { SessionHeader } from './SessionHeader';
 import { SessionProgress } from './SessionProgress';
 import { SessionSetupDialog } from './SessionSetupDialog';
 import { SessionSidebar } from './SessionSidebar';
@@ -50,22 +43,12 @@ import { PriorityPill } from './triage/PriorityPill';
 import { decisionNote, undoLabel } from './session-words';
 import { reviewedAt } from './review/review-range';
 import { useReviewParts } from './review/useReviewParts';
+import { StandupPage } from './standup/StandupPage';
 
 const estimatePill = (item: Item) => <EstimatePill item={item} />;
 const priorityPill = (item: Item) => <PriorityPill item={item} />;
 
-const SettingsIcon = lucideGlyph(lucideSettings, 16);
-
-export function SessionPage({
-  tab,
-  session,
-  plan,
-  mayEdit,
-  actions,
-  self,
-  presence,
-  renameTab,
-}: {
+export type SessionPageProps = {
   tab: Tab;
   session: SessionTabState;
   plan: PlanContextValue;
@@ -75,15 +58,28 @@ export function SessionPage({
   self: SessionFacilitator;
   presence: readonly Participant[];
   renameTab?: ((tabId: string, name: string) => void) | undefined;
-}) {
-  const [canvas, setCanvas] = useState<HTMLElement | null>(null);
-  const mark = useCallback((node: HTMLElement | null) => {
-    if (node) setCanvas(document.querySelector<HTMLElement>(CANVAS_ROOT_SELECTOR));
-  }, []);
-  const layout = useCanvasLayerInsets(canvas, false);
-  const phone = useIsMobileViewport();
+};
+
+// A Session tab's page: Stand-up's, whose unit is a person (./standup), or a queue of cards for every other kind.
+export function SessionPage(props: SessionPageProps) {
+  return SESSION_KINDS[props.session.sessionKind].grouping === 'person' ? (
+    <StandupPage {...props} />
+  ) : (
+    <QueueSessionPage {...props} />
+  );
+}
+
+function QueueSessionPage({
+  tab,
+  session,
+  plan,
+  mayEdit,
+  actions,
+  self,
+  presence,
+  renameTab,
+}: SessionPageProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [queueOpen, setQueueOpen] = useState(false);
   const kind = SESSION_KINDS[session.sessionKind];
   const baton = useSessionFacilitator({
     tabId: tab.id,
@@ -152,44 +148,19 @@ export function SessionPage({
   const capacity = session.setup.capacity;
   // What Commit would add: the room's card's estimate, while it is still to decide.
   const adding = room.current && !decided?.[room.current.id] ? estimateOf(room.current) : null;
-  // A phone folds the queue away again once a card is opened from it.
-  const open = (id: string) => {
-    room.goTo(id);
-    setQueueOpen(false);
-  };
   const shown = room.shown;
   const total = room.list.length;
   // How far through: the room's card's place, or the end once none is left.
   const place = room.current ? room.list.indexOf(room.current) + 1 : total;
   const holderName = baton.holder ? (baton.mine ? 'You' : baton.holder.name) : null;
   const header = (
-    <div className="flex flex-col gap-2.5 px-4 pb-3 pt-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h2 className="text-[15px] font-semibold text-slate-900 dark:text-slate-50">
-            {kind.label}
-            <span className="ml-2 text-[13px] font-medium tabular-nums text-slate-500 dark:text-slate-400">
-              {total ? `${place} of ${total}` : ''}
-            </span>
-          </h2>
-          <p className="truncate text-[12px] text-slate-500 dark:text-slate-400">
-            {timebox?.up ? 'Time’s up' : setupWords(session.setup, plan.types, plan.statusNames)}
-          </p>
-        </div>
-        {mayEdit ? (
-          <Tooltip label="Session Settings">
-            <button
-              type="button"
-              aria-label="Session Settings"
-              onClick={() => setSettingsOpen(true)}
-              className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <SettingsIcon aria-hidden />
-            </button>
-          </Tooltip>
-        ) : null}
-      </div>
-      <SessionFacilitatorChip baton={baton} />
+    <SessionHeader
+      label={kind.label}
+      count={total ? `${place} of ${total}` : ''}
+      line={timebox?.up ? 'Time’s up' : setupWords(session.setup, plan.types, plan.statusNames)}
+      baton={baton}
+      onSettings={mayEdit ? () => setSettingsOpen(true) : undefined}
+    >
       <SessionProgress
         label={kind.label}
         list={room.list}
@@ -201,9 +172,10 @@ export function SessionPage({
       {room.queue.capped ? (
         <p className="text-[11px] text-slate-500">Showing the first {total} cards.</p>
       ) : null}
-    </div>
+    </SessionHeader>
   );
-  const sidebar = (
+  // A phone folds the queue away again once a card is opened from it.
+  const sidebar = (fold: () => void) => (
     <SessionSidebar
       label={kind.label}
       list={room.list}
@@ -211,7 +183,10 @@ export function SessionPage({
       decided={decided}
       currentId={room.current?.id ?? null}
       shownId={shown?.id ?? null}
-      onOpen={open}
+      onOpen={(id) => {
+        room.goTo(id);
+        fold();
+      }}
       aside={tallies ? estimatePill : triage ? priorityPill : review?.aside}
     />
   );
@@ -338,74 +313,30 @@ export function SessionPage({
     />
   );
   return (
-    <>
-      <span hidden ref={mark} />
-      <DashboardMenuName
-        tab={tab}
-        kindLabel={kind.label}
-        onRename={mayEdit && renameTab ? (name) => renameTab(tab.id, name) : undefined}
-      />
-      {canvas
-        ? createPortal(
-            <CanvasCover layout={layout} marker={{ 'data-session-page': '' }} enter opaque>
-              <div
-                role="region"
-                aria-label={`${tab.name} session`}
-                // The bottom padding clears the canvas's bottom toolbars (about 64 px with their margin), as a Dashboard's does,
-                // so the action bar sits above them; on a phone also the home indicator's safe area.
-                className="flex h-full min-h-0 bg-white pb-[4.5rem] max-sm:flex-col max-sm:pb-[calc(4.5rem+env(safe-area-inset-bottom))] xl:pb-0 dark:bg-slate-950"
-                data-session-kind={session.sessionKind}
-              >
-                {phone ? (
-                  <div className="flex shrink-0 flex-col border-b border-slate-200 dark:border-slate-800">
-                    {header}
-                    <button
-                      type="button"
-                      aria-expanded={queueOpen}
-                      onClick={() => setQueueOpen((o) => !o)}
-                      className="mx-4 mb-3 flex h-9 cursor-pointer items-center justify-between rounded-lg border border-slate-200 px-3 text-[13px] font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200"
-                    >
-                      Queue
-                      <span className="text-slate-500">{queueOpen ? 'Hide' : 'Show'}</span>
-                    </button>
-                    {queueOpen ? (
-                      <div className="flex max-h-[40vh] min-h-0 flex-col">{sidebar}</div>
-                    ) : null}
-                  </div>
-                ) : (
-                  <aside
-                    aria-label={`${kind.label} queue`}
-                    className="flex w-80 shrink-0 flex-col border-r border-slate-200 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40"
-                  >
-                    {header}
-                    {sidebar}
-                  </aside>
-                )}
-                <section
-                  aria-label="Card"
-                  className="relative flex min-h-0 min-w-0 flex-1 flex-col"
-                >
-                  {detail}
-                </section>
-              </div>
-            </CanvasCover>,
-            canvas,
-          )
-        : null}
-      {settingsOpen ? (
-        <SessionSetupDialog
-          sessionKind={session.sessionKind}
-          initial={session.setup}
-          plan={plan}
-          settings
-          lastReviewAt={review ? reviewedAt(plan, tab.id) : null}
-          onDone={(setup) => {
-            actions.changeSetup(setup);
-            setSettingsOpen(false);
-          }}
-          onClose={() => setSettingsOpen(false)}
-        />
-      ) : null}
-    </>
+    <SessionFrame
+      tab={tab}
+      sessionKind={session.sessionKind}
+      kindLabel={kind.label}
+      onRename={mayEdit && renameTab ? (name) => renameTab(tab.id, name) : undefined}
+      header={header}
+      sidebar={sidebar}
+      detail={detail}
+      after={
+        settingsOpen ? (
+          <SessionSetupDialog
+            sessionKind={session.sessionKind}
+            initial={session.setup}
+            plan={plan}
+            settings
+            lastReviewAt={review ? reviewedAt(plan, tab.id) : null}
+            onDone={(setup) => {
+              actions.changeSetup(setup);
+              setSettingsOpen(false);
+            }}
+            onClose={() => setSettingsOpen(false)}
+          />
+        ) : null
+      }
+    />
   );
 }

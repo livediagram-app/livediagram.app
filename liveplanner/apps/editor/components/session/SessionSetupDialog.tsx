@@ -11,6 +11,7 @@ import {
   BOARD_SORT_DIRS,
   boardSortFieldsOf,
   boardSortLabel,
+  personKeyOf,
   sessionQueue,
   typeStatusesOf,
   withBoardSortPick,
@@ -33,6 +34,7 @@ import { SESSION_KIND_LOOKS } from './session-kinds';
 import { sessionHeroArt } from './SessionHeroArt';
 import { CapacityPart, NoEstimateNote } from './planning/CapacityPart';
 import { ReviewSetupParts } from './review/ReviewSetupParts';
+import { PeopleOrderPart } from './standup/PeopleOrderPart';
 
 const MINUTE = 60_000;
 const TIMEBOX_CHIPS = [2, 3, 5, 10] as const;
@@ -67,6 +69,9 @@ export function SessionSetupDialog({
   // Sprint Review: Reviewed moves nothing (no When part), and it reads finished work in a done range.
   const stays = !!SESSION_KINDS[sessionKind].stays;
   const archived = !!SESSION_KINDS[sessionKind].archived;
+  // Stand-up: grouped by person, so People Order stands in for Order and the timebox is per person.
+  const byPerson = SESSION_KINDS[sessionKind].grouping === 'person';
+  const per = byPerson ? 'person' : 'card';
   const { items, types, statusNames } = plan;
   const planStatuses = useMemo(() => [...statusNames.keys()], [statusNames]);
   const [setup, setSetup] = useState<SessionSetup>(initial);
@@ -104,9 +109,12 @@ export function SessionSetupDialog({
     });
   const minutes = setup.timeboxMs ? Math.round(setup.timeboxMs / MINUTE) : 0;
   const ready = setup.typeIds.length > 0 && setup.statuses.length > 0;
-  const sortWords = first
-    ? `, ${fields.find((f) => f.id === first.field)?.label ?? first.field} ${boardSortLabel(fields.find((f) => f.id === first.field)?.kind, first.dir).toLowerCase()}`
-    : ', in board order';
+  const people = byPerson ? new Set(queue.toGo.map(personKeyOf)).size : 0;
+  const sortWords = byPerson
+    ? `, ${people} ${people === 1 ? 'person' : 'people'}`
+    : first
+      ? `, ${fields.find((f) => f.id === first.field)?.label ?? first.field} ${boardSortLabel(fields.find((f) => f.id === first.field)?.kind, first.dir).toLowerCase()}`
+      : ', in board order';
   return (
     <Dialog open onClose={onClose} titleId={titleId} size="lg" phoneSheet>
       <HeroDialogHeader
@@ -163,29 +171,32 @@ export function SessionSetupDialog({
             <p className={HINT}>Pick a card type to see its stages.</p>
           )}
         </section>
-        <section className="flex flex-col gap-2" aria-labelledby={`${titleId}-order`}>
-          <h3 id={`${titleId}-order`} className={HEADING}>
-            Order
-          </h3>
-          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-2 max-sm:grid-cols-[auto_1fr]">
-            <SortRow
-              label="Sort By"
-              level={first}
-              fields={fields}
-              onField={(f) => sortPick(0, f)}
-              onDir={(d) => dirPick(0, d)}
-            />
-            {first ? (
+        {byPerson ? <PeopleOrderPart id={titleId} setup={setup} onChange={setSetup} /> : null}
+        {byPerson ? null : (
+          <section className="flex flex-col gap-2" aria-labelledby={`${titleId}-order`}>
+            <h3 id={`${titleId}-order`} className={HEADING}>
+              Order
+            </h3>
+            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-2 max-sm:grid-cols-[auto_1fr]">
               <SortRow
-                label="Then By"
-                level={second}
-                fields={fields.filter((f) => f.id !== first.field)}
-                onField={(f) => sortPick(1, f)}
-                onDir={(d) => dirPick(1, d)}
+                label="Sort By"
+                level={first}
+                fields={fields}
+                onField={(f) => sortPick(0, f)}
+                onDir={(d) => dirPick(0, d)}
               />
-            ) : null}
-          </div>
-        </section>
+              {first ? (
+                <SortRow
+                  label="Then By"
+                  level={second}
+                  fields={fields.filter((f) => f.id !== first.field)}
+                  onField={(f) => sortPick(1, f)}
+                  onDir={(d) => dirPick(1, d)}
+                />
+              ) : null}
+            </div>
+          </section>
+        )}
         {archived ? (
           <ReviewSetupParts
             id={titleId}
@@ -249,7 +260,7 @@ export function SessionSetupDialog({
           </h3>
           <div className="flex flex-wrap items-center gap-2">
             <ChoicePills
-              label="Timebox per card"
+              label={`Timebox per ${per}`}
               data="session-timebox"
               pills={[
                 { id: '0', label: 'Off' },
@@ -268,7 +279,7 @@ export function SessionSetupDialog({
                 onChange={(e) => setSetup((s) => withTimebox(s, Number(e.target.value)))}
                 className="h-8 w-16 rounded-md border border-slate-200 bg-white px-2 text-[13px] tabular-nums dark:border-slate-700 dark:bg-slate-900"
               />
-              min per card
+              min per {per}
             </label>
           </div>
         </section>
