@@ -93,7 +93,9 @@ export function useReviewParts({
     ) : null,
     feedback: shown ? (
       <FeedbackStrip
-        key={shown.id}
+        // Keys apart from the Follow-up and Close dialogs' (same card id): they are siblings in SessionPage, and a shared
+        // key there duplicates the strip.
+        key={`feedback:${shown.id}`}
         cardRef={ref}
         count={review.feedbackOn(shown.id)}
         canAdd={review.canFeedback}
@@ -116,7 +118,7 @@ export function useReviewParts({
     ) as ReactNode,
     dialog: following ? (
       <FollowUpDialog
-        key={following.id}
+        key={`follow-up:${following.id}`}
         item={following}
         items={plan.items}
         types={plan.types}

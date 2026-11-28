@@ -43,9 +43,9 @@ export function FeedbackStrip({
       data-feedback-strip=""
       className="flex shrink-0 items-start gap-3 border-t border-slate-200 bg-white px-4 py-2.5 sm:px-6 xl:pr-[20rem] dark:border-slate-800 dark:bg-slate-900"
     >
-      <span className={`${HEADING} mt-2.5 max-sm:hidden`}>Feedback</span>
       {canAdd ? (
         <>
+          <span className={`${HEADING} mt-2.5 max-sm:hidden`}>Feedback</span>
           <textarea
             ref={box}
             rows={1}

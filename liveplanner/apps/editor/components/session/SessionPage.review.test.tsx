@@ -342,6 +342,16 @@ describe('SessionPage: Sprint Review', () => {
     expect(screen.getByRole('heading', { level: 3, name: 'Card A' })).toBeTruthy();
   });
 
+  it('opening and closing Follow-up keeps one feedback strip', () => {
+    mount({ mayEdit: true });
+    for (let i = 0; i < 3; i++) {
+      fireEvent.keyDown(window, { key: 'n' });
+      const dialog = screen.getByRole('dialog', { name: 'New Follow-up' });
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    }
+    expect(document.querySelectorAll('[data-feedback-strip]')).toHaveLength(1);
+  });
+
   it('a type with no follow-up field names the card in its description', async () => {
     const f = mount({ mayEdit: true });
     fireEvent.click(screen.getByRole('button', { name: /Follow-up/ }));
