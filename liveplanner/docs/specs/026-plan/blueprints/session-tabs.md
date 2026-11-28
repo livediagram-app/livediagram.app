@@ -128,9 +128,11 @@ lastReviewAt)` answers a chip's date (`since-last`, `7`, `14`, `30` days, `all` 
   queued, else the first card of the first person not Done, else none (complete). `goTo` keeps `cardStartedAt` when the
   card's person is the room's person (`withCurrent(..., keepClock)`), else restarts it. `block(reason)` patches
   `flagged: true` when not flagged, starts or replies in the day's stand-up thread with `Blocked: {reason}`, records
-  `flagged` with the reason, and `withOutcome`s the decision (the room stays; an earlier Discussed's move is kept).
+  `flagged` with the reason, and `withOutcome`s the decision (the room stays; each call is one step over the card's decision, which it keeps as
+  `prior`, at most eight deep).
   `moveStage(to)` moves the card (`before: null`), and `withOutcome`s `discussed` with `{ from, to, fromRank }` (an
-  existing decision keeps its outcome and first `from`, taking the new `to`). `done()` records `discussed` for each
+  existing decision keeps its outcome, this step's move on top). Undo Last reverts `sessionStep(d)`, the latest step's
+  own move and flag, and `withoutStep` puts the `prior` decision back. `done()` records `discussed` for each
   undecided card of the room's person and `withPersonDone(s, key, by, now, ids, nextId)`; `nextId` is the first card of
   the next person not Done after this one, wrapping, else null. `undoLast()` reads `lastStandupStep(s)`: a person step
   `withoutPersonDone` (removing the Discussed decisions with that `at` and no move) and records each undo; a card step

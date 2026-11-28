@@ -381,7 +381,9 @@ asked that the card does not need.
   flag what's blocked, move what moved") beside the others. Choosing it opens **Set Up Stand-up**:
   1. **Card Types** as Refinement's. It picks first the types with cards in an in-flight stage (a stage in the Doing
      phase, or named In Progress, Doing, Started, In Development, In Dev, Development, In Review, Review, Code Review,
-     Testing, In Testing, QA or Blocked); else every type with cards; else the first type.
+     Testing, In Testing, QA or Blocked, never one named as ready to start: Reviewed, Ready, Refined, Ready for
+     Development, Ready for Dev, Groomed, Selected or Backlog, whatever its phase); else every type with cards; else
+     the first type.
   2. **In-flight Stages** (the Stages part, named for stand-up): those in-flight stages picked first; else each picked
      type's first stage.
   3. **People Order**: **Board Order** (the default: people in the order their first card sits on the board, the
@@ -423,10 +425,11 @@ asked that the card does not need.
 - The **timebox** counts per person: it starts when the room reaches a person and keeps running as the room moves
   between their cards; it restarts only on the next person. Time's up turns the room's segment amber and chimes once,
   as in every kind, and never moves on by itself.
-- The **action bar** holds **Undo Last**, **Blocked** and **Stage** on the left, the line "{Name} · card 1 of 3"
-  (with "· Blocked: {reason}" when the card was marked blocked in this session), the timebox's time left when on, and
-  the **Done** fill button (the shared fill animation, labelled "Done", named "Done: {Name}") on the right. On a phone
-  it stays one row: Undo Last, Blocked and Stage as compact controls, then Done.
+- The **action bar** opens with the line "{Name} · card 1 of 3" (with "· Blocked: {reason}" when the card was marked
+  blocked in this session) on a row of its own, so it reads in full (a long reason wraps to a second line). Under it,
+  one row: **Undo Last**, **Blocked** and **Stage** on the left, the timebox's time left when on, and the **Done** fill
+  button (the shared fill animation, labelled "Done", named "Done: {Name}") on the right; on a phone the same row,
+  with Undo Last, Blocked and Stage as compact controls.
 - **Blocked** (a flag; only while the card is not flagged already) opens the **Blocked dialog**, a centred dialog (a
   sheet on a phone) whose illustrated header names the card ("Mark Blocked", "WI-41 · Retry failed payments"): a short
   **reason** (a text field of up to 200 characters, with Waiting on Someone, Waiting on Review, Needs a Decision,
@@ -447,7 +450,8 @@ asked that the card does not need.
   the session is complete.
 - A Done person's card shown again reads "{Name} done by Sam" in the action bar, with **Undo Done** for the
   facilitator; Blocked, Stage and Comment still act on the card.
-- **Undo Last** takes back the latest decision: a Done (the person no longer Done, the Discussed it recorded taken
+- **Undo Last** takes back the latest step, one at a time (a Blocked then a Stage move on one card are two steps: the
+  first Undo moves it back, the next takes the flag off): a Done (the person no longer Done, the Discussed it recorded taken
   back, the room back on their first card), a Blocked (the flag off when it set it, its comment left as said) or a
   Stage move (the card back in its own place in the stage it came from, while it is still where the move put it).
 - Keys, for the facilitator outside text fields: **D** Done, **B** Blocked, **U** Undo Last, **J** and **K** the next
@@ -527,7 +531,7 @@ and the fill button. A kind brings only:
 and the editor's `session-kinds.tsx` its wording and set-up defaults; a kind's own parts live in their own folder
 (`components/session/planning/`, `components/session/triage/`, `components/session/review/`,
 `components/session/standup/`) and the page draws them only for that kind. Every kind's page is drawn in the same
-frame (`SessionFrame`: the canvas cover, the sidebar or a phone's fold-down queue, the card side) under the same header
+frame (`SessionFrame`: the canvas cover, the sidebar or a phone's queue folding down over the card, never squeezing it, the card side) under the same header
 (`SessionHeader`).
 
 ## Agents and export
