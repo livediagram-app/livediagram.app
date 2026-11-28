@@ -59,7 +59,8 @@ export function SessionFrame({
                 data-session-kind={sessionKind}
               >
                 {phone ? (
-                  <div className="flex shrink-0 flex-col border-b border-slate-200 dark:border-slate-800">
+                  // The queue folds down over the card, never squeezing it (a long queue scrolls in its own sheet).
+                  <div className="relative z-20 flex shrink-0 flex-col border-b border-slate-200 dark:border-slate-800">
                     {header}
                     <button
                       type="button"
@@ -71,7 +72,12 @@ export function SessionFrame({
                       <span className="text-slate-500">{queueOpen ? 'Hide' : 'Show'}</span>
                     </button>
                     {queueOpen ? (
-                      <div className="flex max-h-[40vh] min-h-0 flex-col">{queue}</div>
+                      <div
+                        className="absolute inset-x-0 top-full flex max-h-[60vh] min-h-0 flex-col border-b border-slate-200 bg-white pt-2 shadow-lg dark:border-slate-800 dark:bg-slate-950"
+                        data-session-queue-sheet=""
+                      >
+                        {queue}
+                      </div>
                     ) : null}
                   </div>
                 ) : (

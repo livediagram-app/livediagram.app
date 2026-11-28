@@ -287,6 +287,42 @@ describe('SessionPage: Stand-up', () => {
     expect(f.state().decided).toBeUndefined();
   });
 
+  it('Blocked then Stage are two steps: U takes back the move, a second U the flag', async () => {
+    const f = mount({ mayEdit: true });
+    fireEvent.keyDown(window, { key: 'b' });
+    fireEvent.click(screen.getByRole('button', { name: 'Waiting on Review' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Mark Blocked' }));
+    });
+    f.redraw();
+    vi.setSystemTime(NOW + 1_000);
+    fireEvent.change(screen.getByRole('combobox', { name: 'Stage of WI-1' }), {
+      target: { value: 'done' },
+    });
+    f.redraw();
+    vi.mocked(recordSessionOutcome).mockClear();
+    expect(screen.getByRole('button', { name: 'Undo Moved WI-1' })).toBeTruthy();
+    fireEvent.keyDown(window, { key: 'u' });
+    expect(f.plan.moveItem).toHaveBeenLastCalledWith(
+      'a',
+      expect.objectContaining({ status: 'doing' }),
+    );
+    expect(f.plan.patchItem).not.toHaveBeenCalledWith('a', { clear: ['flagged'] });
+    expect(recordSessionOutcome).not.toHaveBeenCalled();
+    expect(f.state().decided?.a).toMatchObject({ outcome: 'flagged', reason: 'Waiting on Review' });
+    expect(f.state().decided?.a?.from).toBeUndefined();
+    f.redraw();
+    expect(screen.getByRole('button', { name: 'Undo Flagged WI-1' })).toBeTruthy();
+    fireEvent.keyDown(window, { key: 'u' });
+    expect(f.plan.patchItem).toHaveBeenCalledWith('a', { clear: ['flagged'] });
+    expect(recordSessionOutcome).toHaveBeenCalledWith({ projectId: PLAN }, 'a', {
+      session: 'standup',
+      outcome: 'flagged',
+      undone: true,
+    });
+    expect(f.state().decided).toBeUndefined();
+  });
+
   it('U undoes a Done: the person no longer Done, the Discussed taken back, the room back on them', () => {
     const f = mount({ mayEdit: true });
     pressDone();

@@ -72,10 +72,15 @@ export type SessionDecision = {
   reason?: string;
   duplicateOf?: string;
   linked?: string;
+  // Stand-up: the card's decision before this step (a Blocked, then a Stage move), so Undo takes back one step.
+  prior?: SessionDecision;
 };
 
 // What an outcome did beyond deciding, kept on its decision.
-export type SessionDecisionDetail = Omit<SessionDecision, 'outcome' | 'at' | 'by'>;
+export type SessionDecisionDetail = Omit<SessionDecision, 'outcome' | 'at' | 'by' | 'prior'>;
+
+// How many steps on one card a decision keeps for Undo.
+const PRIOR_MAX = 8;
 
 export type SessionTabState = {
   v: 1;
@@ -247,8 +252,24 @@ function readDecided(raw: unknown): Record<string, SessionDecision> | undefined 
 const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
 // What a stored decision did beyond deciding, anything malformed left out.
-function readDetail(d: Record<string, unknown>): SessionDecisionDetail {
-  const out: SessionDecisionDetail = {};
+function readDetail(
+  d: Record<string, unknown>,
+  depth = 0,
+): Omit<SessionDecision, 'outcome' | 'at' | 'by'> {
+  const out: Omit<SessionDecision, 'outcome' | 'at' | 'by'> = {};
+  const prior = d['prior'];
+  if (
+    depth < PRIOR_MAX &&
+    isObj(prior) &&
+    isSessionOutcome(prior['outcome']) &&
+    typeof prior['at'] === 'number'
+  )
+    out.prior = {
+      outcome: prior['outcome'],
+      at: prior['at'],
+      by: typeof prior['by'] === 'string' ? prior['by'] : '',
+      ...readDetail(prior, depth + 1),
+    };
   const from = str(d['from']);
   const to = str(d['to']);
   if (from && to) {
@@ -385,8 +406,8 @@ export function withDecision(
   return withCurrent({ ...s, decided }, nextId, now);
 }
 
-// An outcome kept for `itemId` with the room staying where it is (Stand-up's Blocked and Stage). A card decided already
-// keeps its first move's `from` and `fromRank` (so Undo takes it all the way back) and takes the newer `to`.
+// An outcome kept for `itemId` with the room staying where it is (Stand-up's Blocked and Stage): one step over the card's
+// decision, which it keeps as `prior` (at most PRIOR_MAX deep), so Undo takes back this step alone.
 export function withOutcome(
   s: SessionTabState,
   itemId: string,
@@ -396,17 +417,43 @@ export function withOutcome(
   detail: SessionDecisionDetail = {},
 ): SessionTabState {
   const had = s.decided?.[itemId];
-  const move =
-    had?.from && had.to
-      ? {
-          from: had.from,
-          to: detail.to ?? had.to,
-          ...(had.fromRank ? { fromRank: had.fromRank } : {}),
-        }
-      : {};
-  const flagSet = had?.flagSet || detail.flagSet ? { flagSet: true as const } : {};
-  const next: SessionDecision = { ...had, ...detail, ...move, ...flagSet, outcome, at: now, by };
+  const next: SessionDecision = { ...had, ...detail, outcome, at: now, by };
+  delete next.prior;
+  // A move's rank is its own: none given, none kept from an earlier move.
+  if (detail.from && !detail.fromRank) delete next.fromRank;
+  if (had) next.prior = trimPrior(had, PRIOR_MAX - 1);
   return { ...s, decided: { ...s.decided, [itemId]: next } };
+}
+
+// A decision with at most `left` earlier steps kept under it.
+function trimPrior(d: SessionDecision, left: number): SessionDecision {
+  if (!d.prior) return d;
+  if (left <= 0) {
+    const { prior: _p, ...rest } = d;
+    return rest;
+  }
+  return { ...d, prior: trimPrior(d.prior, left - 1) };
+}
+
+// What a decision's own step did, beside the step before it: moved the card (its from, to and rank) and set the
+// flag. A decision with no step before it did all it holds.
+export function sessionStep(d: SessionDecision): SessionDecision {
+  const p = d.prior;
+  if (!p) return d;
+  const { prior: _p, from, to, fromRank, flagSet, ...rest } = d;
+  const moved = !!from && !!to && (p.from !== from || p.to !== to || p.fromRank !== fromRank);
+  return {
+    ...rest,
+    ...(moved ? { from, to, ...(fromRank ? { fromRank } : {}) } : {}),
+    ...(flagSet && !p.flagSet ? { flagSet } : {}),
+  };
+}
+
+// Undo of the latest step on `itemId`: the decision before it back, else no decision.
+export function withoutStep(s: SessionTabState, itemId: string): SessionTabState {
+  const d = s.decided?.[itemId];
+  if (!d?.prior) return withoutDecision(s, itemId);
+  return { ...s, decided: { ...s.decided, [itemId]: d.prior } };
 }
 
 // Stand-up's Done: the person `key` marked Done, each of `cardIds` not decided yet recorded Discussed at the same

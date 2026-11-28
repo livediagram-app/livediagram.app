@@ -69,10 +69,12 @@ export function defaultSessionSetup(input: {
   const look = SESSION_KIND_LOOKS[input.sessionKind];
   const starts = look.startStages;
   const isStartStage = (s: string) => {
-    const name = statusNames.get(s) ?? s;
+    const name = (statusNames.get(s) ?? s).trim().toLowerCase();
     return (
-      starts.includes(name.trim().toLowerCase()) ||
-      (!!look.startPhase && input.statusPhases?.get(s) === look.startPhase)
+      starts.includes(name) ||
+      (!!look.startPhase &&
+        input.statusPhases?.get(s) === look.startPhase &&
+        !look.notStartStages?.includes(name))
     );
   };
   // A finished-work kind reads archived cards too.

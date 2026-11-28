@@ -6,7 +6,7 @@
 // dialog, and the blockers on Session Complete.
 import { useMemo, useRef, useState } from 'react';
 import { cardRefOrKey, isFlagged, itemStatus, typeIn, typeStatusesOf } from '@liveplanner/items';
-import { SESSION_KINDS } from '@liveplanner/project';
+import { SESSION_KINDS, sessionStep } from '@liveplanner/project';
 import { Callout } from '@liveworkspace/ui/callout';
 import { FeedbackStrip } from '../review/FeedbackStrip';
 import { SessionCard } from '../SessionCard';
@@ -68,7 +68,7 @@ export function StandupPage({
     ? null
     : last.kind === 'person'
       ? `Done ${personName(people.find((p) => p.key === last.key)?.person ?? null)}`
-      : last.decision.outcome === 'discussed' && last.decision.from
+      : sessionStep(last.decision).from
         ? `Moved ${refOf(last.itemId, plan.items, plan.types)}`
         : undoLabel(last.itemId, last.decision, plan.items, plan.types);
   const undoLast = runs && last && lastLabel ? { label: lastLabel, onUndo: room.undoLast } : null;

@@ -114,13 +114,28 @@ export type SessionKindLook = {
   startTypes?: readonly string[];
   // The order a new set-up starts on; absent: the hand order.
   startSort?: readonly BoardSortLevel[];
-  // A stage in this phase counts as one it starts from too (Sprint Review's Done, Stand-up's Doing).
+  // A stage in this phase counts as one it starts from too (Sprint Review's Done, Stand-up's Doing), unless its name
+  // (lower case) is one of `notStartStages` (Stand-up leaves out a Ready column a board reads as Doing).
   startPhase?: StatusPhase;
+  notStartStages?: readonly string[];
   // Stage names (lower case) the kind's Next Stage steps past (sessionTarget's `pass`).
   passStages?: readonly string[];
   // Words Start Planning's search finds it by, beyond every session's.
   keywords: readonly string[];
 };
+
+// Stage names (lower case) for work ready to start: Sprint Planning starts from them, and Stand-up never counts them
+// as in flight, whatever phase the board gives them.
+const READY_STAGES: readonly string[] = [
+  'reviewed',
+  'ready',
+  'refined',
+  'ready for development',
+  'ready for dev',
+  'groomed',
+  'selected',
+  'backlog',
+];
 
 export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>> = {
   refinement: {
@@ -141,16 +156,7 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
       'Pick the cards to plan from, their order, where committed cards go and the team’s capacity.',
     stagesHeading: 'Stages',
     targetHeading: 'When Committed',
-    startStages: [
-      'reviewed',
-      'ready',
-      'refined',
-      'ready for development',
-      'ready for dev',
-      'groomed',
-      'selected',
-      'backlog',
-    ],
+    startStages: READY_STAGES,
     keywords: [
       'sprint',
       'planning',
@@ -209,6 +215,7 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
     targetHeading: '',
     startStages: STANDUP_INFLIGHT_STAGES,
     startPhase: 'doing',
+    notStartStages: READY_STAGES,
     keywords: [
       'standup',
       'stand-up',

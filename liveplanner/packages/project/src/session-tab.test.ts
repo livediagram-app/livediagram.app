@@ -18,11 +18,13 @@ import {
   withFacilitator,
   withFollowUp,
   withNoDecisions,
+  sessionStep,
   withOutcome,
   withPersonDone,
   withPresenter,
   withoutDecision,
   withoutPersonDone,
+  withoutStep,
 } from './session-tab';
 import { isPlanTabKind, tabKindOf } from './tab-kind';
 import { SESSION_FOLLOW_UPS_MAX, SESSION_QUEUE_MAX, type ItemFields } from '@liveplanner/items';
@@ -404,7 +406,7 @@ describe('Stand-up', () => {
     expect(withCurrent(up, 'b', 900, true).cardStartedAt).toBe(900);
   });
 
-  it('keeps an outcome with the room staying, merging a later move into an earlier one', () => {
+  it('keeps each outcome as its own step over the card’s decision, the room staying', () => {
     const on = withCurrent(up, 'a', 1);
     const moved = withOutcome(on, 'a', 'discussed', 'Sam', 5, {
       from: 'doing',
@@ -413,18 +415,47 @@ describe('Stand-up', () => {
     });
     expect(moved.currentId).toBe('a');
     expect(moved.cardStartedAt).toBe(1);
-    const again = withOutcome(moved, 'a', 'discussed', 'Sam', 6, { from: 'review', to: 'done' });
-    expect(again.decided!['a']).toMatchObject({ from: 'doing', to: 'done', fromRank: 'r1' });
-    const flagged = withOutcome(again, 'a', 'flagged', 'Sam', 7, { flagSet: true, reason: 'Keys' });
+    expect(sessionStep(moved.decided!['a']!)).toEqual(moved.decided!['a']);
+    const flagged = withOutcome(moved, 'a', 'flagged', 'Sam', 7, { flagSet: true, reason: 'Keys' });
     expect(flagged.decided!['a']).toMatchObject({
       outcome: 'flagged',
       from: 'doing',
-      to: 'done',
+      to: 'review',
       flagSet: true,
       reason: 'Keys',
     });
-    // A later Discussed keeps the flag the Blocked set.
-    expect(withOutcome(flagged, 'a', 'discussed', 'Sam', 8).decided!['a']!.flagSet).toBe(true);
+    // The Blocked step set the flag and moved nothing.
+    expect(sessionStep(flagged.decided!['a']!)).toEqual({
+      outcome: 'flagged',
+      at: 7,
+      by: 'Sam',
+      reason: 'Keys',
+      flagSet: true,
+    });
+    // A Stage move after it is its own step: it moves, and keeps the flag the Blocked set.
+    const again = withOutcome(flagged, 'a', 'flagged', 'Sam', 8, { from: 'review', to: 'done' });
+    expect(again.decided!['a']).toMatchObject({ from: 'review', to: 'done', flagSet: true });
+    const step = sessionStep(again.decided!['a']!);
+    expect(step).toMatchObject({ from: 'review', to: 'done' });
+    expect(step.flagSet).toBeUndefined();
+    expect(step.fromRank).toBeUndefined();
+    // Undo takes one step back at a time.
+    const back = withoutStep(again, 'a');
+    expect(back.decided!['a']).toEqual(flagged.decided!['a']);
+    expect(withoutStep(withoutStep(back, 'a'), 'a').decided).toBeUndefined();
+    expect(withoutStep(up, 'a')).toBe(up);
+    // A stored step reads back with the steps before it, at most eight deep.
+    let deep = on;
+    for (let i = 0; i < 12; i++) deep = withOutcome(deep, 'a', 'discussed', 'Sam', 10 + i);
+    let depth = 0;
+    for (let d = deep.decided!['a']!; d.prior; d = d.prior) depth++;
+    expect(depth).toBe(8);
+    const read = readSessionTab({
+      ...again,
+      decided: { a: { ...again.decided!['a'], prior: { ...flagged.decided!['a'], prior: 'x' } } },
+    });
+    expect(read?.decided!['a']!.prior).toMatchObject({ outcome: 'flagged', reason: 'Keys' });
+    expect(read?.decided!['a']!.prior!.prior).toBeUndefined();
   });
 
   it('marks a person Done, recording Discussed on their undecided cards, and undoes it', () => {

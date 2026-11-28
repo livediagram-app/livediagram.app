@@ -33,6 +33,9 @@ export function undoDecision(
   sessionKind: SessionTabState['sessionKind'],
   itemId: string,
   d: SessionDecision,
+  // Keep the undo in the card's history (a step that recorded nothing, such as a Stage move on a card decided
+  // already, records no undo).
+  record = true,
 ): void {
   const { items, types } = plan;
   const item = items.get(itemId);
@@ -47,5 +50,5 @@ export function undoDecision(
   const unlink =
     d.linked && d.duplicateOf ? duplicateUnlink(item, d.linked, d.duplicateOf, types) : null;
   if (unlink) void plan.patchItem(itemId, unlink);
-  recordOutcome(plan, sessionKind, itemId, d.outcome, { undone: true });
+  if (record) recordOutcome(plan, sessionKind, itemId, d.outcome, { undone: true });
 }

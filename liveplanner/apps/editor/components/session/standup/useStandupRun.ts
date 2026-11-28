@@ -24,8 +24,9 @@ import {
   withNoDecisions,
   withOutcome,
   withPersonDone,
-  withoutDecision,
+  sessionStep,
   withoutPersonDone,
+  withoutStep,
   type SessionTabState,
 } from '@liveplanner/project';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -183,8 +184,8 @@ export function useStandupRun({
     track('Plan', 'Used', 'SessionFlagged');
   };
 
-  // Stage: the room's card moved to `to` (the column's end), kept so Undo takes it back; a card not decided yet is
-  // recorded Discussed, so it stays in the queue whatever its new stage.
+  // Stage: the room's card moved to `to` (the column's end), its own step so Undo takes back the move alone; a card
+  // not decided yet is recorded Discussed, so it stays in the queue whatever its new stage.
   const moveStage = (to: string) => {
     const item = current;
     const from = item ? itemStatus(item) : undefined;
@@ -215,7 +216,8 @@ export function useStandupRun({
     track('Plan', 'Used', 'SessionUndone');
   };
 
-  // Undo Last: the newest Done, Blocked or Stage move taken back.
+  // Undo Last: the newest Done, Blocked or Stage move taken back, one step at a time (a Stage move after a Blocked
+  // takes back the move, and the next Undo the flag).
   const last = lastStandupStep(session);
   const undoLast = () => {
     if (!runs || !last) return;
@@ -224,12 +226,14 @@ export function useStandupRun({
       return;
     }
     const { itemId, decision } = last;
-    undoDecision(plan, 'standup', itemId, decision);
+    const step = sessionStep(decision);
+    const moveOnly = !!decision.prior && !!step.from && !step.flagSet;
+    undoDecision(plan, 'standup', itemId, step, !moveOnly);
     const card = items.get(itemId);
     const same = !!card && personKeyOf(card) === currentKey;
-    run(tabId, (s) => withCurrent(withoutDecision(s, itemId), itemId, Date.now(), same));
+    run(tabId, (s) => withCurrent(withoutStep(s, itemId), itemId, Date.now(), same));
     setPeekId(null);
-    plan.announce(`${decision.outcome === 'flagged' ? 'Blocked' : 'Move'} undone`);
+    plan.announce(`${step.from ? 'Move' : 'Blocked'} undone`);
     track('Plan', 'Used', 'SessionUndone');
   };
 

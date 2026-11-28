@@ -110,12 +110,15 @@ export function StandupActionBar({
           </option>
         ))}
       </Select>
+      {/* The person line has a row of its own above the controls, so it reads in full (a long Blocked reason wraps
+          to a second line) and the controls keep one row. */}
       <span
-        className="min-w-0 flex-1 truncate px-2 text-[13px] text-slate-500 max-sm:order-first max-sm:basis-full max-sm:px-0 max-sm:text-[12px] dark:text-slate-400"
+        className="order-first line-clamp-2 min-w-0 basis-full text-[13px] text-slate-500 max-sm:text-[12px] dark:text-slate-400"
         data-standup-line=""
       >
         {doneBy ? `${name} done by ${doneBy}` : line}
       </span>
+      <span aria-hidden className="flex-1" />
       {timebox ? (
         <span
           className={`tabular-nums text-[13px] font-medium ${timebox.up ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}
