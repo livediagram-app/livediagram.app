@@ -103,6 +103,15 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   characters; the passages sent are capped at 24,000 characters. A failed or refused model call says
   which (bad key, no credit, rate limit) in words, never a raw error.
 
+### Asked from Slack or Teams
+
+A question asked in a connected Slack workspace or Teams tenant ([Slack and Teams](chat-apps.md)) is this same Ask:
+the same route inside the knowledgebase's room, under the linked account's own access and every limit above, its
+gaps recorded as unanswered questions. Three things differ, each because no sign-in token of the person's comes with
+it: it is answered from pages alone (no Sources), on the knowledgebase's own key or built-in AI (never a team's or a
+person's shared key), and with the AI that applies (no Answer With choice). The answer is drawn as the chat's own
+blocks, privately to the asker.
+
 ### Shared with Ask AI
 
 The other apps' Ask AI ([ask.md](../../../../liveworkspace/docs/specs/020-ask/ask.md)) is built on the parts of Ask

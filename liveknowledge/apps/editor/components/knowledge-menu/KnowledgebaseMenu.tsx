@@ -17,6 +17,7 @@ import {
 import {
   AiEditingIcon,
   AiIcon,
+  ChatIcon,
   DeleteIcon,
   DescribeIcon,
   ExportIcon,
@@ -36,6 +37,7 @@ const ICONS: Record<KnowledgeMenuVerb, ReactNode> = {
   publish: <PublishIcon />,
   ai: <AiIcon />,
   aiEditing: <AiEditingIcon />,
+  chat: <ChatIcon />,
   delete: <DeleteIcon />,
 };
 

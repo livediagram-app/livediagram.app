@@ -1,12 +1,13 @@
-// What makes liveknowledge a knowledgebase (docs/specs/030-knowledgebase): Ask, Insights (./insights), verification,
-// search and getting around the pages, Describe to Set Up and the team's AI key, and the pages made from them.
-// Every event here is a count with a preset type, never a question, an answer, a page or a key. Part of the metric
-// catalogue: import from ../metric-catalogue.
+// What makes liveknowledge a knowledgebase (docs/specs/030-knowledgebase): Ask, Insights (./insights), Slack and
+// Teams (./chat), verification, search and getting around the pages, Describe to Set Up and the team's AI key, and
+// the pages made from them. Every event here is a count with a preset type, never a question, an answer, a page or
+// a key. Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { openedChart } from './opened';
 
+export * from './chat';
 export * from './insights';
 
 // ---- Ask (search-and-ask.md "Ask") ----------------------------------------------------------------------------

@@ -13,6 +13,8 @@ import {
 } from '@liveknowledge/api-schema';
 import { handleTokens } from './routes/tokens';
 import { DocumentRoom } from './document-room/document-room';
+import { ChatWorkspace } from './chat/chat-workspace';
+import { handleChatHooks, handleChatLink } from './chat/chat-routes';
 import { handleInternalItems } from './routes/internal-items';
 import { handleAutomationHook } from './routes/automation-hook-route';
 import { handleEmailOptOut } from './routes/email-optout-route';
@@ -54,7 +56,7 @@ import { routeToWorkspace, WORKBENCH_ROUTE } from '@liveworkspace/sites/workspac
 import { accountsFetch } from '@liveworkspace/auth-client';
 import type { Env } from './types';
 
-export { DocumentRoom };
+export { ChatWorkspace, DocumentRoom };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -98,6 +100,13 @@ async function routeApiRequest(
   // never a person, so answered before identity, with its own body, type and network checks
   // (routes/automation-hook-route.ts).
   if (segments[1] === 'hooks') return handleAutomationHook(request, env);
+
+  // Slack's and Teams' doors (chat/chat-routes.ts): their platform's signature, never a person, so answered before
+  // identity, each with its own body cap, signature check and replay guard.
+  if (segments[1] === 'chat') {
+    const hook = handleChatHooks(request, env, segments, (p) => executionCtx?.waitUntil(p));
+    if (hook) return hook;
+  }
 
   // A rule email's unsubscribe (routes/email-optout-route.ts): its token, never a person, so answered before
   // identity, limited per network.
@@ -293,6 +302,9 @@ async function routeApiRequest(
     bearer: person ? bearerTokenOf(request.headers.get('Authorization')) : null,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
+  // A chat user's account link (chat/chat-routes.ts), the signed-in person's.
+  if (segments[1] === 'chat') return handleChatLink(ctx);
+
   switch (segments[1]) {
     case 'capabilities':
       return handleCapabilities(ctx);

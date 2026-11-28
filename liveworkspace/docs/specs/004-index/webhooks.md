@@ -7,6 +7,10 @@ endpoint, or a message formatted for a Slack or Microsoft Teams channel, with a 
 belongs to a single item and only ever sends what that item's rules tell it to. Built once in the index; every app's
 rules send through it. The engineering detail is [blueprints/webhooks.md](blueprints/webhooks.md).
 
+A connection only sends. Hearing from Slack or Teams (a command, a mention, a pasted link) and answering as the person
+who asked is a [chat app](../023-chat-apps/chat-apps.md), installed in the workspace rather than added to an item; the
+two share their Slack escaping and message builders (`@liveworkspace/chat`).
+
 In copy it is a **connection**, never a webhook (Send to Webhook, the step that posts to your own service, and
 Incoming Webhook, a trigger, are Automations' own words). The index's routes, tables, error codes and identifiers
 keep the word `webhook`: nothing stored was renamed.

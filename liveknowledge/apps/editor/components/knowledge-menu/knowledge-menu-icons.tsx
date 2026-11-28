@@ -5,6 +5,7 @@ import {
   lucideFileDown,
   lucideFileUp,
   lucideGlobe,
+  lucideMessagesSquare,
   lucidePalette,
   lucidePencil,
   lucideShieldCheck,
@@ -23,4 +24,5 @@ export const ExportIcon = lucideGlyph(lucideFileDown, 16);
 export const PublishIcon = lucideGlyph(lucideGlobe, 16);
 export const AiIcon = lucideGlyph(lucideSparkles, 16);
 export const AiEditingIcon = lucideGlyph(lucideShieldCheck, 16);
+export const ChatIcon = lucideGlyph(lucideMessagesSquare, 16);
 export const DeleteIcon = lucideGlyph(lucideTrash2, 16);

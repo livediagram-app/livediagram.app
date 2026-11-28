@@ -9,6 +9,7 @@ import {
   type WebhookDeliveryType,
   type WebhookKind,
 } from '@liveworkspace/index-client';
+import { SLACK_SECTION_MAX, slackCut, slackEscape } from '@liveworkspace/chat/slack-text';
 
 /** A delivery's copy of its event, as the outbox wrote it. */
 export type DeliveryEvent = {
@@ -102,23 +103,8 @@ export function jsonBodyOf(event: DeliveryEvent, detail = event.detail): unknown
   };
 }
 
-// Slack's mrkdwn treats these three as control characters.
-const slackEscape = (text: string) =>
-  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-// The most a Slack section's text may hold: past it Slack refuses the whole message (invalid_blocks).
-export const SLACK_SECTION_MAX = 3000;
-
-/** Escaped text cut to `max` characters with an ellipsis: never inside an escape (`&am`) or a surrogate pair. */
-export function slackCut(escaped: string, max: number): string {
-  if (escaped.length <= max) return escaped;
-  let head = escaped.slice(0, Math.max(0, max - 1));
-  const amp = head.lastIndexOf('&');
-  if (amp >= 0 && !head.includes(';', amp)) head = head.slice(0, amp);
-  const last = head.charCodeAt(head.length - 1);
-  if (last >= 0xd800 && last <= 0xdbff) head = head.slice(0, -1);
-  return `${head}…`;
-}
+// Slack's escaping and its section cut are the platform's (@liveworkspace/chat), shared with the chat apps.
+export { SLACK_SECTION_MAX, slackCut };
 
 /** A Slack incoming webhook's message: the sentence, a link back, and what sent it beneath. */
 export function slackBodyOf(event: DeliveryEvent, summary = summaryOf(event)): unknown {

@@ -9,6 +9,8 @@
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'document',
+  // A chat user's account link, /chat/link (docs/specs/030-knowledgebase/chat-apps.md "Linking an account").
+  'chat',
   // The guest handoff's way back, /auth/guest (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests").
   'auth',
   // A rule email's unsubscribe page, /email-optout (docs/specs/013-workspace/automations.md "Unsubscribing").
