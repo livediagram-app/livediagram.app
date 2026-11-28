@@ -5,7 +5,12 @@
 
 import type { CardThreadWriteResponse, CardThreadsResponse } from '@liveplanner/api-schema';
 import { storedThreadField, type ItemPerson } from '@liveplanner/items';
-import type { CardThread, CommentMention, CommentReactionId } from '@liveplanner/project';
+import type {
+  CardThread,
+  CommentLabel,
+  CommentMention,
+  CommentReactionId,
+} from '@liveplanner/project';
 import { isOfflineId } from '../offline/offline-store';
 import { offlineFetchThreads, offlineWriteThread } from '../offline/offline-threads';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
@@ -14,8 +19,23 @@ import { workbenchAllows } from './workbench-confinement';
 
 export type ThreadAction =
   // `field`: the Comments field it starts in (absent: the built-in Comments).
-  | { kind: 'start'; itemId: string; text: string; mentions?: CommentMention[]; field?: string }
-  | { kind: 'reply'; threadId: string; text: string; mentions?: CommentMention[] }
+  // `title`: its own title (absent: the automatic one); `label`: what its comment is (items.md "Review Feedback").
+  | {
+      kind: 'start';
+      itemId: string;
+      text: string;
+      mentions?: CommentMention[];
+      field?: string;
+      title?: string;
+      label?: CommentLabel;
+    }
+  | {
+      kind: 'reply';
+      threadId: string;
+      text: string;
+      mentions?: CommentMention[];
+      label?: CommentLabel;
+    }
   | {
       kind: 'edit';
       threadId: string;
@@ -72,16 +92,21 @@ export async function fetchCloudThreads(scope: ItemsScope): Promise<CardThread[]
 // The method, path and body of one action on the api.
 function requestOf(action: ThreadAction): { method: string; path: string; body?: unknown } {
   const t = 'threadId' in action ? `/threads/${enc(action.threadId)}` : '';
-  const comment = (a: { text: string; mentions?: CommentMention[] }) => ({
+  const comment = (a: { text: string; mentions?: CommentMention[]; label?: CommentLabel }) => ({
     text: a.text,
     ...(a.mentions?.length ? { mentions: a.mentions } : {}),
+    ...(a.label ? { label: a.label } : {}),
   });
   switch (action.kind) {
     case 'start':
       return {
         method: 'POST',
         path: `/items/${enc(action.itemId)}/threads`,
-        body: { ...comment(action), ...storedThreadField(action.field) },
+        body: {
+          ...comment(action),
+          ...storedThreadField(action.field),
+          ...(action.title ? { title: action.title } : {}),
+        },
       };
     case 'reply':
       return { method: 'POST', path: `${t}/comments`, body: comment(action) };

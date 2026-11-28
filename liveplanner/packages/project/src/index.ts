@@ -181,6 +181,7 @@ export * from '@liveworkspace/model-core/shape-marker';
 export * from './behaviour-config';
 export * from './behaviour-skin';
 export * from './comments';
+export * from './comment-label';
 export * from './collab-index-rows';
 export * from './plan-board-rows';
 export * from './cell-comments';

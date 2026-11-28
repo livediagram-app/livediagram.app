@@ -268,6 +268,7 @@ const OUTCOME_VERBS: Record<SessionOutcome, string> = {
   committed: 'Committed',
   accepted: 'Accepted',
   closed: 'Closed',
+  reviewed: 'Reviewed',
 };
 function sessionOutcomeLine(
   ctx: ActivityContext,

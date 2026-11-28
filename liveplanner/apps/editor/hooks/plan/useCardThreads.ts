@@ -128,6 +128,7 @@ function localChange(
           action.text,
           { id: who.ownerId, name: who.by.name, color: who.by.color },
           action.mentions,
+          action.label,
         ),
       };
     case 'edit':
@@ -289,8 +290,10 @@ export function useCardThreads(opts: {
             action.text,
             { id: ownerId, name: by.name, color: by.color },
             action.mentions,
+            action.label,
           ),
           ...storedThreadField(action.field),
+          ...(action.title ? { title: action.title } : {}),
           now: Date.now(),
         });
         settle(pendingId, shown);

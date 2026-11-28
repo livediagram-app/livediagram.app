@@ -9,16 +9,19 @@ import {
   isFacilitator,
   lastDecided,
   newSessionTab,
+  presenterOf,
   readSessionTab,
   timeboxLeftMs,
   withCurrent,
   withDecision,
   withFacilitator,
+  withFollowUp,
   withNoDecisions,
+  withPresenter,
   withoutDecision,
 } from './session-tab';
 import { isPlanTabKind, tabKindOf } from './tab-kind';
-import { SESSION_QUEUE_MAX } from '@liveplanner/items';
+import { SESSION_FOLLOW_UPS_MAX, SESSION_QUEUE_MAX, type ItemFields } from '@liveplanner/items';
 
 // docs/specs/026-plan/session-tabs.md, blueprint session-tabs.md "Data and persistence", "Behaviour and state".
 const SAM = { id: 'k-sam', name: 'Sam', color: '#0ea5e9' };
@@ -266,5 +269,87 @@ describe('the timebox', () => {
     expect(timeboxLeftMs(boxed, 999_000)).toBe(0);
     expect(timeboxLeftMs(base, 5)).toBeNull();
     expect(timeboxLeftMs({ ...boxed, cardStartedAt: undefined }, 5)).toBeNull();
+  });
+});
+
+describe('Sprint Review', () => {
+  const JO = { id: 'p-jo', name: 'Jo', color: '#0891b2' };
+  const ALI = { id: 'p-ali', name: 'Ali', color: '#dc2626' };
+  const review = newSessionTab('review', { typeIds: ['task'], statuses: ['done'] });
+  const card = (fields: ItemFields) => ({ id: 'c1', fields });
+
+  it('is a kind whose Reviewed stays and whose queue reads archived cards', () => {
+    expect(SESSION_KINDS.review).toMatchObject({
+      completes: 'reviewed',
+      stays: true,
+      archived: true,
+    });
+  });
+
+  it('reads the done range, the presenter switch, presenters and follow-ups back', () => {
+    const read = readSessionTab({
+      sessionKind: 'review',
+      setup: { typeIds: ['task'], statuses: ['done'], since: 10, until: 20, presenter: 'none' },
+      presenters: { c1: JO, c2: null, c3: { id: 1 }, '': JO },
+      followUps: { c1: ['n1', 'n1', 'n2'], c2: [], '': ['n3'] },
+    })!;
+    expect(read.setup).toMatchObject({ since: 10, until: 20, presenter: 'none' });
+    expect(read.presenters).toEqual({ c1: JO, c2: null });
+    expect(read.followUps).toEqual({ c1: ['n1', 'n2'] });
+    // An end before the start, a bad edge and an unknown presenter switch are dropped.
+    const loose = readSessionTab({
+      sessionKind: 'review',
+      setup: { since: 30, until: 20, presenter: 'all' },
+      presenters: 'x',
+      followUps: { c1: 'n1' },
+    })!;
+    expect(loose.setup.until).toBeUndefined();
+    expect(loose.setup.presenter).toBeUndefined();
+    expect(loose.presenters).toBeUndefined();
+    expect(
+      readSessionTab({ sessionKind: 'review', presenters: { c1: { id: 1 } } })!.presenters,
+    ).toBeUndefined();
+    expect(loose.followUps).toBeUndefined();
+    expect(
+      readSessionTab({ sessionKind: 'review', setup: { since: -1, until: 5 } })!.setup,
+    ).toMatchObject({
+      until: 5,
+    });
+    expect(
+      readSessionTab({ sessionKind: 'review', setup: { since: Infinity } })!.setup.since,
+    ).toBeUndefined();
+  });
+
+  it('keeps at most a queue of presenters and follow-up lists', () => {
+    const many = Object.fromEntries(
+      Array.from({ length: SESSION_QUEUE_MAX + 5 }, (_, i) => [`c${i}`, JO]),
+    );
+    const lists = Object.fromEntries(
+      Array.from({ length: SESSION_QUEUE_MAX + 5 }, (_, i) => [`c${i}`, ['n']]),
+    );
+    const read = readSessionTab({ sessionKind: 'review', presenters: many, followUps: lists })!;
+    expect(Object.keys(read.presenters!)).toHaveLength(SESSION_QUEUE_MAX);
+    expect(Object.keys(read.followUps!)).toHaveLength(SESSION_QUEUE_MAX);
+  });
+
+  it('presents a card’s assignee unless the facilitator named someone, or none at all', () => {
+    expect(presenterOf(review, card({ assignee: JO }))).toEqual(JO);
+    expect(presenterOf(review, card({}))).toBeNull();
+    const named = withPresenter(review, 'c1', { ...ALI, extra: 1 } as typeof ALI);
+    expect(named.presenters).toEqual({ c1: ALI });
+    expect(presenterOf(named, card({ assignee: JO }))).toEqual(ALI);
+    const nobody = withPresenter(review, 'c1', null);
+    expect(presenterOf(nobody, card({ assignee: JO }))).toBeNull();
+    const off = { ...review, setup: { ...review.setup, presenter: 'none' as const } };
+    expect(presenterOf(off, card({ assignee: JO }))).toBeNull();
+  });
+
+  it('keeps each follow-up once, up to the cap', () => {
+    let s = withFollowUp(review, 'c1', 'n1');
+    s = withFollowUp(s, 'c1', 'n1');
+    s = withFollowUp(s, 'c1', 'n2');
+    expect(s.followUps).toEqual({ c1: ['n1', 'n2'] });
+    for (let i = 0; i < SESSION_FOLLOW_UPS_MAX + 2; i += 1) s = withFollowUp(s, 'c2', `m${i}`);
+    expect(s.followUps?.c2).toHaveLength(SESSION_FOLLOW_UPS_MAX);
   });
 });

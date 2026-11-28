@@ -1,6 +1,8 @@
 // Set Up Refinement's rules (docs/specs/026-plan/session-tabs.md "Making one"): which card types and stages it picks
 // first, the stages the picked types offer with how many cards each holds, and the set-up in words. Pure.
 import {
+  REVIEW_RANGE_DEFAULT_DAYS,
+  DAY_MS,
   boardSortText,
   isArchived,
   isTrashed,
@@ -8,12 +10,12 @@ import {
   typeStatusesOf,
   type Item,
   type ItemTypeDef,
+  type StatusPhase,
 } from '@liveplanner/items';
+import { SESSION_KINDS } from '@liveplanner/project';
 import type { SessionKindId } from '@liveplanner/items';
 import type { SessionSetup } from '@liveplanner/project';
 import { SESSION_KIND_LOOKS } from './session-kinds';
-
-const live = (i: Item) => !isArchived(i) && !isTrashed(i);
 
 // The stages the picked types use, once each, in the plan's column order (a type's own order where it keeps one).
 export function stagesFor(
@@ -30,15 +32,16 @@ export function stagesFor(
   return [...inPlan, ...[...used].filter((s) => !inPlan.includes(s))];
 }
 
-// How many live cards of the picked types each stage holds now.
+// How many live cards of the picked types each stage holds now (archived ones too for a kind that reads them).
 export function stageCounts(
   items: Iterable<Item>,
   typeIds: readonly string[],
+  archived = false,
 ): Map<string, number> {
   const picked = new Set(typeIds);
   const out = new Map<string, number>();
   for (const i of items) {
-    if (!live(i) || !picked.has(i.type)) continue;
+    if (isTrashed(i) || (!archived && isArchived(i)) || !picked.has(i.type)) continue;
     const s = itemStatus(i) ?? '';
     out.set(s, (out.get(s) ?? 0) + 1);
   }
@@ -56,16 +59,27 @@ export function defaultSessionSetup(input: {
   types: readonly ItemTypeDef[];
   planStatuses: readonly string[];
   statusNames: ReadonlyMap<string, string>;
+  // Sprint Review: the plan's stage phases (a Done-phase stage is one it starts from), the newest decision of another
+  // review session (its Since Last Review) and the time now.
+  statusPhases?: ReadonlyMap<string, StatusPhase> | undefined;
+  lastReviewAt?: number | null | undefined;
+  now?: number | undefined;
 }): SessionSetup {
   const { types, planStatuses, statusNames } = input;
   const look = SESSION_KIND_LOOKS[input.sessionKind];
   const starts = look.startStages;
-  const isStartLike = (name: string | undefined) =>
-    !!name && starts.includes(name.trim().toLowerCase());
-  const items = [...input.items].filter(live);
-  const nameOf = (s: string) => statusNames.get(s) ?? s;
+  const isStartStage = (s: string) => {
+    const name = statusNames.get(s) ?? s;
+    return (
+      starts.includes(name.trim().toLowerCase()) ||
+      (!!look.startDone && input.statusPhases?.get(s) === 'done')
+    );
+  };
+  // A finished-work kind reads archived cards too.
+  const archived = !!SESSION_KINDS[input.sessionKind].archived;
+  const items = [...input.items].filter((i) => !isTrashed(i) && (archived || !isArchived(i)));
   const refining = types.filter((t) =>
-    items.some((i) => i.type === t.id && isStartLike(nameOf(itemStatus(i) ?? ''))),
+    items.some((i) => i.type === t.id && isStartStage(itemStatus(i) ?? '')),
   );
   const withCards = types.filter((t) => items.some((i) => i.type === t.id));
   const pool = refining.length ? refining : withCards.length ? withCards : types.slice(0, 1);
@@ -81,11 +95,17 @@ export function defaultSessionSetup(input: {
     const t = types.find((x) => x.id === id)!;
     return typeStatusesOf(t, planStatuses).slice(0, 1);
   });
-  const statuses = stages.filter((s) => isStartLike(nameOf(s)));
+  const statuses = stages.filter(isStartStage);
+  // Since the last review when there was one, else the last REVIEW_RANGE_DEFAULT_DAYS days.
+  const now = input.now ?? Date.now();
+  const since = archived
+    ? (input.lastReviewAt ?? now - REVIEW_RANGE_DEFAULT_DAYS * DAY_MS)
+    : undefined;
   return {
     typeIds: picked,
     statuses: statuses.length ? statuses : [...new Set(firsts)],
     ...(look.startSort ? { sortBy: look.startSort.map((l) => ({ ...l })) } : {}),
+    ...(since !== undefined ? { since } : {}),
   };
 }
 
@@ -96,8 +116,21 @@ export function setupWords(
   statusNames: ReadonlyMap<string, string>,
 ): string {
   const stages = setup.statuses.map((s) => statusNames.get(s) ?? s).join(', ');
+  const range = rangeWords(setup);
   const order = boardSortText(setup.sortBy, types);
-  return order.length ? `${stages} · ${order.join(', then ')}` : stages;
+  const head = range ? `${stages} · ${range}` : stages;
+  return order.length ? `${head} · ${order.join(', then ')}` : head;
+}
+
+const day = (ms: number) =>
+  new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+
+// A done range in words ("since 14 Nov", "14 Nov to 21 Nov", "until 21 Nov"), or '' with none.
+export function rangeWords(setup: Pick<SessionSetup, 'since' | 'until'>): string {
+  const { since, until } = setup;
+  if (since !== undefined && until !== undefined) return `${day(since)} to ${day(until)}`;
+  if (since !== undefined) return `since ${day(since)}`;
+  return until !== undefined ? `until ${day(until)}` : '';
 }
 
 // A count of cards, as the preview says it.

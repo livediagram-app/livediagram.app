@@ -140,10 +140,10 @@ export type ItemsTallyRequest = {
 // POST /api/projects/:id/items/:itemId/session (docs/specs/026-plan/session-tabs.md "History"): a Session tab's
 // outcome for the card, kept in its history as an entry tagged `session`. Nothing on the card is written. 204.
 export type ItemSessionRequest = {
-  /** The session kind: `refinement`, `planning` (Sprint Planning) or `triage` (Bug Triage). */
-  session: 'refinement' | 'planning' | 'triage';
-  /** What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning); `accepted`, `closed`, `skipped` or `flagged` (Bug Triage). */
-  outcome: 'refined' | 'skipped' | 'flagged' | 'committed' | 'accepted' | 'closed';
+  /** The session kind: `refinement`, `planning` (Sprint Planning), `triage` (Bug Triage) or `review` (Sprint Review). */
+  session: 'refinement' | 'planning' | 'triage' | 'review';
+  /** What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning); `accepted`, `closed`, `skipped` or `flagged` (Bug Triage); `reviewed` or `skipped` (Sprint Review). */
+  outcome: 'refined' | 'skipped' | 'flagged' | 'committed' | 'accepted' | 'closed' | 'reviewed';
   /** A Close's reason, at most 200 characters; only with `closed`. */
   reason?: string;
   /** The id of the card a closed card duplicates, a card of this plan other than itself; only with `closed`. */

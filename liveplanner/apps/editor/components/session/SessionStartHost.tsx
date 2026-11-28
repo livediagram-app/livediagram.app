@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import type { SessionKindId } from '@liveplanner/items';
 import type { SessionSetup } from '@liveplanner/project';
+import { reviewedAt } from './review/review-range';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { SessionSetupDialog } from './SessionSetupDialog';
 import { defaultSessionSetup } from './session-setup';
@@ -29,6 +30,8 @@ export function SessionStartHost({
       types: plan.types,
       planStatuses: [...plan.statusNames.keys()],
       statusNames: plan.statusNames,
+      statusPhases: plan.statusPhases,
+      lastReviewAt: reviewedAt(plan),
     }),
   );
   return (

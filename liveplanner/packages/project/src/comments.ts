@@ -10,6 +10,7 @@ import type { ElementAction } from '@liveworkspace/element-model/element-action'
 import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import type { CommentReaction } from '@liveworkspace/model-core/comment-reactions';
 import { isComment, keepLocalTicks } from './element-deltas';
+import type { CommentLabel } from './comment-label';
 import { withLiveCustomColours } from '@liveworkspace/element-model/custom-colours';
 import { mapElementThreads, type CellCommentThreads } from './cell-comments';
 
@@ -58,6 +59,9 @@ export type Comment = {
   // they did; one each per person, under their public collab key. Absent when none, so older comments read as
   // they always did.
   reactions?: CommentReaction[];
+  // What the comment is (docs/specs/026-plan/items.md "Review Feedback"): `review` for feedback left in a Sprint
+  // Review session, drawn as a Review Feedback chip. Given with the comment, public, kept by every edit.
+  label?: CommentLabel;
 };
 
 // Threads live on elements (currently boxed only). `resolved` is sticky:
@@ -71,6 +75,7 @@ export function createComment(
   text: string,
   author: { id?: string; name: string; color: string },
   mentions?: CommentMention[],
+  label?: CommentLabel,
 ): Comment {
   return {
     id: crypto.randomUUID(),
@@ -80,6 +85,7 @@ export function createComment(
     authorColor: author.color,
     authorId: author.id,
     ...(mentions?.length ? { mentions } : {}),
+    ...(label ? { label } : {}),
   };
 }
 

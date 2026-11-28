@@ -251,6 +251,14 @@ describe('replying and comments', () => {
     expect(screen.getByText('· Edited')).toBeTruthy();
   });
 
+  // items.md "Review Feedback": feedback left in a Sprint Review wears its chip on the card's own thread.
+  it('marks Review Feedback, and only that', () => {
+    renderLive([thread('th-a', { comments: [comment('c1', { label: 'review' }), comment('c2')] })]);
+    openThread('Title of th-a');
+    expect(document.querySelectorAll('[data-comment-review]')).toHaveLength(1);
+    expect(screen.getByText('Review Feedback')).toBeTruthy();
+  });
+
   // inbox-reading.md "AI comments": the same byline the Inbox draws, the assistant's name first.
   it('names an assistant’s comment by the assistant, with the AI chip, whom it wrote for and its ask', () => {
     renderLive([

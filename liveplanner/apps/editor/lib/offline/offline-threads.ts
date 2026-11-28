@@ -100,6 +100,7 @@ function changeOf(
           action.text,
           { id: who.ownerId, name: who.by.name, color: who.by.color },
           action.mentions,
+          action.label,
         ),
       };
     case 'edit': {
@@ -168,6 +169,7 @@ export async function offlineWriteThread(
           action.text,
           { id: who.ownerId, name: who.by.name, color: who.by.color },
           action.mentions,
+          action.label,
         );
         const thread = startThread({
           id: newThreadId(),
@@ -175,6 +177,7 @@ export async function offlineWriteThread(
           card: { projectId, itemId: item.id, key: item.key },
           comment,
           ...storedThreadField(action.field),
+          ...(action.title ? { title: action.title } : {}),
           now,
         });
         answer = { thread, commentId: comment.id };

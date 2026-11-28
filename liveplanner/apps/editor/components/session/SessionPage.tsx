@@ -6,7 +6,9 @@
 // kind with a tally (Sprint Planning) adds its parts from ./planning: the tally under the progress bar, the Estimate
 // strip above the action bar, an estimate pill on each row and its line on Session Complete. Bug Triage adds its parts
 // from ./triage: a priority pill on each row and the Close dialog, which asks a Close its reason (priority and
-// severity are set in the card's own Details).
+// severity are set in the card's own Details). Sprint Review adds its parts from ./review (useReviewParts): the demo
+// strip over the card, the feedback strip above the action bar, Follow-up and its dialog, a presenter disc on each row
+// and its feedback and follow-ups on Session Complete.
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { estimateOf, itemStatus, sessionTally, typeIn, type Item } from '@liveplanner/items';
@@ -46,6 +48,8 @@ import { commitMakes } from './planning/planning-words';
 import { CloseDialog } from './triage/CloseDialog';
 import { PriorityPill } from './triage/PriorityPill';
 import { decisionNote, undoLabel } from './session-words';
+import { reviewedAt } from './review/review-range';
+import { useReviewParts } from './review/useReviewParts';
 
 const estimatePill = (item: Item) => <EstimatePill item={item} />;
 const priorityPill = (item: Item) => <PriorityPill item={item} />;
@@ -99,6 +103,19 @@ export function SessionPage({
     run: actions.runSession,
   });
   const timebox = useSessionTimebox(session);
+  const review = useReviewParts({
+    on: session.sessionKind === 'review',
+    tabId: tab.id,
+    session,
+    plan,
+    runs,
+    run: actions.runSession,
+    shown: room.shown,
+    peeking: room.peeking,
+    list: room.list,
+    // A queued card opens in the room; a follow-up on its board's panel.
+    onOpen: (id) => (room.list.some((i) => i.id === id) ? room.goTo(id) : plan.openItem(id)),
+  });
   const completeRef = useRef<HTMLButtonElement>(null);
   // The card the Close dialog is open for (Bug Triage's Close asking its reason), or none.
   const [closingId, setClosingId] = useState<string | null>(null);
@@ -118,9 +135,10 @@ export function SessionPage({
     ]),
   );
   if (undoLast) outcomeKeys['u'] = undoLast;
+  if (review) Object.assign(outcomeKeys, review.keys);
   useSessionKeys({
     // On Session Complete only U (Undo Last) is live: there is no card to decide.
-    on: runs && !settingsOpen && !closingId && (!!room.current || !!undoLast),
+    on: runs && !settingsOpen && !closingId && !review?.following && (!!room.current || !!undoLast),
     outcomes: room.current ? outcomeKeys : undoLast ? { u: undoLast } : {},
     next: room.next,
     previous: room.previous,
@@ -194,7 +212,7 @@ export function SessionPage({
       currentId={room.current?.id ?? null}
       shownId={shown?.id ?? null}
       onOpen={open}
-      aside={tallies ? estimatePill : triage ? priorityPill : undefined}
+      aside={tallies ? estimatePill : triage ? priorityPill : review?.aside}
     />
   );
   const statusName = (id: string) => plan.statusNames.get(id) ?? id;
@@ -215,9 +233,11 @@ export function SessionPage({
           You are looking at another card.
         </Callout>
       ) : null}
+      {review?.demo}
       <div className="flex min-h-0 flex-1 flex-col" data-session-card={shown.id}>
         <SessionCard plan={plan} item={shown} />
       </div>
+      {review?.feedback}
       {tally ? (
         <EstimateStrip
           item={shown}
@@ -241,7 +261,14 @@ export function SessionPage({
           sessionKind={session.sessionKind}
           item={shown}
           decision={shownDecision}
-          note={shownDecision ? decisionNote(shownDecision, plan.items, plan.types) : null}
+          note={
+            shownDecision
+              ? [decisionNote(shownDecision, plan.items, plan.types), review?.note(shown.id)]
+                  .filter(Boolean)
+                  .join(' · ') || null
+              : null
+          }
+          extra={review?.extra}
           last={
             undoLast && last
               ? {
@@ -265,6 +292,7 @@ export function SessionPage({
           onUndo={() => room.undo(shown.id)}
         />
       )}
+      {review?.dialog}
       {closing ? (
         <CloseDialog
           key={shown.id}
@@ -287,7 +315,9 @@ export function SessionPage({
   ) : (
     <SessionComplete
       outcomes={kind.outcomes}
-      summary={tally ? <PlanningSummary tally={tally} capacity={capacity} /> : null}
+      summary={
+        tally ? <PlanningSummary tally={tally} capacity={capacity} /> : (review?.summary ?? null)
+      }
       empty={total === 0}
       decided={decided}
       runs={runs}
@@ -368,6 +398,7 @@ export function SessionPage({
           initial={session.setup}
           plan={plan}
           settings
+          lastReviewAt={review ? reviewedAt(plan, tab.id) : null}
           onDone={(setup) => {
             actions.changeSetup(setup);
             setSettingsOpen(false);

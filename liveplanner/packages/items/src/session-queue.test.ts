@@ -3,6 +3,8 @@ import { item } from './test-items';
 import type { ItemTypeDef } from './item-types';
 import {
   SESSION_QUEUE_MAX,
+  holdOrder,
+  inDoneRange,
   isSessionKindId,
   isSessionOutcome,
   nextToGo,
@@ -238,4 +240,70 @@ it('offers each kind its own outcomes', () => {
   expect(outcomeFits('triage', 'flagged')).toBe(true);
   expect(outcomeFits('triage', 'refined')).toBe(false);
   expect(outcomeFits('refinement', 'closed')).toBe(false);
+});
+
+describe('Sprint Review queue', () => {
+  const done = (title: string, since: number, more: Record<string, unknown> = {}) =>
+    item({ title, status: 'done', statusSince: since, ...more }, { type: 'work' });
+  const early = done('Early', 100);
+  const mid = done('Mid', 200);
+  const late = done('Late', 300);
+  const shelved = done('Shelved', 200, { archived: true });
+  const binned = item({ title: 'Binned', status: 'trash' }, { type: 'work' });
+  const all = [early, mid, late, shelved, binned];
+  const titles = (pick: Parameters<typeof sessionQueue>[0]['pick']) =>
+    sessionQueue({ items: all, types: TYPES, pick })
+      .toGo.map((i) => i.fields['title'])
+      .sort();
+
+  it('reads archived cards only when the kind asks, never trashed ones', () => {
+    expect(titles({ typeIds: ['work'], statuses: ['done'] })).toEqual(['Early', 'Late', 'Mid']);
+    expect(titles({ typeIds: ['work'], statuses: ['done'], archived: true })).toEqual([
+      'Early',
+      'Late',
+      'Mid',
+      'Shelved',
+    ]);
+  });
+
+  it('keeps cards that entered their stage within the range, either end open', () => {
+    expect(titles({ typeIds: ['work'], statuses: ['done'], since: 150 })).toEqual(['Late', 'Mid']);
+    expect(titles({ typeIds: ['work'], statuses: ['done'], until: 250 })).toEqual(['Early', 'Mid']);
+    expect(titles({ typeIds: ['work'], statuses: ['done'], since: 150, until: 250 })).toEqual([
+      'Mid',
+    ]);
+  });
+
+  it('inDoneRange is open with no bounds', () => {
+    expect(inDoneRange(early)).toBe(true);
+    expect(inDoneRange(early, 101)).toBe(false);
+    expect(inDoneRange(late, undefined, 299)).toBe(false);
+  });
+
+  it('review decides Reviewed or Skipped, and moves nothing', () => {
+    expect(isSessionKindId('review')).toBe(true);
+    expect(isSessionOutcome('reviewed')).toBe(true);
+    expect(outcomeFits('review', 'reviewed')).toBe(true);
+    expect(outcomeFits('review', 'flagged')).toBe(false);
+  });
+});
+
+describe('holdOrder', () => {
+  const [a, b, c] = [card('A', 'backlog'), card('B', 'backlog'), card('C', 'backlog')];
+  it('keeps known cards where they were queued and adds new ones after', () => {
+    const first = holdOrder([], [a, b]);
+    expect(first.cards).toEqual([a, b]);
+    // B now sorts first (it was edited), and C newly matches.
+    const next = holdOrder(first.order, [b, c, a]);
+    expect(next.cards.map((i) => i.fields['title'])).toEqual(['A', 'B', 'C']);
+    expect(next.order).toEqual([a.id, b.id, c.id]);
+    // A card that left keeps its place for when it comes back.
+    expect(holdOrder(next.order, [c, a]).order).toEqual(next.order);
+  });
+
+  it('keeps a bounded order', () => {
+    const many = Array.from({ length: SESSION_QUEUE_MAX * 4 }, (_, i) => `x${i}`);
+    expect(holdOrder(many, [a]).order).toHaveLength(SESSION_QUEUE_MAX * 4);
+    expect(holdOrder(many, [a]).order.at(-1)).toBe(a.id);
+  });
 });

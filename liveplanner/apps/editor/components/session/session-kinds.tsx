@@ -4,6 +4,7 @@
 // grow"): an outcome's label, glyph, colour, key and the words it is announced with; a kind's Start Planning line and
 // set-up title. `SESSION_KINDS` (@liveplanner/project) holds what is not the editor's.
 import {
+  REVIEW_DONE_STAGES,
   TRIAGE_WAITING_STAGES,
   type BoardSortLevel,
   type SessionKindId,
@@ -16,12 +17,14 @@ import {
   lucideCheck,
   lucideCircleX,
   lucideFlag,
+  lucidePresentation,
 } from '@liveworkspace/icons/lucide';
 
 const CheckIcon = lucideGlyph(lucideCheck, 16);
 const FlagIcon = lucideGlyph(lucideFlag, 16);
 const CommitIcon = lucideGlyph(lucideCalendarCheck, 16);
 const CloseIcon = lucideGlyph(lucideCircleX, 16);
+const ReviewedIcon = lucideGlyph(lucidePresentation, 16);
 
 // Closed's colour: a deep rose, apart from the flag's orange and the accent, readable on white and on slate-950.
 export const CLOSED_COLOUR = '#e11d48';
@@ -73,6 +76,13 @@ export const OUTCOME_LOOKS: Readonly<Record<SessionOutcome, OutcomeLook>> = {
     done: 'Accepted',
   },
   closed: { label: 'Close', key: 'c', Icon: CloseIcon, colour: CLOSED_COLOUR, done: 'Closed' },
+  reviewed: {
+    label: 'Reviewed',
+    key: 'r',
+    Icon: ReviewedIcon,
+    colour: 'var(--color-brand-600)',
+    done: 'Reviewed',
+  },
 };
 
 export type SessionKindLook = {
@@ -94,6 +104,8 @@ export type SessionKindLook = {
   startTypes?: readonly string[];
   // The order a new set-up starts on; absent: the hand order.
   startSort?: readonly BoardSortLevel[];
+  // A stage in the Done phase counts as one it starts from too (Sprint Review's finished work).
+  startDone?: true;
   // Stage names (lower case) the kind's Next Stage steps past (sessionTarget's `pass`).
   passStages?: readonly string[];
   // Words Start Planning's search finds it by, beyond every session's.
@@ -166,4 +178,19 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
     passStages: TRIAGE_WAITING_STAGES,
     keywords: ['triage', 'bug', 'bugs', 'defect', 'issue', 'incident', 'close', 'accept'],
   },
+  review: {
+    name: 'Sprint Review',
+    line: 'Walk the work finished since the last review, demo each card and keep the room’s feedback on it.',
+    setupTitle: 'Set Up Sprint Review',
+    setupLine: 'Pick the finished work to demo, from when, in what order, and who presents it.',
+    stagesHeading: 'Done Stages',
+    targetHeading: '',
+    startStages: REVIEW_DONE_STAGES,
+    startDone: true,
+    startSort: [{ field: 'updatedAt', dir: 'asc' }],
+    keywords: ['review', 'demo', 'sprint review', 'feedback', 'follow-up', 'showcase', 'done'],
+  },
 };
+
+// Sprint Review's Follow-up key (N: new), beside its outcomes' R and S.
+export const FOLLOW_UP_KEY = 'n';

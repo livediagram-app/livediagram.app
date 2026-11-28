@@ -4497,6 +4497,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CardThreadCommentRequest": {
     "additionalProperties": false,
     "properties": {
+      "label": {
+        "const": "review",
+        "description": "What the comment is: `review` for Sprint Review feedback; only on a reply.",
+        "type": "string"
+      },
       "mentions": {
         "items": {
           "$ref": "#/components/schemas/CommentMention"
@@ -4547,6 +4552,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "properties": {
       "field": {
+        "type": "string"
+      },
+      "label": {
+        "const": "review",
+        "description": "What the comment is: `review` for Sprint Review feedback (shown as Review Feedback); else 400 label_invalid.",
         "type": "string"
       },
       "mentions": {
@@ -5280,6 +5290,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
+      "label": {
+        "$ref": "#/components/schemas/CommentLabel"
+      },
       "mentions": {
         "items": {
           "$ref": "#/components/schemas/CommentMention"
@@ -5311,6 +5324,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "authorColor"
     ],
     "type": "object"
+  },
+  "CommentLabel": {
+    "const": "review",
+    "type": "string"
   },
   "CommentMention": {
     "additionalProperties": false,
@@ -9645,14 +9662,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "outcome": {
-        "description": "What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning); `accepted`, `closed`, `skipped` or `flagged` (Bug Triage).",
+        "description": "What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning); `accepted`, `closed`, `skipped` or `flagged` (Bug Triage); `reviewed` or `skipped` (Sprint Review).",
         "enum": [
           "refined",
           "skipped",
           "flagged",
           "committed",
           "accepted",
-          "closed"
+          "closed",
+          "reviewed"
         ],
         "type": "string"
       },
@@ -9661,11 +9679,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "session": {
-        "description": "The session kind: `refinement`, `planning` (Sprint Planning) or `triage` (Bug Triage).",
+        "description": "The session kind: `refinement`, `planning` (Sprint Planning), `triage` (Bug Triage) or `review` (Sprint Review).",
         "enum": [
           "refinement",
           "planning",
-          "triage"
+          "triage",
+          "review"
         ],
         "type": "string"
       },
@@ -14005,7 +14024,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "refinement",
       "planning",
-      "triage"
+      "triage",
+      "review"
     ],
     "type": "string"
   },
@@ -14016,7 +14036,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "flagged",
       "committed",
       "accepted",
-      "closed"
+      "closed",
+      "reviewed"
     ],
     "type": "string"
   },
@@ -14031,6 +14052,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "object"
+      },
+      "presenter": {
+        "const": "none",
+        "type": "string"
+      },
+      "since": {
+        "type": "number"
       },
       "sortBy": {
         "items": {
@@ -14058,6 +14086,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "until": {
+        "type": "number"
       }
     },
     "required": [
@@ -14083,6 +14114,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "facilitator": {
         "$ref": "#/components/schemas/SessionFacilitator"
+      },
+      "followUps": {
+        "additionalProperties": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "type": "object"
+      },
+      "presenters": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/ItemPerson"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": "object"
       },
       "sessionKind": {
         "$ref": "#/components/schemas/SessionKindId"

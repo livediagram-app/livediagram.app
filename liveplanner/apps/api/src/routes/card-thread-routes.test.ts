@@ -136,6 +136,16 @@ describe('starting a thread', () => {
     expect(op?.body.op?.upserts?.[0]?.createdBy.authorId).toBeUndefined();
   });
 
+  it('keeps a Review Feedback label on the comment, and refuses an unknown one (items.md "Review Feedback")', async () => {
+    const res = await start('p1', a.id, 'Tooltips', {}, { label: 'review' });
+    expect(res.status).toBe(201);
+    expect(res.body.thread?.comments[0]?.label).toBe('review');
+    expect((await start('p1', a.id, 'Plain')).body.thread?.comments[0]?.label).toBeUndefined();
+    const bad = await start('p1', a.id, 'Hi', {}, { label: 'praise' });
+    expect(bad.status).toBe(400);
+    expect(bad.body).toMatchObject({ error: 'label_invalid' });
+  });
+
   it('takes a given title, and refuses one too long, no text, a missing card and a full card', async () => {
     expect((await start('p1', a.id, 'Hi', {}, { title: 'Basket bug' })).body.thread?.title).toBe(
       'Basket bug',

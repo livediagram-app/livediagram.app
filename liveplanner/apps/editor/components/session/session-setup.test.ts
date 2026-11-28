@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { Item, ItemTypeDef } from '@liveplanner/items';
+import { DAY_MS, type Item, type ItemTypeDef } from '@liveplanner/items';
 import {
   cardsWord,
   defaultSessionSetup,
+  rangeWords,
   setupWords,
   stageCounts,
   stagesFor,
@@ -211,5 +212,66 @@ describe('the set-up in words', () => {
       ),
     ).toBe('Backlog · Priority (Highest First)');
     expect([cardsWord(1), cardsWord(3)]).toEqual(['1 card', '3 cards']);
+  });
+});
+
+describe('Sprint Review set-up', () => {
+  const types = [type('task', ['backlog', 'doing', 'shipping'])];
+  const NOW = 100 * DAY_MS;
+  const PHASES = new Map([['shipping', 'done' as const]]);
+  const NAMED = new Map([...NAMES, ['shipping', 'Shipping']]);
+  const items = [card('task', 'shipping', { archived: true }), card('task', 'doing')];
+
+  it('starts from Done-phase stages, archived cards counted, since the last review', () => {
+    expect(
+      defaultSessionSetup({
+        sessionKind: 'review',
+        items,
+        types,
+        planStatuses: PLAN,
+        statusNames: NAMED,
+        statusPhases: PHASES,
+        lastReviewAt: 42,
+        now: NOW,
+      }),
+    ).toEqual({
+      typeIds: ['task'],
+      statuses: ['shipping'],
+      sortBy: [{ field: 'updatedAt', dir: 'asc' }],
+      since: 42,
+    });
+  });
+
+  it('with no earlier review, starts 14 days back from now', () => {
+    expect(
+      defaultSessionSetup({
+        sessionKind: 'review',
+        items,
+        types,
+        planStatuses: PLAN,
+        statusNames: NAMED,
+        statusPhases: PHASES,
+        now: NOW,
+      }).since,
+    ).toBe(NOW - 14 * DAY_MS);
+  });
+
+  it('counts archived cards when asked', () => {
+    expect(stageCounts(items, ['task'], true).get('shipping')).toBe(1);
+    expect(stageCounts(items, ['task']).get('shipping')).toBeUndefined();
+  });
+
+  it('words the done range in the sidebar header', () => {
+    const at = new Date(2026, 10, 14).getTime();
+    const to = new Date(2026, 10, 21).getTime();
+    const day = (ms: number) =>
+      new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    expect(rangeWords({ since: at, until: to })).toBe(`${day(at)} to ${day(to)}`);
+    expect(rangeWords({ since: at })).toBe(`since ${day(at)}`);
+    expect(rangeWords({ until: to })).toBe(`until ${day(to)}`);
+    expect(rangeWords({})).toBe('');
+    expect(setupWords({ typeIds: ['task'], statuses: ['done'], since: at }, types, NAMES)).toBe(
+      `Done · since ${day(at)}`,
+    );
   });
 });
