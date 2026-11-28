@@ -28,7 +28,7 @@ export function SessionTabsArt() {
       <text className={TEXT} x={17} y={17} fontSize="6.4" fontWeight="700">
         Refinement
       </text>
-      <text className={MUTED} x={56} y={17} fontSize="5.2" fontWeight="600">
+      <text className={MUTED} x={60} y={17} fontSize="5.2" fontWeight="600">
         4 of 9
       </text>
       <Progress
@@ -186,12 +186,12 @@ export function StandupArt() {
       <text className={TEXT} x={17} y={17} fontSize="6.4" fontWeight="700">
         Stand-up
       </text>
-      <text className={MUTED} x={47} y={17} fontSize="5.2" fontWeight="600">
+      <text className={MUTED} x={50} y={17} fontSize="5.2" fontWeight="600">
         2 of 4 people
       </text>
       <Progress x={17} y={22} w={90} segments={['done', 'current', 'todo', 'todo']} />
       {people.map((p, i) => {
-        const y = 30 + i * 20 + (i > 1 ? 14 : 0);
+        const y = 28 + i * 16 + (i > 1 ? 12 : 0);
         return (
           <g key={p.name} opacity={p.done ? 0.6 : 1}>
             <rect
@@ -213,7 +213,7 @@ export function StandupArt() {
           </g>
         );
       })}
-      <text className={TEXT} x={30} y={62.6} fontSize="5.4">
+      <text className={TEXT} x={30} y={65} fontSize="5">
         WI-41 · In Progress
       </text>
       <Panel x={122} y={6} w={168} h={52} />

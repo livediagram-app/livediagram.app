@@ -81,9 +81,9 @@ export function SessionTabPage() {
       <TextBar x={190} y={140} w={150} tone="faint" />
       <TextBar x={190} y={152} w={96} tone="faint" />
 
-      <BarButton x={176} y={210} w={50} label="Skip" mark="skip" />
-      <BarButton x={230} y={210} w={48} label="Flag" mark="flag" />
-      <Label x={284} y={222.5} size={8.5} tone="muted">
+      <BarButton x={176} y={210} w={44} label="Skip" mark="skip" />
+      <BarButton x={223} y={210} w={48} label="Flag" mark="flag" />
+      <Label x={276} y={222.5} size={8} tone="muted">
         Moves to Ready
       </Label>
       <FillButton x={340} y={209} w={70} label="Refined" shortcut="R" />

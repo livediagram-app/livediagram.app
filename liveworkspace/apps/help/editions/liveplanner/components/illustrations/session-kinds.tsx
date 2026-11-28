@@ -127,7 +127,7 @@ export function StandupScene() {
       <rect
         x={186}
         y={168}
-        width={142}
+        width={128}
         height={22}
         rx={6}
         className="fill-white stroke-slate-200"
@@ -136,7 +136,7 @@ export function StandupScene() {
       <Label x={194} y={179.5} size={8.5} tone="muted">
         Add a note to WI-41
       </Label>
-      <Button x={332} y={168} w={78} h={22} label="Add Comment" />
+      <Button x={318} y={168} w={92} h={22} label="Add Comment" />
       <Label x={186} y={204} size={9} weight={600} tone="strong">
         Priya · card 1 of 3 · Blocked: Waiting on Review
       </Label>
