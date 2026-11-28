@@ -34,10 +34,14 @@ export const MODELS: ModelTable = {
   ...ROAD_MODELS,
 };
 
+// The models in a Map, so a kind is looked up among the table's own kinds only: a kind such as 'constructor' or
+// 'toString' finds nothing rather than reaching Object.prototype's methods.
+const MODEL_BY_KIND: ReadonlyMap<string, ModelTable[string]> = new Map(Object.entries(MODELS));
+
 /** Builds a piece's model in its frame. */
 export function buildModel(kind: string, c: ModelContext): Builder {
   const m = new Builder();
-  const model = MODELS[kind];
+  const model = MODEL_BY_KIND.get(kind);
   if (model) model(m, c);
   else if (isWallPieceShape(kind)) {
     // Hung on a wall: a panel against the wall behind it, at eye height.
