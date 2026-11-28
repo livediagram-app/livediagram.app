@@ -81,8 +81,11 @@ never read `Tab.session`.
 
 - The queue is **live**: the plan's cards whose type and stage the set-up picks, not archived, not in the Trash,
   sorted by the set-up's order (a card with no value for a level after those with one, rank breaking ties), exactly
-  as a board sorts. A card added to a picked stage mid-session joins it; one dragged out of the picked stages on a
-  board leaves it, unless the session already decided it.
+  as a board sorts. A card added to a picked stage mid-session joins it at the end; one dragged out of the picked
+  stages on a board leaves it, unless the session already decided it.
+- The order **holds**: each screen keeps the cards in the order it first queued them, so editing a queued card (its
+  title, its estimate, anything the order reads, Last Edited among them) never moves it, and the room never sees the
+  shown card jump from "2 of 5" to "5 of 5". Saving a changed set-up in Session Settings sorts the queue afresh.
 - A **decided** card stays in the queue whatever its stage is now, so a Refined card does not vanish when it moves on.
   Decided cards lead the list, in the order they were decided; the cards still to go follow in the set-up's order.
 - A decided card that is deleted, trashed or archived leaves the queue; its outcome is dropped with it.
@@ -342,11 +345,12 @@ bar, timebox, facilitator and fill button as Refinement; what it brings is below
   **Skip** works as Refinement's.
 - **Follow-up** opens the **Follow-up dialog**, a centred dialog (a sheet on a phone) whose illustrated header names
   the card it comes from ("New Follow-up", "From WI-47 · Dark mode for the dashboard"): a **Title** (filled from the
-  newest feedback added on this screen for the card, else empty; up to 200 characters), a **Card Type** (the card's
+  newest Review Feedback comment on the card, whoever left it, else empty; up to 200 characters), a **Card Type** (the card's
   own first), a line saying where it goes ("Added to **Backlog**"), and **Cancel** and **Create Follow-up** at its
   foot. Create needs a title; Enter in the title presses it, Escape cancels. It makes a new card of that type in its
   first Backlog-like stage (Backlog, Icebox, Inbox, Ideas, Someday), else its Default State, else its first stage, at
-  the top of that column, and links it to the reviewed card: through the new card's Card field named like a follow-up
+  the top of that column, with the reviewed card's Priority when its type has one (so on a board laned by priority it
+  sits in its source's lane), and links it to the reviewed card: through the new card's Card field named like a follow-up
   (Follow-up Of, Follow Up Of, Follows Up, Related, Related To, Relates To, See Also) that links to the reviewed
   card's type, when its type has one (it then shows in the reviewed card's Linked Cards); else its description reads
   "Follow-up from WI-47: Dark mode for the dashboard". The room stays on the reviewed card; the follow-up is kept on

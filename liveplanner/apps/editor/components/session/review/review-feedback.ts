@@ -23,6 +23,20 @@ export function feedbackCount(threads: readonly CardThread[]): number {
   return n;
 }
 
+// The newest Review Feedback comment's text on a card's threads (a later one wins a tie), or '' with none: what
+// Follow-up's title starts from, on any screen and after a reload.
+export function latestFeedback(threads: readonly CardThread[]): string {
+  let text = '';
+  let at = -Infinity;
+  for (const t of threads)
+    for (const c of t.comments)
+      if (c.label === 'review' && c.createdAt >= at) {
+        at = c.createdAt;
+        text = c.text;
+      }
+  return text;
+}
+
 // Session Complete's feedback line over the queued cards: how many comments, on how many cards.
 export function feedbackSummary(
   cardIds: readonly string[],

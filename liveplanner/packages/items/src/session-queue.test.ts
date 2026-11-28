@@ -3,6 +3,7 @@ import { item } from './test-items';
 import type { ItemTypeDef } from './item-types';
 import {
   SESSION_QUEUE_MAX,
+  holdOrder,
   inDoneRange,
   isSessionKindId,
   isSessionOutcome,
@@ -284,5 +285,25 @@ describe('Sprint Review queue', () => {
     expect(isSessionOutcome('reviewed')).toBe(true);
     expect(outcomeFits('review', 'reviewed')).toBe(true);
     expect(outcomeFits('review', 'flagged')).toBe(false);
+  });
+});
+
+describe('holdOrder', () => {
+  const [a, b, c] = [card('A', 'backlog'), card('B', 'backlog'), card('C', 'backlog')];
+  it('keeps known cards where they were queued and adds new ones after', () => {
+    const first = holdOrder([], [a, b]);
+    expect(first.cards).toEqual([a, b]);
+    // B now sorts first (it was edited), and C newly matches.
+    const next = holdOrder(first.order, [b, c, a]);
+    expect(next.cards.map((i) => i.fields['title'])).toEqual(['A', 'B', 'C']);
+    expect(next.order).toEqual([a.id, b.id, c.id]);
+    // A card that left keeps its place for when it comes back.
+    expect(holdOrder(next.order, [c, a]).order).toEqual(next.order);
+  });
+
+  it('keeps a bounded order', () => {
+    const many = Array.from({ length: SESSION_QUEUE_MAX * 4 }, (_, i) => `x${i}`);
+    expect(holdOrder(many, [a]).order).toHaveLength(SESSION_QUEUE_MAX * 4);
+    expect(holdOrder(many, [a]).order.at(-1)).toBe(a.id);
   });
 });

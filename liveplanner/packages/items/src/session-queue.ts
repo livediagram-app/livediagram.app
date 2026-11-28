@@ -112,6 +112,23 @@ export function sessionQueue(input: {
   };
 }
 
+// The cards still to go in the order the screen first queued them (docs/specs/026-plan/session-tabs.md "The queue"):
+// a card already in `order` keeps its place, so editing the shown card never re-sorts it to the end; a newly matching
+// card comes after, in the board's order. Answers the cards and the order to keep next time (the old one plus the new
+// ids, at most SESSION_QUEUE_MAX * 4, the oldest dropped first).
+export function holdOrder(
+  order: readonly string[],
+  cards: readonly Item[],
+): { cards: Item[]; order: string[] } {
+  const at = new Map(order.map((id, i) => [id, i]));
+  const known: Item[] = [];
+  const fresh: Item[] = [];
+  for (const c of cards) (at.has(c.id) ? known : fresh).push(c);
+  known.sort((a, b) => at.get(a.id)! - at.get(b.id)!);
+  const next = fresh.length ? [...order, ...fresh.map((c) => c.id)] : [...order];
+  return { cards: [...known, ...fresh], order: next.slice(-SESSION_QUEUE_MAX * 4) };
+}
+
 // Stage names, compared without case, that are never Next Stage: finished work, and the pile work waits in.
 const DONE_LIKE = [
   'done',

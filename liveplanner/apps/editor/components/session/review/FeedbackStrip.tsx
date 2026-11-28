@@ -76,7 +76,7 @@ export function FeedbackStrip({
       <span
         role="status"
         data-feedback-count={count}
-        className={`shrink-0 text-[12px] text-slate-500 dark:text-slate-400 ${canAdd ? 'mt-2.5 max-sm:hidden' : 'py-1'}`}
+        className={`shrink-0 text-[12px] text-slate-500 dark:text-slate-400 ${canAdd ? 'mt-2.5' : 'py-1'}`}
       >
         {canAdd ? countWords : `Feedback: ${countWords.toLowerCase()}`}
       </span>

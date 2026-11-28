@@ -58,6 +58,9 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
 
 ## Behaviour and state
 
+- `holdOrder(order, toGo)` keeps the to-go cards in the order a screen first queued them (known ids in their old
+  place, new ones after in the board's order) and answers the order to keep; `useSessionRun` holds it in a ref keyed
+  by the set-up's value, so a saved set-up sorts afresh.
 - `sessionQueue({ items, types, planStatuses, setup, decided })` answers `{ decided: Item[], toGo: Item[], capped }`:
   decided cards (still present, not trashed, not archived unless `pick.archived`) by `at`; to-go cards whose type is in
   `typeIds` and status in `statuses`, not trashed, not archived unless `pick.archived`, entered their status

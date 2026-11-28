@@ -3,7 +3,7 @@
 // Running a Sprint Review (docs/specs/026-plan/session-tabs.md "Sprint Review"): who presents each card, the room's
 // feedback kept as Review Feedback comments on the real card, and follow-up cards made from it and linked back. The
 // presenter and follow-ups are the facilitator's and ride the tab; feedback is anyone's who may comment.
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import {
   cardRefOrKey,
   followUpFieldOf,
@@ -12,6 +12,7 @@ import {
   holdsSeveral,
   itemTitle,
   newItemId,
+  PRIORITIES,
   typeIn,
   type Item,
   type ItemFields,
@@ -28,7 +29,12 @@ import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { newCardStatus } from '@/components/plan/new-card-status';
 import { useCardThreadsContext } from '@/components/plan/threads/CardThreadsContext';
 import { track } from '@/lib/telemetry';
-import { FEEDBACK_THREAD_TITLE, feedbackCount, feedbackThreadOf } from './review-feedback';
+import {
+  FEEDBACK_THREAD_TITLE,
+  feedbackCount,
+  feedbackThreadOf,
+  latestFeedback,
+} from './review-feedback';
 
 export type ReviewRun = ReturnType<typeof useReviewRun>;
 
@@ -49,8 +55,6 @@ export function useReviewRun({
   run: (tabId: string, change: (s: SessionTabState) => SessionTabState) => void;
 }) {
   const threads = useCardThreadsContext();
-  // The newest feedback this screen added per card: what Follow-up's title starts from.
-  const [latest, setLatest] = useState<Readonly<Record<string, string>>>({});
 
   const presenter = (item: Item): ItemPerson | null => presenterOf(session, item);
   const setPresenter = (itemId: string, who: ItemPerson | null) => {
@@ -76,15 +80,14 @@ export function useReviewRun({
         debugLog('[session] feedback.failed', { itemId });
         return false;
       }
-      setLatest((l) => ({ ...l, [itemId]: text }));
       plan.announce('Feedback added');
       return true;
     },
     [threads, plan],
   );
 
-  // A follow-up of `typeId` made from `from`, in its type's Backlog-like stage at the column's top, linked back
-  // through a follow-up Card field when the type has one, else by a line in its description. Answers its id, or null
+  // A follow-up of `typeId` made from `from`, in its type's Backlog-like stage at the column's top with the source's
+  // priority, linked back through a follow-up Card field when the type has one, else by a line in its description. Answers its id, or null
   // when it could not be made.
   const followUp = async ({ from, title, typeId }: FollowUpInput): Promise<string | null> => {
     const name = followUpTitle(title);
@@ -98,10 +101,16 @@ export function useReviewRun({
             description: `Follow-up from ${cardRefOrKey(from, plan.types)}: ${itemTitle(from)}`,
           }
         : {};
+    // The source's priority, so on a board laned by priority the follow-up sits in its source's lane.
+    const priority = from.fields['priority'];
+    const ranked: ItemFields =
+      type.fields.includes('priority') && (PRIORITIES as readonly unknown[]).includes(priority)
+        ? { priority: priority as string }
+        : {};
     const id = newItemId();
     const made = await plan.addItem({
       type: typeId,
-      fields: { title: name, ...link },
+      fields: { title: name, ...link, ...ranked },
       status: followUpStatus(type, plan.statusNames) ?? newCardStatus(type, plan.statusNames),
       after: null,
       id,
@@ -123,7 +132,9 @@ export function useReviewRun({
     canFeedback,
     feedbackOn,
     addFeedback,
-    latestFeedback: (itemId: string) => latest[itemId] ?? '',
+    // The newest Review Feedback on the card, whoever left it: Follow-up's title starts from it.
+    latestFeedback: (itemId: string) =>
+      threads ? latestFeedback(threads.threads.threadsOf(itemId)) : '',
     followUp,
     followUpsOf: (itemId: string) => session.followUps?.[itemId] ?? [],
   };

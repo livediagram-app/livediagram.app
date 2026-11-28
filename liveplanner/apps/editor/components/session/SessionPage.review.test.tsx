@@ -52,6 +52,7 @@ const task: ItemTypeDef = {
     'title',
     'status',
     'assignee',
+    'priority',
     'description',
     'attachments',
     'f-pr',
@@ -122,6 +123,7 @@ function mount(opts: {
   session?: Partial<SessionTabState>;
   items?: Item[];
   refuse?: boolean;
+  threads?: ReturnType<typeof thread>[];
 }) {
   const items = new Map(
     (
@@ -177,7 +179,7 @@ function mount(opts: {
     }),
   };
   const live = liveThreads(
-    [],
+    opts.threads ?? [],
     { canComment: opts.canComment ?? opts.mayEdit, projectId: PLAN },
     { refuse: !!opts.refuse },
   );
@@ -197,7 +199,14 @@ function mount(opts: {
   const r = render(el(state));
   view.rerender = (s) => r.rerender(el(s));
   view.rerender(state);
-  return { plan, items, acts: live.acts, state: () => state };
+  // The plan's cards changed (a new map, as the store hands one), drawn again.
+  const edit = (id: string, fields: Item['fields']) => {
+    const was = items.get(id)!;
+    items.set(id, { ...was, fields: { ...was.fields, ...fields }, updatedAt: was.updatedAt + 100 });
+    (plan as unknown as { items: Map<string, Item> }).items = new Map(items);
+    view.rerender(state);
+  };
+  return { plan, items, acts: live.acts, state: () => state, edit };
 }
 
 const feedbackBox = () => screen.getByRole<HTMLTextAreaElement>('textbox', { name: /Feedback on/ });
@@ -309,6 +318,46 @@ describe('SessionPage: Sprint Review', () => {
     await addFeedback('Lost?');
     expect(feedbackBox().value).toBe('Lost?');
     expect(screen.getByText('None yet')).toBeTruthy();
+  });
+
+  it('holds the queue order while the shown card is edited (Last Edited order)', () => {
+    const f = mount({ mayEdit: true });
+    const titles = () => screen.getAllByRole('option').map((o) => o.textContent);
+    expect(titles()[0]).toContain('Card A');
+    f.edit('a', { title: 'Card A edited' });
+    expect(titles()[0]).toContain('Card A edited');
+    expect(screen.getByRole('heading', { level: 3, name: 'Card A edited' })).toBeTruthy();
+    // A newly matching card joins at the end.
+    f.edit('wip', { status: 'done' });
+    expect(titles()).toHaveLength(3);
+    expect(titles()[2]).toContain('Card WIP');
+  });
+
+  it('Follow-up starts from anyone’s newest feedback on the card, and keeps its priority', async () => {
+    const fb = thread('th-1', {
+      comments: [
+        comment('c1', { label: 'review', text: 'Older', createdAt: 1 }),
+        comment('c2', { label: 'review', text: 'Newest from Jo', createdAt: 2 }),
+        comment('c3', { text: 'Not feedback', createdAt: 3 }),
+      ],
+      cards: [{ projectId: PLAN, itemId: 'a', key: 1 }],
+    });
+    const f = mount({
+      mayEdit: true,
+      threads: [fb],
+      items: [card('a', 1, { priority: 'high' })],
+    });
+    fireEvent.keyDown(window, { key: 'n' });
+    const title = screen.getByRole<HTMLInputElement>('textbox', { name: 'Title' });
+    expect(title.value).toBe('Newest from Jo');
+    await act(async () => {
+      fireEvent.keyDown(title, { key: 'Enter' });
+    });
+    expect(f.plan.addItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fields: { title: 'Newest from Jo', 'f-rel': ['a'], priority: 'high' },
+      }),
+    );
   });
 
   it('Follow-up makes a linked card from the newest feedback, through Related', async () => {

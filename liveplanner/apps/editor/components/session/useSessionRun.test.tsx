@@ -10,7 +10,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import { recordSessionOutcome } from '@/lib/api/item-history';
 import { track } from '@/lib/telemetry';
-import { useSessionRun } from './useSessionRun';
+import { heldOrder, useSessionRun } from './useSessionRun';
 
 // docs/specs/026-plan/session-tabs.md "The queue", "The sidebar", "The action bar": the facilitator's moves and
 // outcomes write the real card, keep the outcome in its history and on the tab, and move the room on; anyone else's
@@ -217,5 +217,22 @@ describe('useSessionRun', () => {
     act(() => f.hook.result.current.decide('refined'));
     expect(f.plan.moveItem).not.toHaveBeenCalled();
     expect(f.state().decided?.z?.outcome).toBe('refined');
+  });
+});
+
+// docs/specs/026-plan/session-tabs.md "The queue": the order holds per tab and set-up, for a bounded number of tabs.
+describe('heldOrder', () => {
+  const setup = { typeIds: ['work'], statuses: ['backlog'] };
+  const a = card('ha', 'backlog', 'a');
+  const b = card('hb', 'backlog', 'b');
+  it('holds per tab and set-up, and forgets the oldest tab past the cap', () => {
+    expect(heldOrder('h1', setup, [a, b])).toEqual([a, b]);
+    expect(heldOrder('h1', setup, [b, a])).toEqual([a, b]);
+    // Another set-up sorts afresh.
+    expect(heldOrder('h1', { ...setup, statuses: ['x'] }, [b, a])).toEqual([b, a]);
+    heldOrder('h2', setup, [a, b]);
+    for (let i = 0; i < 20; i += 1) heldOrder(`fill-${i}`, setup, []);
+    // h2 was dropped: its cards sort afresh.
+    expect(heldOrder('h2', setup, [b, a])).toEqual([b, a]);
   });
 });

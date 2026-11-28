@@ -92,6 +92,7 @@ describe('useReviewRun', () => {
     const { hook } = setup({ runs: true, threads: false });
     expect(hook.result.current.canFeedback).toBe(false);
     expect(hook.result.current.feedbackOn('a')).toBe(0);
+    expect(hook.result.current.latestFeedback('a')).toBe('');
     expect(await hook.result.current.addFeedback('a', 'Hi')).toBe(false);
     const viewer = setup({ runs: true, canComment: false });
     expect(await viewer.hook.result.current.addFeedback('a', 'Hi')).toBe(false);

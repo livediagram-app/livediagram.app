@@ -23,7 +23,7 @@ import { FollowUpDialog } from './FollowUpDialog';
 import { ReviewFeedbackMark } from './ReviewFeedbackMark';
 import { ReviewSetupParts, dateValue, dayStart, withRange } from './ReviewSetupParts';
 import { ReviewSummary } from './ReviewSummary';
-import { feedbackThreadOf, feedbackWords } from './review-feedback';
+import { feedbackThreadOf, feedbackWords, latestFeedback } from './review-feedback';
 import { reviewedAt } from './review-range';
 import { comment, thread } from '@/components/plan/threads/thread-test-kit';
 
@@ -307,6 +307,17 @@ describe('review feedback', () => {
     expect(feedbackThreadOf([fresh, old])?.id).toBe('t2');
     expect(feedbackThreadOf([other])).toBeNull();
     expect(feedbackWords({ comments: 5, cards: 3 })).toBe('5 comments on 3 cards');
+    expect(
+      latestFeedback([
+        thread('t5', {
+          comments: [
+            comment('n', { label: 'review', text: 'New', createdAt: 9 }),
+            comment('o', { label: 'review', text: 'Old', createdAt: 1 }),
+          ],
+        }),
+      ]),
+    ).toBe('New');
+    expect(latestFeedback([other])).toBe('');
   });
 
   it('marks a Review Feedback comment', () => {

@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   beforeRank,
+  holdOrder,
   isFlagged,
   itemStatus,
   itemTitle,
@@ -50,6 +51,26 @@ export type SessionCloseInput = { reason: string; duplicateOf?: string | undefin
 
 export type SessionRun = ReturnType<typeof useSessionRun>;
 
+// The order this screen first queued each Session tab's cards in, under the set-up it was queued with (by value: the
+// tab's state is read afresh on each change), kept for the page's life so a phone's or a desktop's layout swap keeps
+// it too. A card edited while queued keeps its place; a saved set-up sorts afresh. At most HELD_TABS tabs, the
+// oldest dropped first.
+const HELD_TABS = 20;
+const held = new Map<string, { key: string; order: string[] }>();
+export function heldOrder(
+  tabId: string,
+  setup: SessionTabState['setup'],
+  toGo: readonly Item[],
+): Item[] {
+  const key = JSON.stringify(setup);
+  const had = held.get(tabId);
+  const kept = holdOrder(had?.key === key ? had.order : [], toGo);
+  held.delete(tabId);
+  held.set(tabId, { key, order: kept.order });
+  if (held.size > HELD_TABS) held.delete(held.keys().next().value!);
+  return kept.cards;
+}
+
 export function useSessionRun({
   tabId,
   session,
@@ -71,10 +92,10 @@ export function useSessionRun({
   const kind = SESSION_KINDS[session.sessionKind];
   // A kind that reviews finished work reads archived cards too, never restoring them.
   const archived = !!kind.archived;
-  const queue = useMemo(
-    () => sessionQueue({ items: items.values(), types, pick: { ...setup, archived }, decided }),
-    [items, types, setup, decided, archived],
-  );
+  const queue = useMemo(() => {
+    const q = sessionQueue({ items: items.values(), types, pick: { ...setup, archived }, decided });
+    return { ...q, toGo: heldOrder(tabId, setup, q.toGo) };
+  }, [items, types, setup, decided, archived, tabId]);
   // The whole list as the sidebar shows it: decided cards first, then those still to go.
   const list = useMemo(() => [...queue.decided, ...queue.toGo], [queue]);
   // The room's card: the one the tab names while it is queued, else the first still to go, else none (complete).
