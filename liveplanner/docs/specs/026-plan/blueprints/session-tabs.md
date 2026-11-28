@@ -193,7 +193,10 @@ Shared pieces every kind now uses: `SessionFrame` and `SessionHeader` (the page 
 `SessionRow` (one queue row, exported by `SessionSidebar`), `session-writes.ts` (`recordOutcome`, `undoDecision`: an
 outcome's history write and an undo's card writes), and `SessionProgress` over any `{ id }` units with its own noun.
 `CommentRow` draws `review/ReviewFeedbackMark` for a labelled comment.
-`session-words.ts` (a decided card's note, Undo Last's label) serves every kind. The tab writes go through `hooks/plan/useSessionTabActions.ts`. Start Planning
+`session-words.ts` (a decided card's note, Undo Last's label) serves every kind. Help: `SessionHeader` takes the
+kind's `helpArticle` (`SESSION_KIND_LOOKS`, a `HelpArticleKey`) and draws `HelpArticleLink` (the bare `?`, `md`, beside the 32px cog) before
+Session Settings for every role; `SessionSetupDialog` passes `HelpArticleLink article="planSessionSetup" size="md"` as
+`HeroDialogHeader`'s `actions`. The tab writes go through `hooks/plan/useSessionTabActions.ts`. Start Planning
 gains the `sessions` category, the `session` start kind and `start/SessionPicture`.
 
 ## Accessibility
