@@ -3,8 +3,6 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { FormatPainterMode } from '@/editions/livediagram/components/illustrations/palette-modes';
 import { FormatPanelScene } from '@/editions/livediagram/components/illustrations/selection-modes';
-import { FormatPainterMode as LivehuddleFormatPainterMode } from '@/editions/livehuddle/components/illustrations/palette-modes';
-import { FormatPanelScene as LivehuddleFormatPanelScene } from '@/editions/livehuddle/components/illustrations/selection-modes';
 import { FormatPainterMode as DesignFormatPainterMode } from '@/editions/livedesign/components/illustrations/palette-modes';
 import { FormatPainterMode as DocumentsFormatPainterMode } from '@/editions/livedocuments/components/illustrations/palette-modes';
 import { FormatPanelScene as DesignFormatPanelScene } from '@/editions/livedesign/components/illustrations/selection-modes';
@@ -80,12 +78,6 @@ Every element you click takes on the copied look. Because it copies the styling 
 <Figure app="livedocuments" caption="Format mode: the brush carries one element's look onto another.">
   <DocumentsFormatPainterMode />
 </Figure>
-<Figure
-  app="livehuddle"
-  caption="Format Painter pressed on the source's selection toolbar, its style being painted onto another shape."
->
-  <LivehuddleFormatPainterMode />
-</Figure>
 
 ## Choosing what it copies
 
@@ -106,12 +98,6 @@ While the Format Painter is on, a **Format** panel sits at the bottom right, abo
 
 <Figure app="livedocuments" caption="The Format panel shows what the brush copies and what happens after painting.">
   <DocumentsFormatPanelScene />
-</Figure>
-<Figure
-  app="livehuddle"
-  caption="Painting with Fill switched off: the Format panel copies only Border and Text, so the target keeps its own colour."
->
-  <LivehuddleFormatPanelScene />
 </Figure>
 
 The collapsed row always names what is currently enabled ("Border, Text", or "Everything" when all are on), so a painter that seems to be ignoring colours explains itself at a glance. With every toggle off it reads "Nothing", turns amber, and the brush paints nothing. Your choices are remembered on this device.

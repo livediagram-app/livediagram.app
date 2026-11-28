@@ -3,7 +3,6 @@ import { helpMetadata } from '@/lib/seo';
 import { FormatPainter } from '@/editions/livediagram/components/illustrations/canvas';
 import { FormatPainter as DesignFormatPainter } from '@/editions/livedesign/components/illustrations/canvas';
 import { FormatPainter as DocumentsFormatPainter } from '@/editions/livedocuments/components/illustrations/canvas';
-import { FormatPainter as HuddleFormatPainter } from '@/editions/livehuddle/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'The Format Painter',
@@ -67,9 +66,6 @@ The format painter copies the styling of one element and applies it to others, s
   <DocumentsFormatPainter />
 </Figure>
 
-<Figure app="livehuddle" caption="Load the brush from one note, then click another to give it the same look.">
-  <HuddleFormatPainter />
-</Figure>
 
 ## Choosing what it copies
 
@@ -81,7 +77,6 @@ The **Format** panel decides what the brush carries. Under **Copies**, five swit
   - **Border**: stroke colour, width, pattern and corners, and an arrow's line.
 </AppNote>
 
-<AppNote app="livehuddle">- **Border**: stroke colour, width, pattern and corners.</AppNote>
 
 - **Text**: colour, size, weight, italic, underline, strikethrough, font and alignment.
 
