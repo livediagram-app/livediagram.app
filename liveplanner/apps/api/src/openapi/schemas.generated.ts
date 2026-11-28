@@ -13958,6 +13958,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "from": {
         "type": "string"
       },
+      "fromRank": {
+        "type": "string"
+      },
       "linked": {
         "type": "string"
       },
